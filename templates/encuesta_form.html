@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Encuesta de Satisfacción</title>
+  <link rel="stylesheet" href="{% static 'css/encuesta.css' %}">
+</head>
+<body>
+  <div class="encuesta-container">
+    <h2>Encuesta de Satisfacción</h2>
+
+    <div class="venta-info">
+      <p>Venta N° {{ venta.id }} - Atendido por: <strong>{{ trabajador.get_full_name|default:trabajador.username }}</strong></p>
+      <p>Fecha de la venta: {{ venta.fecha }}</p>
+    </div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <label for="id_cordialidad">{{ form.cordialidad.label }}</label>
+      {{ form.cordialidad }}
+
+      <label for="id_resolucion_dudas">{{ form.resolucion_dudas.label }}</label>
+      {{ form.resolucion_dudas }}
+
+      <label for="id_tiempo_atencion">{{ form.tiempo_atencion.label }}</label>
+      {{ form.tiempo_atencion }}
+
+      <label for="id_recomendacion">{{ form.recomendacion.label }}</label>
+      {{ form.recomendacion }}
+
+      <label for="id_comentario">{{ form.comentario.label }}</label>
+      {{ form.comentario }}
+
+      <button type="submit">Enviar encuesta</button>
+    </form>
+  </div>
+</body>
+</html>

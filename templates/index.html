@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Bienvenido a la Ferretería</title>
+  <link rel="stylesheet" href="{% static 'css/index.css' %}">
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-brand">Ferretería Dino</div>
+    <div class="navbar-links">
+      <a href="{% url 'login' %}" class="btn-login">Iniciar sesión</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <header>
+      <h1>Ferretería Dino</h1>
+      <p>Tu aliado en materiales de construcción</p>
+    </header>
+
+    <section class="features">
+      <div class="card">
+        <h2>Catálogo de Productos</h2>
+        <p>Explora nuestra variedad de materiales de alta calidad para tus proyectos.</p>
+      </div>
+      <div class="card">
+        <h2>Ventas y Reportes</h2>
+        <p>Gestiona tus ventas y visualiza el rendimiento de tus empleados.</p>
+      </div>
+      <div class="card">
+        <h2>Satisfacción del Cliente</h2>
+        <p>Evalúa el servicio recibido y ayúdanos a seguir mejorando.</p>
+      </div>
+    </section>
+
+    <footer>
+      <p>&copy; 2025 Ferretería Dino - Todos los derechos reservados</p>
+    </footer>
+  </div>
+</body>
+</html>
