@@ -51,8 +51,14 @@ class DetalleVentaInline(admin.TabularInline):
 class VentaAdmin(admin.ModelAdmin):
     list_display = ('id', 'cliente', 'usuario', 'fecha', 'tiempo_inicio', 'tiempo_fin', 'duracion_venta_formateada', 'get_total')
     readonly_fields = ('tiempo_inicio', 'tiempo_fin')
+    exclude = ('usuario',)  # oculta el campo 'usuario' del formulario
     inlines = [DetalleVentaInline]
     list_per_page = 5
+
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:  # solo cuando es una nueva venta
+            obj.usuario = request.user
+        super().save_model(request, obj, form, change)
 
     def get_total(self, obj):
         return obj.total

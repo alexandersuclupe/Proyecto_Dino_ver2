@@ -60,7 +60,7 @@ class Venta(models.Model):
         return 0
 
     def __str__(self):
-        return f'Venta #{self.id} - {self.cliente.nombre}'
+        return f'Venta #{self.id} - {self.cliente}'
 # Detalle de Venta
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
