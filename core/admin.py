@@ -5,9 +5,15 @@ from django import forms
 
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'apellidos', 'correo' ,'direccion', 'telefono')
-    search_fields = ('nombres', 'apellidos')  # para poder buscar rápido
-    list_filter = ('nombre',)  # filtros en barra lateral (opcional)
+    list_display = ('nombre_completo', 'correo', 'direccion', 'telefono')
+    list_filter = ('direccion',)
+
+    def nombre_completo(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}"
+    nombre_completo.short_description = 'Nombre completo'
+
+    def correo(self, obj):
+        return obj.user.email
     list_per_page = 5
 
 

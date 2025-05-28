@@ -29,5 +29,7 @@ urlpatterns = [
     path('gracias/', views.gracias_encuesta, name='gracias_encuesta'),
     path('', index, name='index'),
     path('login/', login_view, name='login'),
+    path('registrar/', views.registro_cliente, name='registro_cliente'),
+
     
 ]

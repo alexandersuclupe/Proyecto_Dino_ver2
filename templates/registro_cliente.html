@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  {% load static %}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registrar Cliente</title>
+  <link rel="stylesheet" href="{% static 'css/registro_cliente.css' %}">
+</head>
+<body>
+  <div class="encuesta-container">
+    <h2>Registro de Cliente</h2>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      
+      <div class="form-group">
+        {{ form.username.label_tag }}
+        {{ form.username }}
+      </div>
+      <div class="form-group">
+        {{ form.first_name.label_tag }}
+        {{ form.first_name }}
+      </div>
+      <div class="form-group">
+        {{ form.last_name.label_tag }}
+        {{ form.last_name }}
+      </div>
+      <div class="form-group">
+        {{ form.email.label_tag }}
+        {{ form.email }}
+      </div>
+      <div class="form-group">
+        {{ form.password.label_tag }}
+        {{ form.password }}
+      </div>
+      
+      
+      <div class="form-group">
+        {{ form.direccion.label_tag }}
+        {{ form.direccion }}
+      </div>
+      <div class="form-group">
+        {{ form.telefono.label_tag }}
+        {{ form.telefono }}
+      </div>
+
+      <button type="submit">Registrarse</button>
+    </form>
+
+    <p class="register-link">¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a></p>
+  </div>
+</body>
+</html>

@@ -1,11 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Venta, EncuestaSatisfaccion
 from .forms import EncuestaSatisfaccionForm
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-
-
+from .forms import RegistroClienteForm
 
 
 def encuesta_satisfaccion(request, venta_id):
@@ -49,3 +48,14 @@ def login_view(request):
             messages.error(request, 'Credenciales inválidas. Intenta nuevamente.')
 
     return render(request, 'login.html')
+
+def registro_cliente(request):
+    if request.method == 'POST':
+        form = RegistroClienteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
+            return redirect('login')
+    else:
+        form = RegistroClienteForm()
+    return render(request, 'registro_cliente.html', {'form': form})

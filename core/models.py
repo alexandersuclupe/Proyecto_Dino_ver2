@@ -6,14 +6,12 @@ from datetime import timedelta
 
 # Cliente
 class Cliente(models.Model):
-    nombre = models.CharField(max_length=100)
-    apellidos = models.CharField(max_length=100)
-    correo = models.EmailField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     direccion = models.CharField(max_length=200, blank=True, null=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
-        return self.nombre
+        return self.user.get_full_name()
 
 # Producto
 class Producto(models.Model):
