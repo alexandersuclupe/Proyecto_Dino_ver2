@@ -1,91 +1,83 @@
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f4f6f8;
-  color: #2c3e50;
-}
-
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 30px 20px;
-}
-
-header {
-  text-align: center;
-  padding: 40px 0;
-}
-
-header h1 {
-  margin: 0;
-  font-size: 36px;
-  color: #2980b9;
-}
-
-header p {
-  font-size: 18px;
-  color: #34495e;
-}
-
-.features {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-  margin-top: 30px;
-}
-
-.card {
-  background: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  width: 280px;
-  text-align: center;
-  transition: transform 0.3s ease;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-}
-
-.card h2 {
-  color: #2980b9;
-  margin-bottom: 10px;
-}
-
-footer {
-  text-align: center;
-  margin-top: 50px;
-  padding: 20px;
-  color: #7f8c8d;
-  font-size: 14px;
-}
-
-.navbar {
-  background-color: #2c3e50;
-  padding: 15px 40px;
+/* Fondo degradado de la sección principal */
+.hero {
+  background: linear-gradient(90deg, #fcff32, #fcff32, #6cff29);
   color: white;
+  padding: 80px 0;
+}
+
+/* Botón */
+.hero .btn {
+  background: rgb(255, 255, 255);
+  color: #d32f2f;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 10px 20px;
+}
+
+.hero .btn:hover {
+  background-color: #eaffee;
+  color: #b71c1c;
+}
+
+/* Caja de estadísticas */
+.stats-box {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px 30px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.stats-box div {
+  text-align: center;
+}
+
+.stats-box h3 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* Navbar */
+.navbar-brand {
+  font-weight: bold;
+  display: flex;
   align-items: center;
 }
 
-.navbar-brand {
-  font-size: 22px;
-  font-weight: bold;
+.navbar-brand img {
+  margin-right: 10px;
 }
 
-.navbar-links a.btn-login {
-  color: white;
-  text-decoration: none;
-  padding: 8px 18px;
-  background-color: #2980b9;
-  border-radius: 5px;
-  transition: background-color 0.3s;
-  font-weight: bold;
+.nav-link {
+  font-weight: 500;
 }
 
-.navbar-links a.btn-login:hover {
-  background-color: #1f618d;
+/* Responsivo */
+@media (max-width: 768px) {
+  .hero {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .stats-box {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+footer {
+  margin-top: 70px;
+  padding-bottom: 20px;
+}
+
+.card-title {
+  font-weight: 600;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f8f9fa;
 }
