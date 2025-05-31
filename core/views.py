@@ -43,7 +43,7 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('index')  # Redirige al inicio después del login
+            return redirect('cliente_panel')  # Redirige al inicio después del login
         else:
             messages.error(request, 'Credenciales inválidas. Intenta nuevamente.')
 
@@ -59,3 +59,6 @@ def registro_cliente(request):
     else:
         form = RegistroClienteForm()
     return render(request, 'registro_cliente.html', {'form': form})
+
+def cliente_dashboard(request):
+    return render(request, 'cliente_panel.html')

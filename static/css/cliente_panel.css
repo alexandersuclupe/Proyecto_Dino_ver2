@@ -1,0 +1,32 @@
+body {
+  background-color: #f9fafb;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.stat-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background-color: white;
+  transition: all 0.2s ease-in-out;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+}
+
+.badge {
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+}
+
+.btn-sm {
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}

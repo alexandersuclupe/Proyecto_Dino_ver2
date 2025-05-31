@@ -19,6 +19,7 @@ from django.urls import path
 from core import views
 from core.views import index  # ← Aquí va la importación
 from core.views import login_view
+from django.contrib.auth.views import LogoutView
 
 
 
@@ -30,6 +31,9 @@ urlpatterns = [
     path('', index, name='index'),
     path('login/', login_view, name='login'),
     path('registrar/', views.registro_cliente, name='registro_cliente'),
+    path('cliente/dashboard/', views.cliente_dashboard, name='cliente_panel'),
+     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
+
 
     
 ]
