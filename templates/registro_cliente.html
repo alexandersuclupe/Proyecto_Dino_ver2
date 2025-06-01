@@ -6,6 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registrar Cliente</title>
   <link rel="stylesheet" href="{% static 'css/registro_cliente.css' %}">
+  <style>
+    .error-message {
+      color: red;
+      font-size: 0.9em;
+      margin-top: 5px;
+    }
+    input.error {
+      border: 1px solid red;
+    }
+  </style>
 </head>
 <body>
   <div class="encuesta-container">
@@ -16,32 +26,37 @@
       <div class="form-group">
         {{ form.username.label_tag }}
         {{ form.username }}
+        <div id="error-username" class="error-message"></div>
       </div>
       <div class="form-group">
         {{ form.first_name.label_tag }}
         {{ form.first_name }}
+        <div id="error-first_name" class="error-message"></div>
       </div>
       <div class="form-group">
         {{ form.last_name.label_tag }}
         {{ form.last_name }}
+        <div id="error-last_name" class="error-message"></div>
       </div>
       <div class="form-group">
         {{ form.email.label_tag }}
         {{ form.email }}
+        <div id="error-email" class="error-message"></div>
       </div>
       <div class="form-group">
         {{ form.password.label_tag }}
         {{ form.password }}
+        <div id="error-password" class="error-message"></div>
       </div>
-      
-      
       <div class="form-group">
         {{ form.direccion.label_tag }}
         {{ form.direccion }}
+        <div id="error-direccion" class="error-message"></div>
       </div>
       <div class="form-group">
         {{ form.telefono.label_tag }}
         {{ form.telefono }}
+        <div id="error-telefono" class="error-message"></div>
       </div>
 
       <button type="submit">Registrarse</button>
@@ -49,5 +64,95 @@
 
     <p class="register-link">¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a></p>
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      function showError(input, message) {
+        input.classList.add('error');
+        const errorDiv = document.getElementById(`error-${input.name}`);
+        if (errorDiv) errorDiv.innerText = message;
+      }
+
+      function clearError(input) {
+        input.classList.remove('error');
+        const errorDiv = document.getElementById(`error-${input.name}`);
+        if (errorDiv) errorDiv.innerText = '';
+      }
+
+      // Nombres y Apellidos: solo letras
+      ['id_first_name', 'id_last_name'].forEach(id => {
+        const input = document.getElementById(id);
+        input.addEventListener('input', () => {
+          const val = input.value;
+          if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/.test(val)) {
+            showError(input, "Este campo solo permite letras.");
+          } else {
+            clearError(input);
+          }
+        });
+      });
+
+      // Username: letras, números, guion bajo; verificar repetidos
+      const username = document.getElementById('id_username');
+      const existingUsernames = ['kar_12', 'admin', 'juan2024']; // Simulación
+
+      username.addEventListener('blur', () => {
+        const val = username.value.trim();
+        if (!/^[a-zA-Z0-9_]{4,}$/.test(val)) {
+          showError(username, "Solo letras, números o guión bajo. Mínimo 4 caracteres.");
+        } else if (existingUsernames.includes(val)) {
+          showError(username, "Este nombre de usuario ya existe. Intenta con otro.");
+        } else {
+          clearError(username);
+        }
+      });
+
+      // Email: debe contener @ y dominio
+      const email = document.getElementById('id_email');
+      email.addEventListener('blur', () => {
+        const val = email.value.trim();
+        if (!/^[\w\.-]+@[\w\.-]+\.\w{2,4}$/.test(val)) {
+          showError(email, "Introduce un correo electrónico válido.");
+        } else {
+          clearError(email);
+        }
+      });
+
+      // Password: mínimo 8, una mayúscula, una minúscula, un número
+      const password = document.getElementById('id_password');
+      password.addEventListener('blur', () => {
+        const val = password.value;
+        if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(val)) {
+          showError(password, "Debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.");
+        } else {
+          clearError(password);
+        }
+      });
+
+      // Dirección: mínimo 5 caracteres
+      const direccion = document.getElementById('id_direccion');
+      direccion.addEventListener('blur', () => {
+        const val = direccion.value.trim();
+        if (val.length < 5) {
+          showError(direccion, "La dirección debe tener al menos 5 caracteres.");
+        } else {
+          clearError(direccion);
+        }
+      });
+
+      // Teléfono: solo números, 9 dígitos
+      const telefono = document.getElementById('id_telefono');
+      telefono.addEventListener('input', () => {
+        telefono.value = telefono.value.replace(/\D/g, ''); // eliminar letras
+      });
+      telefono.addEventListener('blur', () => {
+        if (!/^\d{9}$/.test(telefono.value)) {
+          showError(telefono, "El teléfono debe contener exactamente 9 dígitos.");
+        } else {
+          clearError(telefono);
+        }
+      });
+    });
+  </script>
 </body>
 </html>
