@@ -4,27 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Distribuidora Dino</title>
+    <title>Dino — Inicio</title>
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="#">
-            <img src="{% static 'img/logo.png' %}" alt="Logo" width="40"> Distribuidora Dino
+        <a class="navbar-brand">
+            <img src="{% static 'img/logo_dino.png' %}" alt="Logo de Dino" width="150">| Evaluación de desempeño
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="#">Productos</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Servicios</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Cliente</a></li>
-                <li class="nav-item"><a class="nav-link" href="/admin/">Colaborador</a></li>
+                <li class="nav-item"><a class="nav-link" href="/admin/">Sesión como colaborador</a></li>
             </ul>
         </div>
     </div>
@@ -33,30 +30,29 @@
 <!-- Hero Section -->
 <section class="hero text-white text-center">
     <div class="container">
-        <h1 class="display-4 fw-bold">Distribuidora Dino</h1>
-        <h3 class="fw-normal mb-3">Herramientas de Calidad & Evaluación de Desempeño</h3>
+        <h1 class="display-4 fw-bold">Ferretería Dino</h1>
+        <h3 class="fw-normal mb-3"><strong>Herramientas para la evaluación del desempeño del personal.</strong></h3>
         <p class="lead">La ferretería líder con sistema integrado de evaluación de desempeño para nuestros colaboradores y clientes.</p>
         <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
-            <a href="#" class="btn btn-lg">Ver Catálogo</a>
-            <input type="text" class="form-control w-auto" placeholder="Buscar...">
+            <a href="{% url 'login' %}" class="btn btn-lg">Iniciar sesión como cliente</a>
         </div>
 
         <div class="stats-box mt-5">
             <div>
                 <h3>500+</h3>
-                <p>Productos</p>
+                <p>productos</p>
             </div>
             <div>
                 <h3>98%</h3>
-                <p>Satisfacción</p>
+                <p>satisfacción</p>
             </div>
             <div>
                 <h3>50+</h3>
-                <p>Colaboradores</p>
+                <p>colaboradores</p>
             </div>
             <div>
                 <h3>15</h3>
-                <p>Años</p>
+                <p>años</p>
             </div>
         </div>
     </div>
@@ -65,19 +61,19 @@
 <!-- Productos destacados -->
 <section class="py-5 bg-light">
   <div class="container">
-    <h2 class="text-center mb-4">Productos Destacados</h2>
+    <h2 class="text-center mb-4 titulo_destacado">Trabajadores destacados</h2>
     <div class="row row-cols-1 row-cols-md-4 g-4">
       {% for i in "1234" %}
       <div class="col">
         <div class="card h-100">
-          <img src="{% static 'img/product-placeholder.png' %}" class="card-img-top" alt="Producto">
+          <img src="{% static 'img/logo_trabajador_destacado.png' %}" class="card-img-top" alt="Trabajador destacado">
           <div class="card-body">
-            <h5 class="card-title">Producto Ejemplo {{ forloop.counter }}</h5>
-            <p class="card-text">Herramienta profesional para tu proyecto.</p>
+            <h5 class="card-title">Trabajador N.º {{ forloop.counter }}</h5>
+            <p class="card-text">Este trabajador destacó por su buen desempeño.</p>
           </div>
           <div class="card-footer d-flex justify-content-between align-items-center">
-            <span class="text-primary fw-bold">$99.99</span>
-            <a href="#" class="btn btn-sm btn-outline-primary">Ver</a>
+            <span class="text-primary fw-bold">Valoración 4/5</span>
+            <a href="#" class="btn btn-sm btn-outline-primary">Visualizar</a>
           </div>
         </div>
       </div>
@@ -89,12 +85,11 @@
 <!-- Footer -->
 <footer class="bg-dark text-white pt-4">
   <div class="container text-center">
-    <p>© 2025 Distribuidora Dino. Todos los derechos reservados.</p>
-    <p>📞 +1 (923) 123-4567 · ✉ info@distribuidoradino.com · 📍 123 Calle Principal, Ciudad</p>
+    <p>© — Dino, 2025 — Todos los derechos reservados</p>
+    <p>📞 +51 982 803 339 — ✉ info@dino.com — 🗺️ Chiclayo, Lambayeque - Perú</p>
   </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

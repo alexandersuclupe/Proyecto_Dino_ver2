@@ -11,16 +11,22 @@ body {
 
 .encuesta-container {
   background: #fff;
-  padding: 40px 35px;
+  padding: 10px 20px;
+  padding-top: 5px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   border-radius: 10px;
   width: 100%;
   max-width: 400px;
+  border: 2px solid #36965e; /* Borde verde */
+}
+
+.encuesta-container h2 {
+  margin-bottom: 0px;  
 }
 
 h2 {
   text-align: center;
-  color: #2c3e50;
+  color: #000000;
   margin-bottom: 25px;
 }
 
@@ -29,7 +35,7 @@ form label {
   margin-top: 15px;
   margin-bottom: 6px;
   font-weight: 600;
-  color: #34495e;
+  color: #000000;
 }
 
 form input {
@@ -43,14 +49,14 @@ form input {
 }
 
 form input:focus {
-  border-color: #2980b9;
+  border-color: #36965e;
   outline: none;
-  box-shadow: 0 0 5px rgba(41, 128, 185, 0.4);
+  box-shadow: 0 0 5px rgba(198, 201, 13, 0.4);
 }
 
 button[type="submit"] {
   margin-top: 25px;
-  background-color: #2980b9;
+  background-color: #36965e;
   color: white;
   font-size: 17px;
   padding: 12px 0;
@@ -63,7 +69,7 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-  background-color: #1f618d;
+  background-color: #19693b;
 }
 
 p.error-message {
@@ -79,7 +85,7 @@ p.error-message {
 }
 
 .register-link a {
-  color: #2980b9;
+  color: #36965e;
   text-decoration: none;
   font-weight: bold;
 }
