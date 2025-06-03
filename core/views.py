@@ -1,10 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import  Venta, Usuario, Cliente, EvaluacionVenta, PreguntaEvaluacion, RespuestaEvaluacion, Evaluacion, Incidencia, Rol ,RespuestaEvaluacionVenta ,Indicador
+from .models import  Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol ,RespuestaEvaluacionVenta ,Indicador
 from .forms import  RespuestaForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from .forms import RegistroClienteForm , EvaluacionVentaForm 
+from .forms import RegistroClienteForm , EvaluacionVentaForm ,EvaluacionTrabajadorForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
 
@@ -64,10 +64,11 @@ def registro_cliente(request):
         form = RegistroClienteForm()
     return render(request, 'registro_cliente.html', {'form': form})
 
-# def cliente_dashboard(request):
-#     return render(request, 'cliente_panel.html')
+def admin_dashboard(request):
+    return render(request, 'admin_panel.html')
 @login_required
 def cliente_dashboard(request):
+
     user = request.user
 
     if not hasattr(user, 'rol') or user.rol != 'cliente':
@@ -196,41 +197,41 @@ def cliente_dashboard(request):
 #     })
 
 
-@login_required
-def admin_dashboard(request):
-    # Datos básicos
-    total_empleados = Usuario.objects.filter(rol_admin__nombre='Trabajador').count()
-    empleados = Usuario.objects.filter(rol_admin__nombre='Trabajador')
+# @login_required
+# def admin_dashboard(request):
+#     # Datos básicos
+#     total_empleados = Usuario.objects.filter(rol_admin__nombre='Trabajador').count()
+#     empleados = Usuario.objects.filter(rol_admin__nombre='Trabajador')
     
-    # Evaluaciones por tipo
-    evaluacion_cliente = Evaluacion.objects.filter(tipo='cliente')
-    evaluacion_gerencial = Evaluacion.objects.filter(tipo='gerente')
-    autoevaluacion = Evaluacion.objects.filter(tipo='auto')
+#     # # Evaluaciones por tipo
+#     # evaluacion_cliente = Evaluacion.objects.filter(tipo='cliente')
+#     # evaluacion_gerencial = Evaluacion.objects.filter(tipo='gerente')
+#     # autoevaluacion = Evaluacion.objects.filter(tipo='auto')
 
-    # Calculamos datos para cada tipo de evaluación
-    def get_eval_data(queryset):
-        completadas = queryset.count()
-        # Ejemplo de pendientes, reemplaza según tu lógica:
-        pendientes = 0  # Puedes calcular pendientes si tienes campo para ello
-        promedio = queryset.aggregate(prom=Avg('puntaje'))['prom'] or 0
-        return {
-            'completadas': completadas,
-            'pendientes': pendientes,
-            'promedio': round(promedio, 1),
-        }
+#     # Calculamos datos para cada tipo de evaluación
+#     def get_eval_data(queryset):
+#         completadas = queryset.count()
+#         # Ejemplo de pendientes, reemplaza según tu lógica:
+#         pendientes = 0  # Puedes calcular pendientes si tienes campo para ello
+#         promedio = queryset.aggregate(prom=Avg('puntaje'))['prom'] or 0
+#         return {
+#             'completadas': completadas,
+#             'pendientes': pendientes,
+#             'promedio': round(promedio, 1),
+#         }
 
-    context = {
-        'total_empleados': total_empleados,
-        'empleados': empleados,
-        'evaluacion_cliente': get_eval_data(evaluacion_cliente),
-        'evaluacion_gerencial': get_eval_data(evaluacion_gerencial),
-        'autoevaluacion': get_eval_data(autoevaluacion),
-        'total_evaluaciones_cliente': evaluacion_cliente.count(),
-        'incidencias_activas': Incidencia.objects.filter(estado='abierta').count(),
-        'roles': Rol.objects.all(),
-        # Agrega otros datos que necesites para las otras pestañas
-    }
-    return render(request, 'admin_panel.html', context)
+#     context = {
+#         'total_empleados': total_empleados,
+#         'empleados': empleados,
+#         'evaluacion_cliente': get_eval_data(evaluacion_cliente),
+#         'evaluacion_gerencial': get_eval_data(evaluacion_gerencial),
+#         'autoevaluacion': get_eval_data(autoevaluacion),
+#         'total_evaluaciones_cliente': evaluacion_cliente.count(),
+#         'incidencias_activas': Incidencia.objects.filter(estado='abierta').count(),
+#         'roles': Rol.objects.all(),
+#         # Agrega otros datos que necesites para las otras pestañas
+#     }
+#     return render(request, 'admin_panel.html', context)
 
 
 ##################333
@@ -267,7 +268,8 @@ def evaluar_venta(request, venta_id):
             evaluacion = EvaluacionVenta.objects.create(
                 venta=venta,
                 trabajador=trabajador,
-                cliente=cliente
+                cliente=cliente 
+                
             )
             for indicador in indicadores:
                 puntaje = int(form.cleaned_data[f'indicador_{indicador.id}'])
@@ -286,3 +288,46 @@ def evaluar_venta(request, venta_id):
         'trabajador': trabajador,
         'cliente': cliente
     })
+
+@login_required
+def editar_evaluacion_trabajador(request, evaluacion_id):
+    evaluacion = get_object_or_404(EvaluacionTrabajador, id=evaluacion_id)
+    evaluado = evaluacion.evaluado
+    puesto = evaluado.puesto
+
+    # Criterios asignados al puesto del evaluado
+    criterios = Criterio.objects.filter(puestos=puesto)
+    indicadores = Indicador.objects.filter(criterio__in=criterios)
+
+    # Obtiene las respuestas actuales en un dict {indicador_id: puntaje}
+    respuestas_actuales = {r.indicador_id: r.puntaje for r in evaluacion.respuestas.all()}
+
+    if request.method == 'POST':
+        form = EvaluacionTrabajadorForm(request.POST, indicadores=indicadores)
+        if form.is_valid():
+            for indicador in indicadores:
+                puntaje = form.cleaned_data.get(f'indicador_{indicador.id}')
+                # Actualiza o crea la respuesta
+                obj, created = RespuestaEvaluacionTrabajador.objects.update_or_create(
+                    evaluacion=evaluacion,
+                    indicador=indicador,
+                    defaults={'puntaje': puntaje}
+                )
+            evaluacion.estado = 'COMPLETADA'
+            evaluacion.save()
+            return redirect('admin_dashboard')  # Ajusta a tu URL de éxito
+    else:
+        # Prepara datos iniciales para el formulario
+        initial_data = {}
+        for indicador in indicadores:
+            initial_data[f'indicador_{indicador.id}'] = respuestas_actuales.get(indicador.id, 0)
+
+        form = EvaluacionTrabajadorForm(indicadores=indicadores, initial=initial_data)
+
+    context = {
+        'form': form,
+        'evaluacion': evaluacion,
+        'evaluado': evaluado,
+        'criterios': criterios,
+    }
+    return render(request, 'evaluacion_trabajador_form.html', context)

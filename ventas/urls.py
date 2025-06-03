@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from core import views
 from core.views import index  # ← Aquí va la importación
-from core.views import login_view , evaluar_venta
+from core.views import login_view , evaluar_venta ,editar_evaluacion_trabajador
 from django.contrib.auth.views import LogoutView
 
 
@@ -52,5 +52,6 @@ urlpatterns = [
     path('admin_panel/', views.admin_dashboard, name='admin_dashboard'),
 
     path('evaluar_cliente/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta'),
+    path('evaluacion_trabajador/<int:evaluacion_id>/', views.editar_evaluacion_trabajador, name='editar_evaluacion_trabajador'),
 
 ]

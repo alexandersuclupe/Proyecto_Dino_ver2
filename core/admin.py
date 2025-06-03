@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cliente, Producto, Venta, DetalleVenta, Usuario, Evaluacion ,Criterio ,Indicador , RespuestaEvaluacion ,EvaluacionVenta ,RespuestaEvaluacionVenta
+from .models import Cliente, Producto, Venta, DetalleVenta, Usuario, EvaluacionTrabajador ,Criterio ,Indicador , RespuestaEvaluacionTrabajador ,EvaluacionVenta ,RespuestaEvaluacionVenta ,Puesto
 from django import forms
 from django.contrib.auth.admin import UserAdmin
 
@@ -77,10 +77,11 @@ class VentaAdmin(admin.ModelAdmin):
 @admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):
     model = Usuario
-    list_display = ('username', 'email', 'rol')
+    list_display = ('username', 'email', 'rol')  # agregué 'puesto' para mostrar
     fieldsets = UserAdmin.fieldsets + (
-        (None, {'fields': ('rol', 'area')}),
+        (None, {'fields': ('rol', 'puesto')}),  # Reemplaza 'area' por 'puesto'
     )
+
 
 # @admin.register(Evaluacion)
 # class EvaluacionAdmin(admin.ModelAdmin):
@@ -96,11 +97,16 @@ class UsuarioAdmin(UserAdmin):
 # admin.site.register(Cliente)
 # admin.site.register(Producto)
 
+@admin.register(Puesto)
+class PuestoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'descripcion')
+    search_fields = ('nombre',)
 
 @admin.register(Criterio)
 class CriterioAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'descripcion', 'rango_min', 'rango_max', 'puntaje')
-    search_fields = ('nombre', 'descripcion')
+    list_display = ('nombre', 'descripcion')
+    filter_horizontal = ('puestos',)  # Para mejor selección de puestos en interfaz
+    search_fields = ('nombre',)
 
 @admin.register(Indicador)
 class IndicadorAdmin(admin.ModelAdmin):
@@ -114,15 +120,6 @@ class IndicadorAdmin(admin.ModelAdmin):
     get_criterio_nombre.admin_order_field = 'criterio__nombre'
 
 
-
-class RespuestaEvaluacionInline(admin.TabularInline):
-    model = RespuestaEvaluacion
-    extra = 0
-
-@admin.register(Evaluacion)
-class EvaluacionAdmin(admin.ModelAdmin):
-    list_display = ('evaluado', 'evaluador', 'tipo', 'fecha', 'puntaje_total', 'criterio_obtenido')
-    inlines = [RespuestaEvaluacionInline]
 
     ##############
 
@@ -142,3 +139,16 @@ class RespuestaEvaluacionVentaInline(admin.TabularInline):
 class EvaluacionVentaAdmin(admin.ModelAdmin):
     inlines = [RespuestaEvaluacionVentaInline]
     list_display = ('id', 'cliente', 'trabajador', 'fecha')
+
+
+class RespuestaEvaluacionTrabajadorInline(admin.TabularInline):
+    model = RespuestaEvaluacionTrabajador
+    readonly_fields = ('indicador', 'puntaje')
+    extra = 0
+    can_delete = False
+
+@admin.register(EvaluacionTrabajador)
+class EvaluacionTrabajadorAdmin(admin.ModelAdmin):
+    list_display = ('id', 'evaluador', 'evaluado', 'estado', 'fecha_creacion')
+    list_filter = ('estado',)
+    inlines = [RespuestaEvaluacionTrabajadorInline]

@@ -63,3 +63,18 @@ class EvaluacionVentaForm(forms.Form):
                 )
                 # Aquí asignamos la descripción para usarla en el template
                 self.fields[f'indicador_{indicador.id}'].widget.attrs['descripcion'] = indicador.descripcion or "Sin descripción."
+
+
+
+class EvaluacionTrabajadorForm(forms.Form):
+    def __init__(self, *args, indicadores=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if indicadores:
+            for indicador in indicadores:
+                self.fields[f'indicador_{indicador.id}'] = forms.IntegerField(
+                    label=f"{indicador.nombre} ({indicador.criterio.nombre})",
+                    min_value=0,
+                    max_value=indicador.max_puntaje,
+                    required=True,
+                    widget=forms.NumberInput(attrs={'class': 'form-control'})
+                )
