@@ -1,13 +1,15 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Distribuidora Dino - Cliente</title>
   <link rel="stylesheet" href="{% static 'css/cliente_panel.css' %}">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-light bg-white border-bottom shadow-sm px-4">
@@ -19,7 +21,8 @@
       <span class="text-success fw-medium">● Cliente</span>
       <form action="{% url 'logout' %}" method="post" style="display: inline;">
         {% csrf_token %}
-        <button type="submit" class="btn btn-link text-dark text-decoration-none fw-semibold p-0 m-0" style="border: none; background: none;">
+        <button type="submit" class="btn btn-link text-dark text-decoration-none fw-semibold p-0 m-0"
+          style="border: none; background: none;">
           Salir <i class="bi bi-box-arrow-right"></i>
         </button>
       </form>
@@ -52,62 +55,37 @@
       <div class="col-md-3">
         <div class="card stat-card">
           <div class="card-body text-center">
-            <h3>{{ total_evaluaciones }}</h3>
-            <p class="text-muted">Evaluaciones</p>
+            <h3>{{ evaluaciones_realizadas|length }}</h3>
+            <p class="text-muted">Evaluaciones realizadas</p>
           </div>
         </div>
       </div>
       <div class="col-md-3">
         <div class="card stat-card">
           <div class="card-body text-center">
-            <h3>{{ evaluaciones_pendientes|length }}</h3>
-            <p class="text-muted">Pendientes</p>
+            <h3>{{ ventas_pendientes|length }}</h3>
+            <p class="text-muted">Evaluaciones pendientes</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Pedidos recientes -->
+    <!-- Ventas pendientes de evaluación -->
     <div class="row g-4">
-      <div class="col-md-6">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="fw-bold">Pedidos Recientes</h5>
-            <p class="text-muted">Tus últimas compras en Distribuidora Dino</p>
-            <ul class="list-unstyled">
-              <li class="mb-3 d-flex justify-content-between align-items-center">
-                <div>
-                  <span class="fw-semibold">Taladro Inalámbrico 18V</span><br>
-                  <small class="text-muted">Pedido #001 - 15 Ene 2024</small>
-                </div>
-                <span class="badge bg-dark">Entregado</span>
-              </li>
-              <li class="d-flex justify-content-between align-items-center">
-                <div>
-                  <span class="fw-semibold">Juego de Llaves</span><br>
-                  <small class="text-muted">Pedido #002 - 12 Ene 2024</small>
-                </div>
-                <span class="badge bg-secondary">En tránsito</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Evaluaciones Pendientes -->
       <div class="col-md-6">
         <div class="card">
           <div class="card-body">
             <h5 class="fw-bold">Evaluaciones Pendientes</h5>
             <p class="text-muted">Ayúdanos a mejorar evaluando nuestro servicio</p>
             <ul class="list-unstyled">
-              {% for trabajador in evaluaciones_pendientes %}
+              {% for venta in ventas_pendientes %}
               <li class="mb-3 d-flex justify-content-between align-items-center">
                 <div>
-                  <span class="fw-semibold">Atención de {{ trabajador.first_name }} {{ trabajador.last_name }}</span><br>
-                  <small class="text-muted">Venta reciente</small>
+                  <span class="fw-semibold">Atención de {{ venta.usuario.first_name }} {{ venta.usuario.last_name
+                    }}</span><br>
+                  <small class="text-muted">Venta #{{ venta.id }}</small>
                 </div>
-                <a href="{% url 'evaluar_cliente' trabajador.id %}" class="btn btn-dark btn-sm">Evaluar</a>
+                <a href="{% url 'evaluar_venta' venta.id %}" class="btn btn-dark btn-sm">Evaluar</a>
               </li>
               {% empty %}
               <li class="text-muted">No tienes evaluaciones pendientes por ahora.</li>
@@ -116,9 +94,34 @@
           </div>
         </div>
       </div>
+      <!-- Evaluaciones realizadas -->
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="fw-bold">Evaluaciones Realizadas</h5>
+            <p class="text-muted">Tus evaluaciones completadas</p>
+            <ul class="list-unstyled">
+              {% if evaluaciones_realizadas %}
+              {% for evaluacion in evaluaciones_realizadas %}
+              <li class="mb-3">
+                Evaluaste a: {{ evaluacion.trabajador }}<br>
+                Fecha: {{ evaluacion.fecha|date:"d M Y" }}
+              </li>
+              {% endfor %}
+              {% else %}
+              <li class="text-muted">Aún no has realizado evaluaciones.</li>
+              {% endif %}
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
     </div>
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

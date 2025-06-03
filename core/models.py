@@ -16,6 +16,7 @@ class Usuario(AbstractUser):
     # Solo para clientes
     ROL_TIPOS = [
         ('cliente', 'Cliente'),
+        ('trabajador', 'Trabajador'),
     ]
     rol = models.CharField(max_length=20, choices=ROL_TIPOS, blank=True, null=True)
 
@@ -39,6 +40,7 @@ class Cliente(models.Model):
 
     def __str__(self):
         return self.user.get_full_name() if self.user else "Cliente sin usuario"
+
 
 class Producto(models.Model):
     nombre = models.CharField(max_length=100)
@@ -206,7 +208,8 @@ class RespuestaEvaluacion(models.Model):
     
 class EvaluacionVenta(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
-    trabajador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # rol trabajador
+    trabajador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'rol': 'trabajador'})
+    # rol trabajador
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
 

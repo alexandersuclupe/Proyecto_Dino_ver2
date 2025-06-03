@@ -37,7 +37,7 @@ urlpatterns = [
 
     path('cliente/dashboard/', views.cliente_dashboard, name='cliente_panel'),
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
-    path('clientes/', views.cliente_panel, name='cliente_panel'),
+    #path('clientes/', views.cliente_panel, name='cliente_panel'),
 
     # Nueva ruta para evaluación paso a paso por venta
    # path('evaluar/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta_default'),  # Inicia en pregunta 1

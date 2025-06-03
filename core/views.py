@@ -64,13 +64,37 @@ def registro_cliente(request):
         form = RegistroClienteForm()
     return render(request, 'registro_cliente.html', {'form': form})
 
-def cliente_dashboard(request):
-    return render(request, 'cliente_panel.html')
-
+# def cliente_dashboard(request):
+#     return render(request, 'cliente_panel.html')
 @login_required
-def cliente_panel(request):
-    trabajadores = Usuario.objects.filter(rol='trabajador')
-    return render(request, 'cliente_panel.html', {'trabajadores': trabajadores})
+def cliente_dashboard(request):
+    user = request.user
+
+    if not hasattr(user, 'rol') or user.rol != 'cliente':
+        return render(request, 'error.html', {
+            'mensaje': 'No tienes permisos para acceder a esta página. Debes ser un cliente.'
+        })
+
+    try:
+        cliente = Cliente.objects.get(user=user)
+    except Cliente.DoesNotExist:
+        return render(request, 'error.html', {
+            'mensaje': 'No tienes un perfil cliente asociado.'
+        })
+
+    evaluaciones_realizadas = EvaluacionVenta.objects.filter(cliente=cliente)\
+        .select_related('trabajador', 'venta')
+
+    context = {
+        'evaluaciones_realizadas': evaluaciones_realizadas,
+    }
+    return render(request, 'cliente_panel.html', context)
+
+#####################
+# @login_required
+# def cliente_panel(request):
+#     trabajadores = Usuario.objects.filter(rol='trabajador')
+#     return render(request, 'cliente_panel.html', {'trabajadores': trabajadores})
 
 # @login_required
 # def evaluar_cliente(request, trabajador_id):
