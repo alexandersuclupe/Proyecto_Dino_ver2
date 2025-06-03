@@ -1,0 +1,8 @@
+{% extends "admin/base_site.html" %}
+
+{% block userlinks %}
+  {{ block.super }}
+  {% if request.user.is_authenticated and request.user.rol == 'trabajador' %}
+    | <a href="{% url 'admin_dashboard' %}" style="font-weight: bold; color: #ffffff;">Panel Empleado</a>
+  {% endif %}
+{% endblock %}

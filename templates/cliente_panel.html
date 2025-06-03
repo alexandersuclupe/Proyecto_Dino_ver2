@@ -17,7 +17,12 @@
     </a>
     <div class="d-flex align-items-center gap-3">
       <span class="text-success fw-medium">● Cliente</span>
-      <a href="{% url 'logout' %}" class="text-dark text-decoration-none fw-semibold">Salir <i class="bi bi-box-arrow-right"></i></a>
+      <form action="{% url 'logout' %}" method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-link text-dark text-decoration-none fw-semibold p-0 m-0" style="border: none; background: none;">
+          Salir <i class="bi bi-box-arrow-right"></i>
+        </button>
+      </form>
     </div>
   </nav>
 
@@ -31,7 +36,7 @@
       <div class="col-md-3">
         <div class="card stat-card">
           <div class="card-body text-center">
-            <h3>12</h3>
+            <h3>{{ total_pedidos }}</h3>
             <p class="text-muted">Pedidos</p>
           </div>
         </div>
@@ -39,7 +44,7 @@
       <div class="col-md-3">
         <div class="card stat-card">
           <div class="card-body text-center">
-            <h3>3</h3>
+            <h3>{{ en_carrito }}</h3>
             <p class="text-muted">En Carrito</p>
           </div>
         </div>
@@ -47,7 +52,7 @@
       <div class="col-md-3">
         <div class="card stat-card">
           <div class="card-body text-center">
-            <h3>8</h3>
+            <h3>{{ total_evaluaciones }}</h3>
             <p class="text-muted">Evaluaciones</p>
           </div>
         </div>
@@ -55,14 +60,14 @@
       <div class="col-md-3">
         <div class="card stat-card">
           <div class="card-body text-center">
-            <h3>2</h3>
+            <h3>{{ evaluaciones_pendientes|length }}</h3>
             <p class="text-muted">Pendientes</p>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Pedidos recientes y evaluaciones pendientes -->
+    <!-- Pedidos recientes -->
     <div class="row g-4">
       <div class="col-md-6">
         <div class="card">
@@ -89,26 +94,24 @@
         </div>
       </div>
 
+      <!-- Evaluaciones Pendientes -->
       <div class="col-md-6">
         <div class="card">
           <div class="card-body">
             <h5 class="fw-bold">Evaluaciones Pendientes</h5>
             <p class="text-muted">Ayúdanos a mejorar evaluando nuestro servicio</p>
             <ul class="list-unstyled">
+              {% for trabajador in evaluaciones_pendientes %}
               <li class="mb-3 d-flex justify-content-between align-items-center">
                 <div>
-                  <span class="fw-semibold">Atención de Juan Pérez</span><br>
-                  <small class="text-muted">Venta realizada el 15 Ene</small>
+                  <span class="fw-semibold">Atención de {{ trabajador.first_name }} {{ trabajador.last_name }}</span><br>
+                  <small class="text-muted">Venta reciente</small>
                 </div>
-                <a href="#" class="btn btn-dark btn-sm">Evaluar</a>
+                <a href="{% url 'evaluar_cliente' trabajador.id %}" class="btn btn-dark btn-sm">Evaluar</a>
               </li>
-              <li class="d-flex justify-content-between align-items-center">
-                <div>
-                  <span class="fw-semibold">Servicio de Entrega</span><br>
-                  <small class="text-muted">Pedido #001</small>
-                </div>
-                <a href="#" class="btn btn-dark btn-sm">Evaluar</a>
-              </li>
+              {% empty %}
+              <li class="text-muted">No tienes evaluaciones pendientes por ahora.</li>
+              {% endfor %}
             </ul>
           </div>
         </div>

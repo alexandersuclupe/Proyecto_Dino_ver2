@@ -26,14 +26,30 @@ from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('encuesta/<int:venta_id>/', views.encuesta_satisfaccion, name='encuesta_satisfaccion'),
-    path('gracias/', views.gracias_encuesta, name='gracias_encuesta'),
-    path('', index, name='index'),
-    path('login/', login_view, name='login'),
+
+    # Eliminamos encuesta_satisfaccion antigua
+    # path('encuesta/<int:venta_id>/', views.encuesta_satisfaccion, name='encuesta_satisfaccion'),
+    # path('gracias/', views.gracias_encuesta, name='gracias_encuesta'),
+
+    path('', views.index, name='index'),
+    path('login/', views.login_view, name='login'),
     path('registrar/', views.registro_cliente, name='registro_cliente'),
+
     path('cliente/dashboard/', views.cliente_dashboard, name='cliente_panel'),
-     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
+    path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
+    path('clientes/', views.cliente_panel, name='cliente_panel'),
 
+    # Nueva ruta para evaluación paso a paso por venta
+    path('evaluar/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta_default'),  # Inicia en pregunta 1
+    path('evaluar/<int:venta_id>/<int:pregunta_orden>/', views.evaluar_venta, name='evaluar_venta'),
 
+    # Ruta para mostrar resultado resumen de evaluación
+    path('resultado/<int:venta_id>/', views.resultado_evaluacion, name='resultado_evaluacion'),
+
+    # Comentamos la antigua evaluación por trabajador simple
+    # path('evaluar/<int:trabajador_id>/', views.evaluar_cliente, name='evaluar_cliente'),
+
+    path('admin_panel/', views.admin_dashboard, name='admin_dashboard'),
     
+
 ]

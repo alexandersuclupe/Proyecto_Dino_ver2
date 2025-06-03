@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Cliente, Producto, Venta, DetalleVenta
+from .models import Cliente, Producto, Venta, DetalleVenta, Usuario, Evaluacion
 from django import forms
+from django.contrib.auth.admin import UserAdmin
 
 
 @admin.register(Cliente)
@@ -73,6 +74,26 @@ class VentaAdmin(admin.ModelAdmin):
         return "No calculado"
     duracion_venta_formateada.short_description = 'Duración de la venta'
 
+@admin.register(Usuario)
+class UsuarioAdmin(UserAdmin):
+    model = Usuario
+    list_display = ('username', 'email', 'rol')
+    fieldsets = UserAdmin.fieldsets + (
+        (None, {'fields': ('rol', 'area')}),
+    )
+
+@admin.register(Evaluacion)
+class EvaluacionAdmin(admin.ModelAdmin):
+    list_display = ('tipo', 'evaluador', 'evaluado', 'puntaje', 'fecha')
+    list_filter = ('tipo', 'fecha')
+
+
+
+
+
+
 # # Registro de otros modelos
 # admin.site.register(Cliente)
 # admin.site.register(Producto)
+
+

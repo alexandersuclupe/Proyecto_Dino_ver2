@@ -1,19 +1,44 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
 
+class Rol(models.Model):
+    nombre = models.CharField(max_length=50, unique=True)
+    descripcion = models.TextField(blank=True, null=True)
 
-# Cliente
+    def __str__(self):
+        return self.nombre
+
+class Usuario(AbstractUser):
+    # Solo para clientes
+    ROL_TIPOS = [
+        ('cliente', 'Cliente'),
+    ]
+    rol = models.CharField(max_length=20, choices=ROL_TIPOS, blank=True, null=True)
+
+    # Roles administrativos: trabajador, gerente
+    rol_admin = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True, related_name='usuarios')
+
+    area = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        if self.rol_admin:
+            return f"{self.username} ({self.rol_admin.nombre})"
+        elif self.rol:
+            return f"{self.username} ({self.get_rol_display()})"
+        else:
+            return self.username
+
 class Cliente(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     direccion = models.CharField(max_length=200, blank=True, null=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
-        return self.user.get_full_name()
+        return self.user.get_full_name() if self.user else "Cliente sin usuario"
 
-# Producto
 class Producto(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True, null=True)
@@ -23,10 +48,9 @@ class Producto(models.Model):
     def __str__(self):
         return self.nombre
 
-# Venta
 class Venta(models.Model):
     cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
 
     tiempo_inicio = models.DateTimeField(editable=False, null=True, blank=True)
@@ -35,18 +59,11 @@ class Venta(models.Model):
 
     def save(self, *args, **kwargs):
         now = timezone.now()
-
-        # Si es nueva venta (no tiene ID), se registra el tiempo de inicio
         if not self.pk:
             self.tiempo_inicio = now
-
-        # Siempre se registra el tiempo de fin al guardar
         self.tiempo_fin = now
-
-        # Solo calcula la duración si tiempo_inicio ya está definido
         if self.tiempo_inicio:
             self.duracion_venta = self.tiempo_fin - self.tiempo_inicio
-
         super().save(*args, **kwargs)
 
     @property
@@ -61,7 +78,7 @@ class Venta(models.Model):
 
     def __str__(self):
         return f'Venta #{self.id} - {self.cliente}'
-# Detalle de Venta
+
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
@@ -69,7 +86,6 @@ class DetalleVenta(models.Model):
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
 
     def save(self, *args, **kwargs):
-        # Al guardar, toma el precio del producto si aún no se asignó
         if not self.precio_unitario:
             self.precio_unitario = self.producto.precio
         super().save(*args, **kwargs)
@@ -77,22 +93,57 @@ class DetalleVenta(models.Model):
     @property
     def subtotal(self):
         try:
-                return self.cantidad * self.precio_unitario
+            return self.cantidad * self.precio_unitario
         except (TypeError, ValueError):
             return 0
 
-class EncuestaSatisfaccion(models.Model):
-    venta = models.OneToOneField('Venta', on_delete=models.CASCADE)
-    trabajador = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+# Evaluaciones (referencia)
+class Evaluacion(models.Model):
+    TIPO_CHOICES = [
+        ('auto', 'Autoevaluación'),
+        ('cliente', 'Evaluación de Cliente'),
+        ('gerente', 'Evaluación de Gerente'),
+    ]
+    evaluador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones_hechas')
+    evaluado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones_recibidas')
+    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
+    puntaje = models.DecimalField(max_digits=5, decimal_places=2)
+    comentarios = models.TextField(blank=True, null=True)
+    fecha = models.DateField(auto_now_add=True)
 
+class PreguntaEvaluacion(models.Model):
+    texto = models.CharField(max_length=255)
+    orden = models.PositiveIntegerField()
 
-    cordialidad = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
-    resolucion_dudas = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
-    tiempo_atencion = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
-    recomendacion = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
-    
-    comentario = models.TextField(blank=True, null=True)
+    def __str__(self):
+        return self.texto
+
+class EvaluacionVenta(models.Model):
+    venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
+    trabajador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Usuario con rol trabajador
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Evaluación venta #{self.venta.id} - Cliente: {self.cliente} - Trabajador: {self.trabajador}"
+
+class RespuestaEvaluacion(models.Model):
+    evaluacion = models.ForeignKey(EvaluacionVenta, on_delete=models.CASCADE)
+    pregunta = models.ForeignKey(PreguntaEvaluacion, on_delete=models.CASCADE)
+    puntuacion = models.PositiveSmallIntegerField()  # Valor 1 a 5
+
+    class Meta:
+        unique_together = ('evaluacion', 'pregunta')
+
+    def __str__(self):
+        return f"{self.pregunta.texto}: {self.puntuacion} estrellas"
+
+class Incidencia(models.Model):
+    empleado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    descripcion = models.TextField()
+    estado = models.CharField(max_length=50)
     fecha = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return f"Encuesta para venta #{self.venta.id}"
+        return f"Incidencia de {self.empleado} - {self.estado}"

@@ -2,39 +2,49 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Encuesta de Satisfacción</title>
-  <link rel="stylesheet" href="{% static 'css/encuesta.css' %}">
+    <meta charset="UTF-8" />
+    <title>Evaluar Venta #{{ venta.id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+      .stars label {
+        color: gold;
+        font-size: 1.5rem;
+      }
+    </style>
 </head>
 <body>
-  <div class="encuesta-container">
-    <h2>Encuesta de Satisfacción</h2>
+<div class="container mt-4">
 
-    <div class="venta-info">
-      <p>Venta N° {{ venta.id }} - Atendido por: <strong>{{ trabajador.get_full_name|default:trabajador.username }}</strong></p>
-      <p>Fecha de la venta: {{ venta.fecha }}</p>
+    <h3>Evaluación de la venta #{{ venta.id }}</h3>
+    <p>Cliente: {{ cliente }}</p>
+    <p>Trabajador: {{ trabajador }}</p>
+
+    <div>
+      <small>Progreso: {{ orden_actual }} / {{ total_preguntas }}</small>
+      <div class="progress">
+        <div class="progress-bar" role="progressbar" style="width: {{ progreso }}%;" aria-valuenow="{{ progreso }}" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
     </div>
 
-    <form method="post" novalidate>
+    <form method="post" class="mt-3">
       {% csrf_token %}
+      <h5><span class="badge bg-primary me-2">{{ orden_actual }}</span> {{ pregunta.texto }}</h5>
 
-      <label for="id_cordialidad">{{ form.cordialidad.label }}</label>
-      {{ form.cordialidad }}
+      <div class="mt-3 stars">
+        {{ form.puntuacion }}
+      </div>
 
-      <label for="id_resolucion_dudas">{{ form.resolucion_dudas.label }}</label>
-      {{ form.resolucion_dudas }}
-
-      <label for="id_tiempo_atencion">{{ form.tiempo_atencion.label }}</label>
-      {{ form.tiempo_atencion }}
-
-      <label for="id_recomendacion">{{ form.recomendacion.label }}</label>
-      {{ form.recomendacion }}
-
-      <label for="id_comentario">{{ form.comentario.label }}</label>
-      {{ form.comentario }}
-
-      <button type="submit">Enviar encuesta</button>
+      <div class="mt-4 d-flex justify-content-between">
+        {% if orden_actual > 1 %}
+          <a href="{% url 'evaluar_venta' venta.id orden_actual|add:'-1' %}" class="btn btn-secondary">Anterior</a>
+        {% else %}
+          <div></div>
+        {% endif %}
+        <button type="submit" class="btn btn-warning text-white">Siguiente</button>
+      </div>
     </form>
-  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
