@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=D:\descargas\PROY-CALIDAD\Proyecto_Dino_ver2\.venv
+set VIRTUAL_ENV=C:\Users\nayde\OneDrive\USAT\calidad_dinoV3\Proyecto_Dino_ver2\.venv
 
 if not defined PROMPT set PROMPT=$P$G
 

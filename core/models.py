@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum
 from django.utils import timezone
 from datetime import timedelta
 from django.conf import settings
@@ -97,19 +98,19 @@ class DetalleVenta(models.Model):
         except (TypeError, ValueError):
             return 0
 
-# Evaluaciones (referencia)
-class Evaluacion(models.Model):
-    TIPO_CHOICES = [
-        ('auto', 'Autoevaluación'),
-        ('cliente', 'Evaluación de Cliente'),
-        ('gerente', 'Evaluación de Gerente'),
-    ]
-    evaluador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones_hechas')
-    evaluado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones_recibidas')
-    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
-    puntaje = models.DecimalField(max_digits=5, decimal_places=2)
-    comentarios = models.TextField(blank=True, null=True)
-    fecha = models.DateField(auto_now_add=True)
+# # Evaluaciones (referencia)
+# class Evaluacion(models.Model):
+#     TIPO_CHOICES = [
+#         ('auto', 'Autoevaluación'),
+#         ('cliente', 'Evaluación de Cliente'),
+#         ('gerente', 'Evaluación de Gerente'),
+#     ]
+#     evaluador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones_hechas')
+#     evaluado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones_recibidas')
+#     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
+#     puntaje = models.DecimalField(max_digits=5, decimal_places=2)
+#     comentarios = models.TextField(blank=True, null=True)
+#     fecha = models.DateField(auto_now_add=True)
 
 class PreguntaEvaluacion(models.Model):
     texto = models.CharField(max_length=255)
@@ -118,25 +119,25 @@ class PreguntaEvaluacion(models.Model):
     def __str__(self):
         return self.texto
 
-class EvaluacionVenta(models.Model):
-    venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
-    trabajador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Usuario con rol trabajador
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
-    fecha = models.DateTimeField(auto_now_add=True)
+# class EvaluacionVenta(models.Model):
+#     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
+#     trabajador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Usuario con rol trabajador
+#     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+#     fecha = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"Evaluación venta #{self.venta.id} - Cliente: {self.cliente} - Trabajador: {self.trabajador}"
+#     def __str__(self):
+#         return f"Evaluación venta #{self.venta.id} - Cliente: {self.cliente} - Trabajador: {self.trabajador}"
 
-class RespuestaEvaluacion(models.Model):
-    evaluacion = models.ForeignKey(EvaluacionVenta, on_delete=models.CASCADE)
-    pregunta = models.ForeignKey(PreguntaEvaluacion, on_delete=models.CASCADE)
-    puntuacion = models.PositiveSmallIntegerField()  # Valor 1 a 5
+# class RespuestaEvaluacion(models.Model):
+#     evaluacion = models.ForeignKey(EvaluacionVenta, on_delete=models.CASCADE)
+#     pregunta = models.ForeignKey(PreguntaEvaluacion, on_delete=models.CASCADE)
+#     puntuacion = models.PositiveSmallIntegerField()  # Valor 1 a 5
 
-    class Meta:
-        unique_together = ('evaluacion', 'pregunta')
+#     class Meta:
+#         unique_together = ('evaluacion', 'pregunta')
 
-    def __str__(self):
-        return f"{self.pregunta.texto}: {self.puntuacion} estrellas"
+#     def __str__(self):
+#         return f"{self.pregunta.texto}: {self.puntuacion} estrellas"
 
 class Incidencia(models.Model):
     empleado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -147,3 +148,72 @@ class Incidencia(models.Model):
 
     def __str__(self):
         return f"Incidencia de {self.empleado} - {self.estado}"
+
+########################################################3
+
+
+class Criterio(models.Model):
+    nombre = models.CharField(max_length=100, default='Sin nombre')
+    descripcion = models.CharField(max_length=200, blank=True, null=True)
+    rango_min = models.IntegerField()
+    rango_max = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.nombre}: {self.descripcion} ({self.rango_min}-{self.rango_max})"
+
+    @property
+    def puntaje(self):
+        total = self.indicadores.aggregate(total=models.Sum('max_puntaje'))['total']
+        return total or 0
+
+
+class Indicador(models.Model):
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True, null=True)
+    criterio = models.ForeignKey(Criterio, on_delete=models.CASCADE, related_name='indicadores', default=0)
+
+    max_puntaje = models.IntegerField(default=5)
+
+    def __str__(self):
+        return f"{self.nombre} ({self.criterio.nombre})" 
+    
+class Evaluacion(models.Model):
+    TIPO_CHOICES = [
+        ('auto', 'Autoevaluación'),
+        ('cliente', 'Evaluación de Cliente'),
+        ('gerente', 'Evaluación de Gerente'),
+    ]
+    evaluador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones_hechas')
+    evaluado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones_recibidas')
+    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
+    puntaje_total = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    criterio_obtenido = models.ForeignKey(Criterio, null=True, blank=True, on_delete=models.SET_NULL)
+    comentarios = models.TextField(blank=True, null=True)
+    fecha = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Evaluacion {self.tipo} de {self.evaluado} por {self.evaluador}"
+
+class RespuestaEvaluacion(models.Model):
+    evaluacion = models.ForeignKey(Evaluacion, on_delete=models.CASCADE, related_name='respuestas')
+    indicador = models.ForeignKey(Indicador, on_delete=models.CASCADE, null=True, blank=True)
+    puntaje = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.indicador.nombre}: {self.puntaje}"
+    
+
+    
+class EvaluacionVenta(models.Model):
+    venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
+    trabajador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # rol trabajador
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Evaluación venta #{self.venta.id} - Cliente: {self.cliente} - Trabajador: {self.trabajador}"
+
+class RespuestaEvaluacionVenta(models.Model):
+    evaluacion = models.ForeignKey(EvaluacionVenta, on_delete=models.CASCADE, related_name='respuestas',default=1)
+    indicador = models.ForeignKey(Indicador, on_delete=models.CASCADE,default=1)
+    puntaje = models.IntegerField(default=0)

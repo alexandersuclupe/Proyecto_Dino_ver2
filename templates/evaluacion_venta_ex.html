@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Evaluación Enviada - FerreMax Pro</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9fafb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #333;
+    }
+    .success-container {
+      background: #e6ffed;
+      border: 2px solid #34d399;
+      padding: 40px 60px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(52, 211, 153, 0.3);
+      max-width: 400px;
+    }
+    h1 {
+      color: #059669;
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+    a.button {
+      display: inline-block;
+      background-color: #10b981;
+      color: white;
+      text-decoration: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    a.button:hover {
+      background-color: #059669;
+    }
+  </style>
+</head>
+<body>
+  <div class="success-container">
+    <h1>¡Gracias por tu evaluación!</h1>
+    <p>Hemos recibido tu opinión y trabajaremos para mejorar nuestro servicio.</p>
+    <a href="{% url 'cliente_panel' %}" class="button">Volver al Dashboard</a>
+  </div>
+</body>
+</html>

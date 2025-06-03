@@ -1,10 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import  Venta, Usuario, Cliente, EvaluacionVenta, PreguntaEvaluacion, RespuestaEvaluacion, Evaluacion, Incidencia, Rol
+from .models import  Venta, Usuario, Cliente, EvaluacionVenta, PreguntaEvaluacion, RespuestaEvaluacion, Evaluacion, Incidencia, Rol ,RespuestaEvaluacionVenta ,Indicador
 from .forms import  RespuestaForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from .forms import RegistroClienteForm
+from .forms import RegistroClienteForm , EvaluacionVentaForm 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
 
@@ -95,81 +95,81 @@ def cliente_panel(request):
 #     })
 
 
-@login_required
-def evaluar_venta(request, venta_id, pregunta_orden=1):
-    venta = get_object_or_404(Venta, id=venta_id)
-    cliente = venta.cliente
-    trabajador = venta.usuario  # Usuario que realizó la venta, rol trabajador esperado
+# @login_required
+# def evaluar_venta(request, venta_id, pregunta_orden=1):
+#     venta = get_object_or_404(Venta, id=venta_id)
+#     cliente = venta.cliente
+#     trabajador = venta.usuario  # Usuario que realizó la venta, rol trabajador esperado
 
-    preguntas = PreguntaEvaluacion.objects.order_by('orden')
-    total_preguntas = preguntas.count()
+#     preguntas = PreguntaEvaluacion.objects.order_by('orden')
+#     total_preguntas = preguntas.count()
 
-    try:
-        pregunta = preguntas.get(orden=pregunta_orden)
-    except PreguntaEvaluacion.DoesNotExist:
-        # Si no hay más preguntas, redirigir a resumen
-        return redirect('resultado_evaluacion', venta_id=venta.id)
+#     try:
+#         pregunta = preguntas.get(orden=pregunta_orden)
+#     except PreguntaEvaluacion.DoesNotExist:
+#         # Si no hay más preguntas, redirigir a resumen
+#         return redirect('resultado_evaluacion', venta_id=venta.id)
 
-    evaluacion, created = EvaluacionVenta.objects.get_or_create(
-        venta=venta,
-        cliente=cliente,
-        trabajador=trabajador,
-    )
+#     evaluacion, created = EvaluacionVenta.objects.get_or_create(
+#         venta=venta,
+#         cliente=cliente,
+#         trabajador=trabajador,
+#     )
 
-    if request.method == 'POST':
-        form = RespuestaForm(request.POST)
-        if form.is_valid():
-            puntuacion = int(form.cleaned_data['puntuacion'])
-            # Guardar o actualizar la respuesta a la pregunta actual
-            RespuestaEvaluacion.objects.update_or_create(
-                evaluacion=evaluacion,
-                pregunta=pregunta,
-                defaults={'puntuacion': puntuacion}
-            )
-            siguiente = pregunta_orden + 1
-            if siguiente > total_preguntas:
-                return redirect('resultado_evaluacion', venta_id=venta.id)
-            else:
-                return redirect('evaluar_venta', venta_id=venta.id, pregunta_orden=siguiente)
-    else:
-        # Pre-cargar la respuesta si ya existe para esta pregunta
-        try:
-            respuesta = RespuestaEvaluacion.objects.get(evaluacion=evaluacion, pregunta=pregunta)
-            form = RespuestaForm(initial={'puntuacion': respuesta.puntuacion})
-        except RespuestaEvaluacion.DoesNotExist:
-            form = RespuestaForm()
+#     if request.method == 'POST':
+#         form = RespuestaForm(request.POST)
+#         if form.is_valid():
+#             puntuacion = int(form.cleaned_data['puntuacion'])
+#             # Guardar o actualizar la respuesta a la pregunta actual
+#             RespuestaEvaluacion.objects.update_or_create(
+#                 evaluacion=evaluacion,
+#                 pregunta=pregunta,
+#                 defaults={'puntuacion': puntuacion}
+#             )
+#             siguiente = pregunta_orden + 1
+#             if siguiente > total_preguntas:
+#                 return redirect('resultado_evaluacion', venta_id=venta.id)
+#             else:
+#                 return redirect('evaluar_venta', venta_id=venta.id, pregunta_orden=siguiente)
+#     else:
+#         # Pre-cargar la respuesta si ya existe para esta pregunta
+#         try:
+#             respuesta = RespuestaEvaluacion.objects.get(evaluacion=evaluacion, pregunta=pregunta)
+#             form = RespuestaForm(initial={'puntuacion': respuesta.puntuacion})
+#         except RespuestaEvaluacion.DoesNotExist:
+#             form = RespuestaForm()
 
-    progreso = int((pregunta_orden / total_preguntas) * 100)
+#     progreso = int((pregunta_orden / total_preguntas) * 100)
 
-    return render(request, 'evaluacion/pregunta.html', {
-        'venta': venta,
-        'cliente': cliente,
-        'trabajador': trabajador,
-        'pregunta': pregunta,
-        'form': form,
-        'progreso': progreso,
-        'orden_actual': pregunta_orden,
-        'total_preguntas': total_preguntas,
-    })
+#     return render(request, 'evaluacion/pregunta.html', {
+#         'venta': venta,
+#         'cliente': cliente,
+#         'trabajador': trabajador,
+#         'pregunta': pregunta,
+#         'form': form,
+#         'progreso': progreso,
+#         'orden_actual': pregunta_orden,
+#         'total_preguntas': total_preguntas,
+#     })
 
 
-@login_required
-def resultado_evaluacion(request, venta_id):
-    venta = get_object_or_404(Venta, id=venta_id)
-    evaluacion = get_object_or_404(EvaluacionVenta, venta=venta)
+# @login_required
+# def resultado_evaluacion(request, venta_id):
+#     venta = get_object_or_404(Venta, id=venta_id)
+#     evaluacion = get_object_or_404(EvaluacionVenta, venta=venta)
 
-    respuestas = evaluacion.respuestaevaluacion_set.select_related('pregunta').order_by('pregunta__orden')
+#     respuestas = evaluacion.respuestaevaluacion_set.select_related('pregunta').order_by('pregunta__orden')
 
-    promedio = 0
-    if respuestas.exists():
-        promedio = sum(r.puntuacion for r in respuestas) / respuestas.count()
+#     promedio = 0
+#     if respuestas.exists():
+#         promedio = sum(r.puntuacion for r in respuestas) / respuestas.count()
 
-    return render(request, 'evaluacion/resultado.html', {
-        'venta': venta,
-        'evaluacion': evaluacion,
-        'respuestas': respuestas,
-        'promedio': promedio,
-    })
+#     return render(request, 'evaluacion/resultado.html', {
+#         'venta': venta,
+#         'evaluacion': evaluacion,
+#         'respuestas': respuestas,
+#         'promedio': promedio,
+#     })
 
 
 @login_required
@@ -207,3 +207,58 @@ def admin_dashboard(request):
         # Agrega otros datos que necesites para las otras pestañas
     }
     return render(request, 'admin_panel.html', context)
+
+
+##################333
+@login_required
+def evaluar_venta(request, venta_id):
+    # Validar rol cliente
+    if not hasattr(request.user, 'rol') or request.user.rol != 'cliente':
+        return render(request, 'error.html', {
+            'mensaje': 'No tienes permisos para acceder a esta página. Debes ser un cliente registrado.'
+        })
+
+    # Obtener cliente asociado
+    try:
+        cliente = Cliente.objects.get(user=request.user)
+    except Cliente.DoesNotExist:
+        return render(request, 'error.html', {
+            'mensaje': 'No tienes un perfil de cliente asociado. Por favor contacta al administrador.'
+        })
+
+    # Obtener venta que pertenece a ese cliente
+    try:
+        venta = Venta.objects.get(id=venta_id, cliente=cliente)
+    except Venta.DoesNotExist:
+        return render(request, 'error.html', {
+            'mensaje': 'No se encontró la venta solicitada o no te pertenece.'
+        })
+
+    trabajador = venta.usuario
+    indicadores = Indicador.objects.filter(criterio__nombre="atencion")
+
+    if request.method == 'POST':
+        form = EvaluacionVentaForm(request.POST, indicadores=indicadores)
+        if form.is_valid():
+            evaluacion = EvaluacionVenta.objects.create(
+                venta=venta,
+                trabajador=trabajador,
+                cliente=cliente
+            )
+            for indicador in indicadores:
+                puntaje = int(form.cleaned_data[f'indicador_{indicador.id}'])
+                RespuestaEvaluacionVenta.objects.create(
+                    evaluacion=evaluacion,
+                    indicador=indicador,
+                    puntaje=puntaje
+                )
+            return render(request, 'evaluacion_venta_ex.html')
+    else:
+        form = EvaluacionVentaForm(indicadores=indicadores)
+
+    return render(request, 'evaluacion_venta_form.html', {
+        'form': form,
+        'venta': venta,
+        'trabajador': trabajador,
+        'cliente': cliente
+    })

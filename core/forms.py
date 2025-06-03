@@ -41,3 +41,25 @@ class RespuestaForm(forms.Form):
         choices=[(1, '⭐ Malo'), (2, '⭐⭐ Regular'), (3, '⭐⭐⭐ Bueno'), (4, '⭐⭐⭐⭐ Muy Bueno'), (5, '⭐⭐⭐⭐⭐ Excelente')],
         widget=forms.RadioSelect
     )
+
+#######3
+class EvaluacionVentaForm(forms.Form):
+    comentarios = forms.CharField(
+        widget=forms.Textarea(attrs={'placeholder': 'Comentarios adicionales (opcional)'}),
+        required=False,
+        label="Comentarios adicionales"
+    )
+
+    def __init__(self, *args, indicadores=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if indicadores:
+            for indicador in indicadores:
+                choices = [(i, '★' * i) for i in range(1, indicador.max_puntaje + 1)]
+                self.fields[f'indicador_{indicador.id}'] = forms.ChoiceField(
+                    label=indicador.nombre,
+                    choices=choices,
+                    widget=forms.RadioSelect,
+                    required=True,
+                )
+                # Aquí asignamos la descripción para usarla en el template
+                self.fields[f'indicador_{indicador.id}'].widget.attrs['descripcion'] = indicador.descripcion or "Sin descripción."

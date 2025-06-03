@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from core import views
 from core.views import index  # ← Aquí va la importación
-from core.views import login_view
+from core.views import login_view , evaluar_venta
 from django.contrib.auth.views import LogoutView
 
 
@@ -40,16 +40,17 @@ urlpatterns = [
     path('clientes/', views.cliente_panel, name='cliente_panel'),
 
     # Nueva ruta para evaluación paso a paso por venta
-    path('evaluar/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta_default'),  # Inicia en pregunta 1
-    path('evaluar/<int:venta_id>/<int:pregunta_orden>/', views.evaluar_venta, name='evaluar_venta'),
+   # path('evaluar/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta_default'),  # Inicia en pregunta 1
+   # path('evaluar/<int:venta_id>/<int:pregunta_orden>/', views.evaluar_venta, name='evaluar_venta'),
 
     # Ruta para mostrar resultado resumen de evaluación
-    path('resultado/<int:venta_id>/', views.resultado_evaluacion, name='resultado_evaluacion'),
+    #path('resultado/<int:venta_id>/', views.resultado_evaluacion, name='resultado_evaluacion'),
 
     # Comentamos la antigua evaluación por trabajador simple
     # path('evaluar/<int:trabajador_id>/', views.evaluar_cliente, name='evaluar_cliente'),
 
     path('admin_panel/', views.admin_dashboard, name='admin_dashboard'),
-    
+
+    path('evaluar_cliente/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta'),
 
 ]

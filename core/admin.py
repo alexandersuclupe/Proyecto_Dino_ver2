@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cliente, Producto, Venta, DetalleVenta, Usuario, Evaluacion
+from .models import Cliente, Producto, Venta, DetalleVenta, Usuario, Evaluacion ,Criterio ,Indicador , RespuestaEvaluacion ,EvaluacionVenta ,RespuestaEvaluacionVenta
 from django import forms
 from django.contrib.auth.admin import UserAdmin
 
@@ -82,10 +82,10 @@ class UsuarioAdmin(UserAdmin):
         (None, {'fields': ('rol', 'area')}),
     )
 
-@admin.register(Evaluacion)
-class EvaluacionAdmin(admin.ModelAdmin):
-    list_display = ('tipo', 'evaluador', 'evaluado', 'puntaje', 'fecha')
-    list_filter = ('tipo', 'fecha')
+# @admin.register(Evaluacion)
+# class EvaluacionAdmin(admin.ModelAdmin):
+#     list_display = ('tipo', 'evaluador', 'evaluado', 'puntaje', 'fecha')
+#     list_filter = ('tipo', 'fecha')
 
 
 
@@ -97,3 +97,48 @@ class EvaluacionAdmin(admin.ModelAdmin):
 # admin.site.register(Producto)
 
 
+@admin.register(Criterio)
+class CriterioAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'descripcion', 'rango_min', 'rango_max', 'puntaje')
+    search_fields = ('nombre', 'descripcion')
+
+@admin.register(Indicador)
+class IndicadorAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'get_criterio_nombre', 'max_puntaje')
+    list_filter = ('criterio',)
+    search_fields = ('nombre',)
+
+    def get_criterio_nombre(self, obj):
+        return obj.criterio.nombre
+    get_criterio_nombre.short_description = 'Criterio'
+    get_criterio_nombre.admin_order_field = 'criterio__nombre'
+
+
+
+class RespuestaEvaluacionInline(admin.TabularInline):
+    model = RespuestaEvaluacion
+    extra = 0
+
+@admin.register(Evaluacion)
+class EvaluacionAdmin(admin.ModelAdmin):
+    list_display = ('evaluado', 'evaluador', 'tipo', 'fecha', 'puntaje_total', 'criterio_obtenido')
+    inlines = [RespuestaEvaluacionInline]
+
+    ##############
+
+class RespuestaEvaluacionVentaInline(admin.TabularInline):
+    model = RespuestaEvaluacionVenta
+    extra = 0
+    readonly_fields = ('mostrar_indicador', 'puntaje')
+    fields = ('mostrar_indicador', 'puntaje')
+    can_delete = False
+
+    def mostrar_indicador(self, obj):
+        return obj.indicador.nombre
+    mostrar_indicador.short_description = 'Indicador'
+
+
+@admin.register(EvaluacionVenta)
+class EvaluacionVentaAdmin(admin.ModelAdmin):
+    inlines = [RespuestaEvaluacionVentaInline]
+    list_display = ('id', 'cliente', 'trabajador', 'fecha')
