@@ -11,16 +11,23 @@ body {
 
 .encuesta-container {
   background: #fff;
-  padding: 40px 35px;
+  padding: 5px 20px;
+  padding-top: 5px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   border-radius: 10px;
   width: 100%;
-  max-width: 600px; /* un poco más ancho para dos columnas */
+  max-width: 400px;
+  border: 2px solid #36965e; /* Borde verde */
+}
+
+.encuesta-container h2 {
+  margin-bottom: 10px;
+  margin-top: 10px;
 }
 
 h2 {
   text-align: center;
-  color: #2c3e50;
+  color: #000000;
   margin-bottom: 25px;
 }
 
@@ -35,7 +42,7 @@ form {
 form label {
   grid-column: span 2; /* que label ocupe ambas columnas para que quede encima del input */
   font-weight: 600;
-  color: #34495e;
+  color: #000000;
   margin-bottom: 6px;
 }
 
@@ -49,18 +56,19 @@ form input, form select, form textarea {
   box-sizing: border-box;
   transition: border-color 0.3s ease;
   grid-column: span 1; /* cada input en una columna */
+  margin-bottom: -5px;
 }
 
 form input:focus, form select:focus, form textarea:focus {
-  border-color: #2980b9;
+  border-color: #36965e;
   outline: none;
   box-shadow: 0 0 5px rgba(41, 128, 185, 0.4);
 }
 
 /* El botón de submit debe ocupar ambas columnas y estar centrado */
 button[type="submit"] {
-  margin-top: 25px;
-  background-color: #2980b9;
+  margin-top: -2px;
+  background-color: #36965e;
   color: white;
   font-size: 17px;
   padding: 12px 0;
@@ -71,10 +79,11 @@ button[type="submit"] {
   font-weight: 700;
   transition: background-color 0.3s ease;
   grid-column: span 2;
+  margin-bottom: -5px;
 }
 
 button[type="submit"]:hover {
-  background-color: #1f618d;
+  background-color: #19693b;
 }
 
 p.error-message {
@@ -90,14 +99,4 @@ p.error-message {
   margin-top: 20px;
   font-size: 15px;
   grid-column: span 2;
-}
-
-.register-link a {
-  color: #2980b9;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.register-link a:hover {
-  text-decoration: underline;
 }

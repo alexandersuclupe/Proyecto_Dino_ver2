@@ -4,7 +4,7 @@
   {% load static %}
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Registrar Cliente</title>
+  <title>Dino — Registrarse</title>
   <link rel="stylesheet" href="{% static 'css/registro_cliente.css' %}">
   <style>
     .error-message {
@@ -19,7 +19,7 @@
 </head>
 <body>
   <div class="encuesta-container">
-    <h2>Registro de Cliente</h2>
+    <h2>Registrarse</h2>
     <form method="post" novalidate>
       {% csrf_token %}
       
@@ -62,7 +62,7 @@
       <button type="submit">Registrarse</button>
     </form>
 
-    <p class="register-link">¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a></p>
+    <p class="register-link" style="color: #000000">¿Ya tienes cuenta? <a style="color: #36965e" href="{% url 'login' %}">Inicia sesión aquí</a></p>
   </div>
 
   <script>
