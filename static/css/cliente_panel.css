@@ -1,32 +1,50 @@
 body {
-  background-color: #f9fafb;
+  background-color: #f8f9fa;
   font-family: 'Segoe UI', sans-serif;
+  color: #333;
 }
 
-.stat-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  background-color: white;
-  transition: all 0.2s ease-in-out;
-}
-
-.stat-card:hover {
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+.navbar-brand img {
+  max-height: 50px;
 }
 
 .card {
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  border: 1px solid #36965e; /* Borde verde para todas las cards */
+  border-radius: 12px;
+  background-color: #fff;
+  transition: box-shadow 0.3s ease;
 }
 
-.badge {
-  border-radius: 12px;
-  padding: 6px 12px;
-  font-size: 0.75rem;
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card {
+  padding: 1rem 0.5rem;
+  border: 1px solid #36965e; /* Borde verde también en tarjetas estadísticas */
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000000;
 }
 
 .btn-sm {
   border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.8rem;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+ul li {
+  background-color: #fefefe;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #36965e; /* Borde verde para cada ítem de lista */
+}
+
+.border-start {
+  background-color: #6db86d;
+  border-left: 3px solid #36965e; /* Línea verde para evaluaciones realizadas */
 }
