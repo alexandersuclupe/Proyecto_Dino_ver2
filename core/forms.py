@@ -45,7 +45,11 @@ class RespuestaForm(forms.Form):
 #######3
 class EvaluacionVentaForm(forms.Form):
     comentarios = forms.CharField(
-        widget=forms.Textarea(attrs={'placeholder': 'Comentarios adicionales (opcional)'}),
+        widget=forms.Textarea(attrs={
+            'placeholder': 'Comentarios adicionales (opcional)',
+            'rows': 3,
+            'style': 'resize: vertical; height: 80px; padding-right: 0px'
+        }),
         required=False,
         label="Comentarios adicionales"
     )
