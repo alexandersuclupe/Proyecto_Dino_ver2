@@ -54,5 +54,8 @@ urlpatterns = [
     path('admin_panel/', views.admin_dashboard, name='admin_dashboard'),
 
     path('evaluacion_trabajador/<int:evaluacion_id>/', views.editar_evaluacion_trabajador, name='editar_evaluacion_trabajador'),
+    # path('evaluaciones/', views.mostrar_evaluaciones, name='mostrar_evaluaciones'),
+    # path('evaluaciones/', views.evaluar_trabajadores, name='evaluar_trabajadores'),
+    # path('guardar_evaluacion/<int:evaluacion_id>/', views.guardar_evaluacion, name='guardar_evaluacion'),
 
 ]

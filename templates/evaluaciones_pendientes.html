@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluaciones Pendientes</title>
+    <style>
+        .evaluacion {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 10px;
+            width: 200px;
+            display: inline-block;
+        }
+        .evaluacion h3 {
+            font-size: 1.2em;
+            margin: 0;
+        }
+        .evaluacion button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Evaluaciones Pendientes</h1>
+    <div>
+        {% for evaluacion in evaluaciones_pendientes %}
+            <div class="evaluacion">
+                <h3>{{ evaluacion.trabajador.get_full_name }}</h3>
+                <p>Puesto: {{ evaluacion.trabajador.puesto.nombre }}</p>
+                <p>Evaluador: {{ request.user.get_full_name }}</p>
+
+                {% for evaluacion_obj in evaluacion.evaluaciones %}
+                    <p>Evaluación pendiente</p>
+                    <form action="{% url 'guardar_evaluacion' evaluacion_obj.id %}" method="POST">
+                        {% csrf_token %}
+                        <!-- Mostrar los criterios del puesto del trabajador -->
+                        {% for criterio in evaluacion.trabajador.puesto.criterios.all %}
+                            <div>
+                                <label>{{ criterio.nombre }}</label>
+                                {% for indicador in criterio.indicadores.all %}
+                                    <div>
+                                        <label>{{ indicador.nombre }}</label>
+                                        <input type="number" name="puntaje_{{ indicador.id }}" min="0" max="10" required>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <button type="submit">Guardar Evaluación</button>
+                    </form>
+                {% endfor %}
+            </div>
+        {% empty %}
+            <p>No tienes evaluaciones pendientes.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>
