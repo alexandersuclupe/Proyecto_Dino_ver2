@@ -1,14 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import  Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol ,RespuestaEvaluacionVenta ,Indicador
-from .forms import  RespuestaForm
+from .models import Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador
+from .forms import RespuestaForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from .forms import RegistroClienteForm , EvaluacionVentaForm ,EvaluacionTrabajadorForm
+from .forms import RegistroClienteForm, EvaluacionVentaForm, EvaluacionTrabajadorForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
-
-
 
 
 # def encuesta_satisfaccion(request, venta_id):
@@ -37,58 +35,78 @@ from django.db.models import Avg
 def gracias_encuesta(request):
     return render(request, 'gracias.html')
 
+
 def index(request):
     return render(request, 'index.html')
 
+
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST.get('username')  # Puede ser email o username según tu modelo
+        # Puede ser email o username según tu modelo
+        username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('cliente_panel')  # Redirige al inicio después del login
+            # Redirige al inicio después del login
+            return redirect('cliente_panel')
         else:
-            messages.error(request, 'Credenciales inválidas. Intenta nuevamente.')
+            messages.error(
+                request, 'Credenciales inválidas. Intenta nuevamente.')
 
     return render(request, 'login.html')
+
 
 def registro_cliente(request):
     if request.method == 'POST':
         form = RegistroClienteForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
+            messages.success(
+                request, 'Registro exitoso. Ahora puedes iniciar sesión.')
             return redirect('login')
     else:
         form = RegistroClienteForm()
     return render(request, 'registro_cliente.html', {'form': form})
 
+
 def admin_dashboard(request):
     return render(request, 'admin_panel.html')
+
+
 @login_required
 def cliente_dashboard(request):
 
     user = request.user
 
+    # Verificar que el usuario tiene el rol 'cliente'
     if not hasattr(user, 'rol') or user.rol != 'cliente':
         return render(request, 'error.html', {
             'mensaje': 'No tienes permisos para acceder a esta página. Debes ser un cliente.'
         })
 
     try:
+        # Obtener el perfil del cliente
         cliente = Cliente.objects.get(user=user)
     except Cliente.DoesNotExist:
         return render(request, 'error.html', {
             'mensaje': 'No tienes un perfil cliente asociado.'
         })
 
-    evaluaciones_realizadas = EvaluacionVenta.objects.filter(cliente=cliente)\
-        .select_related('trabajador', 'venta')
+    # Obtener las evaluaciones realizadas por el cliente
+    evaluaciones_realizadas = EvaluacionVenta.objects.filter(cliente=cliente , estado="COMPLETADO")\
+        
 
+    # Obtener las ventas pendientes de evaluación
+    ventas_pendientes = EvaluacionVenta.objects.filter(cliente=cliente, estado="PENDIENTE")
+
+    # Pasar las evaluaciones realizadas y las ventas pendientes al contexto
     context = {
         'evaluaciones_realizadas': evaluaciones_realizadas,
+        'ventas_pendientes': ventas_pendientes,
+        'total_pendientes': ventas_pendientes.count(),  # Contar las ventas pendientes
     }
+
     return render(request, 'cliente_panel.html', context)
 
 #####################
@@ -202,7 +220,7 @@ def cliente_dashboard(request):
 #     # Datos básicos
 #     total_empleados = Usuario.objects.filter(rol_admin__nombre='Trabajador').count()
 #     empleados = Usuario.objects.filter(rol_admin__nombre='Trabajador')
-    
+
 #     # # Evaluaciones por tipo
 #     # evaluacion_cliente = Evaluacion.objects.filter(tipo='cliente')
 #     # evaluacion_gerencial = Evaluacion.objects.filter(tipo='gerente')
@@ -234,7 +252,7 @@ def cliente_dashboard(request):
 #     return render(request, 'admin_panel.html', context)
 
 
-##################333
+# 333
 @login_required
 def evaluar_venta(request, venta_id):
     # Validar rol cliente
@@ -268,8 +286,9 @@ def evaluar_venta(request, venta_id):
             evaluacion = EvaluacionVenta.objects.create(
                 venta=venta,
                 trabajador=trabajador,
-                cliente=cliente 
-                
+                cliente=cliente,
+                estado='COMPLETADO'
+
             )
             for indicador in indicadores:
                 puntaje = int(form.cleaned_data[f'indicador_{indicador.id}'])
@@ -278,6 +297,8 @@ def evaluar_venta(request, venta_id):
                     indicador=indicador,
                     puntaje=puntaje
                 )
+            evaluacion.estado = 'COMPLETADO'
+            evaluacion.save()
             return render(request, 'evaluacion_venta_ex.html')
     else:
         form = EvaluacionVentaForm(indicadores=indicadores)
@@ -289,45 +310,48 @@ def evaluar_venta(request, venta_id):
         'cliente': cliente
     })
 
+
 @login_required
 def editar_evaluacion_trabajador(request, evaluacion_id):
     evaluacion = get_object_or_404(EvaluacionTrabajador, id=evaluacion_id)
     evaluado = evaluacion.evaluado
+    # Si es FK, está bien. Si es M2M, tomar el primero: evaluado.puesto.first()
     puesto = evaluado.puesto
 
-    # Criterios asignados al puesto del evaluado
-    criterios = Criterio.objects.filter(puestos=puesto)
+    # Obtener criterios asignados al puesto del evaluado
+    criterios = Criterio.objects.filter(puesto=puesto)
+
+    # Obtener indicadores relacionados a esos criterios
     indicadores = Indicador.objects.filter(criterio__in=criterios)
 
-    # Obtiene las respuestas actuales en un dict {indicador_id: puntaje}
-    respuestas_actuales = {r.indicador_id: r.puntaje for r in evaluacion.respuestas.all()}
+    # Obtener respuestas previas para precargar el formulario
+    respuestas_actuales = {
+        r.indicador_id: r.puntaje for r in evaluacion.respuestas.all()}
 
     if request.method == 'POST':
         form = EvaluacionTrabajadorForm(request.POST, indicadores=indicadores)
         if form.is_valid():
             for indicador in indicadores:
-                puntaje = form.cleaned_data.get(f'indicador_{indicador.id}')
-                # Actualiza o crea la respuesta
-                obj, created = RespuestaEvaluacionTrabajador.objects.update_or_create(
+                puntaje = int(form.cleaned_data.get(
+                    f'indicador_{indicador.id}', 0))
+                RespuestaEvaluacionTrabajador.objects.update_or_create(
                     evaluacion=evaluacion,
                     indicador=indicador,
                     defaults={'puntaje': puntaje}
                 )
             evaluacion.estado = 'COMPLETADA'
             evaluacion.save()
-            return redirect('admin_dashboard')  # Ajusta a tu URL de éxito
+            return redirect('admin_dashboard')  # Cambia según tu ruta deseada
     else:
-        # Prepara datos iniciales para el formulario
-        initial_data = {}
-        for indicador in indicadores:
-            initial_data[f'indicador_{indicador.id}'] = respuestas_actuales.get(indicador.id, 0)
+        initial_data = {f'indicador_{ind.id}': respuestas_actuales.get(
+            ind.id, 0) for ind in indicadores}
+        form = EvaluacionTrabajadorForm(
+            indicadores=indicadores, initial=initial_data)
 
-        form = EvaluacionTrabajadorForm(indicadores=indicadores, initial=initial_data)
-
-    context = {
+    return render(request, 'evaluacion_trabajador_form.html', {
         'form': form,
         'evaluacion': evaluacion,
         'evaluado': evaluado,
         'criterios': criterios,
-    }
-    return render(request, 'evaluacion_trabajador_form.html', context)
+        'puesto': puesto,
+    })

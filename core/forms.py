@@ -66,15 +66,16 @@ class EvaluacionVentaForm(forms.Form):
 
 
 
+from django import forms
+
 class EvaluacionTrabajadorForm(forms.Form):
     def __init__(self, *args, indicadores=None, **kwargs):
         super().__init__(*args, **kwargs)
         if indicadores:
             for indicador in indicadores:
                 self.fields[f'indicador_{indicador.id}'] = forms.IntegerField(
-                    label=f"{indicador.nombre} ({indicador.criterio.nombre})",
+                    label=indicador.nombre,
                     min_value=0,
-                    max_value=indicador.max_puntaje,
+                    max_value=getattr(indicador, 'puntaje_maximo', 10),  # ejemplo, que tengas ese atributo
                     required=True,
-                    widget=forms.NumberInput(attrs={'class': 'form-control'})
                 )

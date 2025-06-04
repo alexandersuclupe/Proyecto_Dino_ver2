@@ -36,6 +36,8 @@ urlpatterns = [
     path('registrar/', views.registro_cliente, name='registro_cliente'),
 
     path('cliente/dashboard/', views.cliente_dashboard, name='cliente_panel'),
+    path('evaluar_cliente/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta'),
+
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
     #path('clientes/', views.cliente_panel, name='cliente_panel'),
 
@@ -51,7 +53,6 @@ urlpatterns = [
 
     path('admin_panel/', views.admin_dashboard, name='admin_dashboard'),
 
-    path('evaluar_cliente/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta'),
     path('evaluacion_trabajador/<int:evaluacion_id>/', views.editar_evaluacion_trabajador, name='editar_evaluacion_trabajador'),
 
 ]

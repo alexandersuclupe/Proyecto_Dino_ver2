@@ -32,7 +32,8 @@ class Usuario(AbstractUser):
     # Roles administrativos: trabajador, gerente
     rol_admin = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True, related_name='usuarios')
 
-    puesto = models.ManyToManyField(Puesto, blank=True)
+    puesto = models.ForeignKey(Puesto, on_delete=models.SET_NULL, null=True, blank=True)
+
 
 
     def __str__(self):
@@ -167,7 +168,8 @@ class Incidencia(models.Model):
 class Criterio(models.Model):
     nombre = models.CharField(max_length=100, default='Sin nombre')
     descripcion = models.CharField(max_length=200, blank=True, null=True)
-    puestos = models.ManyToManyField(Puesto, blank=True)
+    puesto = models.ForeignKey(Puesto, on_delete=models.SET_NULL, null=True, blank=True)
+
 
     rango_min = models.IntegerField()
     rango_max = models.IntegerField()
@@ -219,11 +221,19 @@ class Indicador(models.Model):
 
     
 class EvaluacionVenta(models.Model):
+
+    ESTADOS = [
+        ('PENDIENTE', 'Pendiente'),
+        ('EN_PROGRESO', 'En progreso'),
+        ('COMPLETADA', 'Completada'),
+    ]
+
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
     trabajador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'rol': 'trabajador'})
     # rol trabajador
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='PENDIENTE')
 
     
 
@@ -231,9 +241,12 @@ class EvaluacionVenta(models.Model):
         return f"Evaluación venta #{self.venta.id} - Cliente: {self.cliente} - Trabajador: {self.trabajador}"
 
 class RespuestaEvaluacionVenta(models.Model):
+    
     evaluacion = models.ForeignKey(EvaluacionVenta, on_delete=models.CASCADE, related_name='respuestas',default=1)
     indicador = models.ForeignKey(Indicador, on_delete=models.CASCADE,default=1)
     puntaje = models.IntegerField(default=0)
+    def __str__(self):
+        return f"{self.indicador.nombre}: {self.puntaje}"
 
 
 ####################333
