@@ -5,13 +5,15 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
+
 class Rol(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
     descripcion = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.nombre
-    
+
+
 class Puesto(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
     descripcion = models.TextField(blank=True, null=True)
@@ -21,20 +23,22 @@ class Puesto(models.Model):
 
 # En tu modelo Usuario (ya existente), agregas:
 
+
 class Usuario(AbstractUser):
     # Solo para clientes
     ROL_TIPOS = [
         ('cliente', 'Cliente'),
         ('trabajador', 'Trabajador'),
     ]
-    rol = models.CharField(max_length=20, choices=ROL_TIPOS, blank=True, null=True)
+    rol = models.CharField(
+        max_length=20, choices=ROL_TIPOS, blank=True, null=True)
 
     # Roles administrativos: trabajador, gerente
-    rol_admin = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True, related_name='usuarios')
+    rol_admin = models.ForeignKey(
+        Rol, on_delete=models.SET_NULL, null=True, blank=True, related_name='usuarios')
 
-    puesto = models.ForeignKey(Puesto, on_delete=models.SET_NULL, null=True, blank=True)
-
-
+    puesto = models.ForeignKey(
+        Puesto, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         if self.rol_admin:
@@ -44,8 +48,10 @@ class Usuario(AbstractUser):
         else:
             return self.username
 
+
 class Cliente(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE, null=True, blank=True)
     direccion = models.CharField(max_length=200, blank=True, null=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
 
@@ -62,14 +68,17 @@ class Producto(models.Model):
     def __str__(self):
         return self.nombre
 
+
 class Venta(models.Model):
     cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
 
     tiempo_inicio = models.DateTimeField(editable=False, null=True, blank=True)
     tiempo_fin = models.DateTimeField(null=True, blank=True)
-    duracion_venta = models.DurationField(null=True, blank=True, editable=False)
+    duracion_venta = models.DurationField(
+        null=True, blank=True, editable=False)
 
     def save(self, *args, **kwargs):
         now = timezone.now()
@@ -93,11 +102,13 @@ class Venta(models.Model):
     def __str__(self):
         return f'Venta #{self.id} - {self.cliente}'
 
+
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     cantidad = models.PositiveIntegerField()
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    precio_unitario = models.DecimalField(
+        max_digits=10, decimal_places=2, editable=False)
 
     def save(self, *args, **kwargs):
         if not self.precio_unitario:
@@ -124,6 +135,7 @@ class DetalleVenta(models.Model):
 #     puntaje = models.DecimalField(max_digits=5, decimal_places=2)
 #     comentarios = models.TextField(blank=True, null=True)
 #     fecha = models.DateField(auto_now_add=True)
+
 
 class PreguntaEvaluacion(models.Model):
     texto = models.CharField(max_length=255)
@@ -152,8 +164,10 @@ class PreguntaEvaluacion(models.Model):
 #     def __str__(self):
 #         return f"{self.pregunta.texto}: {self.puntuacion} estrellas"
 
+
 class Incidencia(models.Model):
-    empleado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    empleado = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     descripcion = models.TextField()
     estado = models.CharField(max_length=50)
@@ -162,14 +176,14 @@ class Incidencia(models.Model):
     def __str__(self):
         return f"Incidencia de {self.empleado} - {self.estado}"
 
-########################################################3
+# 3
 
 
 class Criterio(models.Model):
     nombre = models.CharField(max_length=100, default='Sin nombre')
     descripcion = models.CharField(max_length=200, blank=True, null=True)
-    puesto = models.ForeignKey(Puesto, on_delete=models.SET_NULL, null=True, blank=True)
-
+    puesto = models.ForeignKey(
+        Puesto, on_delete=models.SET_NULL, null=True, blank=True)
 
     rango_min = models.IntegerField()
     rango_max = models.IntegerField()
@@ -179,20 +193,22 @@ class Criterio(models.Model):
 
     @property
     def puntaje(self):
-        total = self.indicadores.aggregate(total=models.Sum('max_puntaje'))['total']
+        total = self.indicadores.aggregate(
+            total=models.Sum('max_puntaje'))['total']
         return total or 0
 
 
 class Indicador(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True, null=True)
-    criterio = models.ForeignKey(Criterio, on_delete=models.CASCADE, related_name='indicadores', default=0)
+    criterio = models.ForeignKey(
+        Criterio, on_delete=models.CASCADE, related_name='indicadores', default=0)
 
     max_puntaje = models.IntegerField(default=5)
 
     def __str__(self):
-        return f"{self.nombre} ({self.criterio.nombre})" 
-    
+        return f"{self.nombre} ({self.criterio.nombre})"
+
 # class Evaluacion(models.Model):
 #     TIPO_CHOICES = [
 #         ('auto', 'Autoevaluación'),
@@ -217,9 +233,8 @@ class Indicador(models.Model):
 
 #     def __str__(self):
 #         return f"{self.indicador.nombre}: {self.puntaje}"
-    
 
-    
+
 class EvaluacionVenta(models.Model):
 
     ESTADOS = [
@@ -229,27 +244,31 @@ class EvaluacionVenta(models.Model):
     ]
 
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
-    trabajador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'rol': 'trabajador'})
+    trabajador = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'rol': 'trabajador'})
     # rol trabajador
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
-    estado = models.CharField(max_length=20, choices=ESTADOS, default='PENDIENTE')
-
-    
+    estado = models.CharField(
+        max_length=20, choices=ESTADOS, default='PENDIENTE')
 
     def __str__(self):
         return f"Evaluación venta #{self.venta.id} - Cliente: {self.cliente} - Trabajador: {self.trabajador}"
 
+
 class RespuestaEvaluacionVenta(models.Model):
-    
-    evaluacion = models.ForeignKey(EvaluacionVenta, on_delete=models.CASCADE, related_name='respuestas',default=1)
-    indicador = models.ForeignKey(Indicador, on_delete=models.CASCADE,default=1)
+
+    evaluacion = models.ForeignKey(
+        EvaluacionVenta, on_delete=models.CASCADE, related_name='respuestas', default=1)
+    indicador = models.ForeignKey(
+        Indicador, on_delete=models.CASCADE, default=1)
     puntaje = models.IntegerField(default=0)
+
     def __str__(self):
         return f"{self.indicador.nombre}: {self.puntaje}"
 
 
-####################333
+# 333
 
 class EvaluacionTrabajador(models.Model):
     ESTADOS = [
@@ -258,17 +277,31 @@ class EvaluacionTrabajador(models.Model):
         ('COMPLETADA', 'Completada'),
     ]
 
-    evaluador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones_realizadas')
-    evaluado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones_recibidas')
+    evaluador = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones_realizadas')
+    evaluado = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='evaluaciones_recibidas')
     fecha_creacion = models.DateTimeField(default=timezone.now)
-    estado = models.CharField(max_length=20, choices=ESTADOS, default='PENDIENTE')
+    # Valor por defecto para las nuevas evaluaciones
+    fecha_activacion = models.DateTimeField(default=timezone.now)
+    estado = models.CharField(
+        max_length=20, choices=ESTADOS, default='PENDIENTE')
     observaciones = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"Evaluación de {self.evaluador.get_full_name()} a {self.evaluado.get_full_name()}"
 
+    def save(self, *args, **kwargs):
+        # Si la fecha de activación es futura, no permita guardar la evaluación hasta esa fecha
+        if self.fecha_activacion > timezone.now():
+            raise ValueError(
+                "No se puede crear una evaluación antes de la fecha de activación.")
+        super().save(*args, **kwargs)
+
+
 class RespuestaEvaluacionTrabajador(models.Model):
-    evaluacion = models.ForeignKey(EvaluacionTrabajador, on_delete=models.CASCADE, related_name='respuestas')
+    evaluacion = models.ForeignKey(
+        EvaluacionTrabajador, on_delete=models.CASCADE, related_name='respuestas')
     indicador = models.ForeignKey(Indicador, on_delete=models.CASCADE)
     puntaje = models.IntegerField(default=0)
 

@@ -7,6 +7,8 @@ from django.contrib import messages
 from .forms import RegistroClienteForm, EvaluacionVentaForm, EvaluacionTrabajadorForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
+from django.core.paginator import Paginator
+
 
 
 # def encuesta_satisfaccion(request, venta_id):
@@ -355,3 +357,73 @@ def editar_evaluacion_trabajador(request, evaluacion_id):
         'criterios': criterios,
         'puesto': puesto,
     })
+
+
+##############################333
+
+def mostrar_evaluaciones(request):
+    # Obtener todas las evaluaciones de trabajadores
+    evaluaciones = EvaluacionTrabajador.objects.all()
+    
+    # Paginación (mostrar 10 evaluaciones por página)
+    paginator = Paginator(evaluaciones, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Pasar las evaluaciones al contexto
+    context = {
+        'page_obj': page_obj
+    }
+    
+    return render(request, 'mostrar_evaluaciones.html', context)
+
+@login_required
+def evaluar_trabajadores(request):
+    # Filtrar trabajadores con puestos específicos
+    trabajadores = Usuario.objects.filter(rol='trabajador').exclude(puesto__nombre__in=['gerente', 'supervisor'])
+
+    # Crear un listado de evaluaciones pendientes para cada trabajador
+    evaluaciones_pendientes = []
+    for trabajador in trabajadores:
+        # Filtrar las evaluaciones pendientes para el evaluador actual
+        evaluaciones = EvaluacionTrabajador.objects.filter(evaluador=request.user, evaluado=trabajador, estado='PENDIENTE')
+
+        if evaluaciones.exists():
+            evaluaciones_pendientes.append({
+                'trabajador': trabajador,
+                'evaluaciones': evaluaciones
+            })
+    
+    context = {
+        'evaluaciones_pendientes': evaluaciones_pendientes
+    }
+    return render(request, 'evaluaciones_pendientes.html', context)
+
+@login_required
+def guardar_evaluacion(request, evaluacion_id):
+    # Obtener la evaluación específica
+    evaluacion = get_object_or_404(EvaluacionTrabajador, id=evaluacion_id)
+
+    # Verificar que el evaluador es el que está logueado (supervisor)
+    if evaluacion.evaluador != request.user:
+        return redirect('error')  # Redirigir si no es el supervisor
+
+    if request.method == 'POST':
+        # Guardar las respuestas de evaluación
+        for indicador in evaluacion.evaluado.puesto.criterios.all().indicadores.all():
+            puntaje = request.POST.get(f'puntaje_{indicador.id}')
+            if puntaje:
+                RespuestaEvaluacionTrabajador.objects.create(
+                    evaluacion=evaluacion,
+                    indicador=indicador,
+                    puntaje=puntaje
+                )
+        
+        # Cambiar el estado de la evaluación a 'COMPLETADA'
+        evaluacion.estado = 'COMPLETADA'
+        evaluacion.save()
+
+        # Redirigir al listado de evaluaciones o mostrar un mensaje de éxito
+        return redirect('mostrar_evaluaciones')
+
+    return render(request, 'evaluacion_trabajador_form.html', {'evaluacion': evaluacion})
