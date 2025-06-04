@@ -54,14 +54,44 @@ class VentaAdmin(admin.ModelAdmin):
     list_display = ('id', 'cliente', 'usuario', 'fecha', 'tiempo_inicio',
                     'tiempo_fin', 'duracion_venta_formateada', 'get_total')
     readonly_fields = ('tiempo_inicio', 'tiempo_fin')
-    exclude = ('usuario',)  # oculta el campo 'usuario' del formulario
+    # exclude = ('usuario',)  # oculta el campo 'usuario' del formulario
     inlines = [DetalleVentaInline]
     list_per_page = 5
 
+    # Filtrar solo usuarios con rol 'trabajador' y puesto 'vendedor'
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "usuario":
+            # Filtramos por rol 'trabajador' y puesto 'vendedor'
+            kwargs["queryset"] = Usuario.objects.filter(
+                rol='trabajador', puesto__nombre='vendedor')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     def save_model(self, request, obj, form, change):
-        if not obj.pk:  # solo cuando es una nueva venta
-            obj.usuario = request.user
-        super().save_model(request, obj, form, change)
+        # Primero, guardamos la venta
+        obj.save()  # Guarda la venta en la base de datos
+
+        if not change:  # Si es una nueva venta, crea la evaluación
+            # Crear la EvaluacionVenta automáticamente con los datos
+            evaluacion = EvaluacionVenta.objects.create(
+                venta=obj,  # Relacionar con la venta que ya ha sido guardada
+                trabajador=obj.usuario,  # El trabajador que atendió la venta
+                cliente=obj.cliente,  # El cliente de la venta
+            )
+
+            # Crear los indicadores y puntajes si están definidos
+            indicadores = Indicador.objects.all()  # O lo que necesites para los indicadores
+            for indicador in indicadores:
+                # Aquí agregas los puntajes por cada indicador
+                puntaje = 0  # Aquí puede ir la lógica para calcular el puntaje
+                RespuestaEvaluacionVenta.objects.create(
+                    evaluacion=evaluacion,
+                    indicador=indicador,
+                    puntaje=puntaje
+                )
+
+        else:
+            # Si la venta ya existe, solo guardamos los cambios sin crear la evaluación
+            super().save_model(request, obj, form, change)
 
     def get_total(self, obj):
         return obj.total
