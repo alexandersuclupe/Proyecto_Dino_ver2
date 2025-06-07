@@ -34,6 +34,10 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('login/', views.login_view, name='login'),
     path('registrar/', views.registro_cliente, name='registro_cliente'),
+    path('autoevaluacion/nueva/', views.crear_autoevaluacion, name='crear_autoevaluacion'),
+    path('autoevaluacion/lista/', views.lista_autoevaluaciones, name='lista_autoevaluaciones'),
+    path('autoevaluacion/', views.realizar_autoevaluacion, name='realizar_autoevaluacion'),
+    path('evaluacion_exitosa/', views.evaluacion_exitosa, name='evaluacion_exitosa'),
 
     path('cliente/dashboard/', views.cliente_dashboard, name='cliente_panel'),
     path('evaluar_cliente/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta'),

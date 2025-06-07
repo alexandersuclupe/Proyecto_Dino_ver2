@@ -5,7 +5,6 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
-
 class Rol(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
     descripcion = models.TextField(blank=True, null=True)
@@ -307,3 +306,68 @@ class RespuestaEvaluacionTrabajador(models.Model):
 
     def __str__(self):
         return f"{self.indicador.nombre}: {self.puntaje}"
+
+class AutoevaluacionTrabajador(models.Model):
+    trabajador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='autoevaluaciones'
+    )
+    fecha = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.trabajador} - {self.fecha}"
+
+    @property
+    def total_puntaje(self):
+        return sum(res.puntaje for res in self.respuestas.all())
+
+class RespuestaAutoevaluacionTrabajador(models.Model):
+    autoevaluacion = models.ForeignKey(
+        'AutoevaluacionTrabajador',
+        related_name='respuestas',
+        on_delete=models.CASCADE
+    )
+    indicador = models.ForeignKey('Indicador', on_delete=models.PROTECT)
+
+    VALORACION_CHOICES = [
+        ('Malo', 'Malo'),
+        ('Regular', 'Regular'),
+        ('Bueno', 'Bueno'),
+    ]
+
+    valoracion = models.CharField(
+        max_length=10,
+        choices=VALORACION_CHOICES,
+        default='Regular'
+    )
+
+    puntaje = models.PositiveIntegerField(default=0)  # Se calcula automáticamente, pero se mantiene visible
+
+    def save(self, *args, **kwargs):
+        # Establece el puntaje automáticamente según la valoración
+        if self.valoracion == 'Malo':
+            self.puntaje = 1
+        elif self.valoracion == 'Regular':
+            self.puntaje = 3
+        elif self.valoracion == 'Bueno':
+            self.puntaje = 5
+        else:
+            self.puntaje = 0  # Valor por defecto si no coincide
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.indicador.nombre} - {self.valoracion} ({self.puntaje})"
+
+class PuntajeIndicador(models.Model):
+    indicador = models.ForeignKey('Indicador', on_delete=models.CASCADE, related_name="puntajes")
+    malo = models.FloatField(default=0.0)
+    regular = models.FloatField(default=0.0)
+    bueno = models.FloatField(default=0.0)
+
+    class Meta:
+        app_label = 'core'
+
+    def __str__(self):
+        return f'Puntajes para {self.indicador.nombre}'

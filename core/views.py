@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador
-from .forms import RespuestaForm
+from .models import AutoevaluacionTrabajador, RespuestaAutoevaluacionTrabajador, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador
+from .forms import AutoevaluacionForm, AutoevaluacionTrabajadorForm, RespuestaAutoevaluacionFormSet, RespuestaForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -8,6 +8,7 @@ from .forms import RegistroClienteForm, EvaluacionVentaForm, EvaluacionTrabajado
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
 from django.core.paginator import Paginator
+from django.contrib.auth.models import User
 
 
 
@@ -427,3 +428,111 @@ def guardar_evaluacion(request, evaluacion_id):
         return redirect('mostrar_evaluaciones')
 
     return render(request, 'evaluacion_trabajador_form.html', {'evaluacion': evaluacion})
+
+def crear_autoevaluacion(request):
+
+    indicadores = Indicador.objects.all()
+
+    if request.method == 'POST':
+        form = AutoevaluacionTrabajadorForm(request.POST)
+        formset = RespuestaAutoevaluacionFormSet(request.POST, queryset=None)
+        if form.is_valid() and formset.is_valid():
+            autoevaluacion = form.save(commit=False)
+            autoevaluacion.evaluador = request.user
+            autoevaluacion.save()
+            for form_indicador in formset:
+                respuesta = form_indicador.save(commit=False)
+                respuesta.autoevaluacion = autoevaluacion
+                respuesta.save()
+            return redirect('lista_autoevaluaciones')
+    else:
+        form = AutoevaluacionTrabajadorForm()
+        formset = RespuestaAutoevaluacionFormSet(queryset=None)
+
+    return render(request, 'crear_autoevaluacion.html', {
+        'form': form,
+        'formset': formset,
+        'indicadores': indicadores 
+    })
+def lista_autoevaluaciones(request):
+    autoevaluaciones = AutoevaluacionTrabajador.objects.all()
+    return render(request, 'lista_autoevaluaciones.html', {'autoevaluaciones': autoevaluaciones})
+
+
+@login_required
+def realizar_autoevaluacion(request):
+    indicadores = Indicador.objects.all()
+
+    if request.method == 'POST':
+        form = AutoevaluacionForm(indicadores, request.POST)
+        if form.is_valid(): 
+            evaluacion = AutoevaluacionTrabajador.objects.create(
+                trabajador=request.user
+            )
+            puntaje_map = {
+                'Malo': 1,
+                'Regular': 3,
+                'Bueno': 5,
+            }
+            for key, valoracion in form.cleaned_data.items():
+                indicador_id = int(key.replace('indicador_', ''))
+                valoracion_normalizada = valoracion.strip().capitalize()
+                puntaje = puntaje_map.get(valoracion_normalizada, 0)
+                RespuestaAutoevaluacionTrabajador.objects.create(
+                    autoevaluacion=evaluacion,
+                    indicador_id=indicador_id,
+                    valoracion=valoracion_normalizada,
+                    puntaje=puntaje
+                )
+            return redirect('evaluacion_exitosa')
+    else:
+        form = AutoevaluacionForm(indicadores)
+
+    return render(request, 'realizar_autoevaluacion.html', {
+        'form': form,
+        'trabajador': request.user,
+        'indicadores': indicadores,
+        'titulo': f'Autoevaluación - {request.user.get_full_name() or request.user.username}'
+    })
+
+def guardar_autoevaluacion(request):
+    if request.method == 'POST':
+        trabajador = request.user
+        autoeval = AutoevaluacionTrabajador.objects.create(trabajador=trabajador)
+
+        for key, valoracion in request.POST.items():
+            if key.startswith('indicador_'):
+                indicador_id = int(key.split('_')[1])
+                respuesta = RespuestaAutoevaluacionTrabajador(
+                    autoevaluacion=autoeval,
+                    indicador_id=indicador_id,
+                    valoracion=valoracion
+                )
+                respuesta.save()  # Importantísimo para que se calcule el puntaje automáticamente
+
+
+def evaluacion_exitosa(request):
+    return render(request, 'evaluacion_exitosa.html')
+
+@login_required
+def autoevaluacion_view(request):
+    trabajador = request.user
+
+    print(f"Usuario: {trabajador} - Rol: {getattr(trabajador, 'rol', 'No tiene rol')}")
+    indicadores = Indicador.objects.all()
+    print(f"Indicadores encontrados: {indicadores.count()}")
+
+    # Opcionalmente comentar el filtro de rol para pruebas:
+    # if not trabajador.is_authenticated or trabajador.rol != 'trabajador':
+    #     messages.error(request, "No tienes permiso para acceder a esta página.")
+    #     return redirect('pagina_inicio')
+
+    if request.method == 'POST':
+        # tu lógica para guardar respuestas aquí
+        pass
+
+    return render(request, 'realizar_autoevaluacion.html', {
+        'trabajador': trabajador,
+        'indicadores': indicadores,
+    })
+

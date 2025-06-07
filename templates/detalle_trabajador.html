@@ -1,0 +1,13 @@
+<h2>Autoevaluaciones de {{ trabajador.get_full_name }}</h2>
+<table>
+    <tr>
+        <th>Indicador</th>
+        <th>Puntaje</th>
+    </tr>
+    {% for r in respuestas %}
+    <tr>
+        <td>{{ r.indicador.nombre }}</td>
+        <td>{{ r.puntaje }}</td>
+    </tr>
+    {% endfor %}
+</table>

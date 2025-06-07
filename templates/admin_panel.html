@@ -49,9 +49,14 @@
             <button class="nav-link" id="roles-tab" data-bs-toggle="tab" data-bs-target="#roles" type="button" role="tab">Roles</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="reportes-tab" data-bs-toggle="tab" data-bs-target="#reportes" type="button" role="tab">Reportes</button>
+            <button class="nav-link" id="reportes-tab" data-bs-toggle="tab" data-bs-target="#reportes" type="button"
+                role="tab">Reportes</button>
         </li>
-    </ul>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="autoevaluaciones-tab" href="{% url 'realizar_autoevaluacion' %}"
+                role="tab">Autoevaluaciones</a>
+        </li>
+        </ul>
 
     <div class="tab-content mt-3" id="adminTabsContent">
         <!-- Resumen -->

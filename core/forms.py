@@ -1,5 +1,5 @@
 from django import forms
-from .models import Cliente  # Asegúrate de tener este modelo
+from .models import AutoevaluacionTrabajador, Cliente, Indicador, RespuestaAutoevaluacionTrabajador  # Asegúrate de tener este modelo
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -83,3 +83,54 @@ class EvaluacionTrabajadorForm(forms.Form):
                     max_value=getattr(indicador, 'puntaje_maximo', 10),  # ejemplo, que tengas ese atributo
                     required=True,
                 )
+
+class AutoevaluacionTrabajadorForm(forms.ModelForm):
+    class Meta:
+        model = AutoevaluacionTrabajador
+        fields = ['trabajador']
+
+class RespuestaAutoevaluacionForm(forms.ModelForm):
+    class Meta:
+        model = RespuestaAutoevaluacionTrabajador
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Indicador no editable
+        self.fields['indicador'].disabled = True
+        # Puntaje visible pero no editable
+        self.fields['puntaje'].disabled = True
+
+    def clean(self):
+        cleaned_data = super().clean()
+        valoracion = cleaned_data.get('valoracion')
+
+        # Mapea la valoración al puntaje correcto
+        puntaje_map = {
+            'Malo': 1,
+            'Regular': 3,
+            'Bueno': 5,
+        }
+        cleaned_data['puntaje'] = puntaje_map.get(valoracion, 0)
+        return cleaned_data
+    
+class AutoevaluacionForm(forms.Form):
+    def __init__(self, indicadores, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for indicador in indicadores:
+            self.fields[f'indicador_{indicador.id}'] = forms.ChoiceField(
+                choices=[
+                    ('Malo', 'Malo'),
+                    ('Regular', 'Regular'),
+                    ('Bueno', 'Bueno'),
+                ],
+                widget=forms.RadioSelect,
+                label=indicador.nombre
+            )
+
+RespuestaAutoevaluacionFormSet = forms.modelformset_factory(
+    RespuestaAutoevaluacionTrabajador,
+    form=RespuestaAutoevaluacionForm,  # tu form personalizado para cada respuesta
+    extra=0,  # o el número de formularios extra que quieras
+    can_delete=False,
+)

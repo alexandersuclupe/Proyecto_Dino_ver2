@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Cliente, Producto, Venta, DetalleVenta, Usuario, EvaluacionTrabajador, Criterio, Indicador, RespuestaEvaluacionTrabajador, EvaluacionVenta, RespuestaEvaluacionVenta, Puesto
+from jsonschema import ValidationError
+from .models import AutoevaluacionTrabajador, Cliente, Producto, RespuestaAutoevaluacionTrabajador, Venta, DetalleVenta, Usuario, EvaluacionTrabajador, Criterio, Indicador, RespuestaEvaluacionTrabajador, EvaluacionVenta, RespuestaEvaluacionVenta, Puesto
 from django import forms
 from django.contrib.auth.admin import UserAdmin
 
@@ -184,8 +185,41 @@ class RespuestaEvaluacionTrabajadorInline(admin.TabularInline):
     mostrar_indicador.short_description = 'Indicador'
 
 
-@admin.register(EvaluacionTrabajador)
-class EvaluacionTrabajadorAdmin(admin.ModelAdmin):
-    list_display = ('id', 'evaluador', 'evaluado', 'estado', 'fecha_creacion')
-    list_filter = ('estado',)
-    inlines = [RespuestaEvaluacionTrabajadorInline]
+class RespuestaAutoevaluacionForm(forms.ModelForm):
+    class Meta:
+        model = RespuestaAutoevaluacionTrabajador
+        fields = '__all__'
+
+    def clean_puntaje(self):
+        puntaje = self.cleaned_data.get('puntaje')
+        if puntaje is not None and puntaje > 5:
+            raise ValidationError('El puntaje máximo permitido es 5.')
+        return puntaje
+
+    # También se puede limitar el widget para facilitar
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'puntaje' in self.fields:
+            self.fields['puntaje'].widget.attrs.update({'max': 5, 'min': 0})
+
+# Ahora el inline que usa este formulario
+class RespuestaAutoevaluacionInline(admin.TabularInline):
+    model = RespuestaAutoevaluacionTrabajador
+    form = RespuestaAutoevaluacionForm
+    extra = 0
+    can_delete = False
+
+# Modificación del admin de AutoevaluacionTrabajador
+@admin.register(AutoevaluacionTrabajador)
+class AutoevaluacionTrabajadorAdmin(admin.ModelAdmin):
+    list_display = ('trabajador', 'fecha', 'mostrar_indicadores', 'total_puntaje')
+    inlines = [RespuestaAutoevaluacionInline]
+
+    def mostrar_indicadores(self, obj):
+        indicadores = [f"{resp.indicador.nombre} ({resp.valoracion})" for resp in obj.respuestas.all()]
+        return ", ".join(indicadores) if indicadores else "Sin indicadores"
+    mostrar_indicadores.short_description = 'Indicadores'
+
+    def total_puntaje(self, obj):
+        return sum(resp.puntaje for resp in obj.respuestas.all())
+    total_puntaje.short_description = 'Puntaje Total'
