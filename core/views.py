@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import AutoevaluacionTrabajador, RespuestaAutoevaluacionTrabajador, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador
+from .models import AutoevaluacionTrabajador, RespuestaAutoevaluacionTrabajador, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador,PeriodoEvaluacion
 from .forms import AutoevaluacionForm, AutoevaluacionTrabajadorForm, RespuestaAutoevaluacionFormSet, RespuestaForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
@@ -9,6 +9,9 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User
+from django.utils import timezone
+from django.db.models import Q 
+
 
 
 
@@ -465,23 +468,17 @@ def realizar_autoevaluacion(request):
 
     if request.method == 'POST':
         form = AutoevaluacionForm(indicadores, request.POST)
-        if form.is_valid(): 
+        if form.is_valid():
             evaluacion = AutoevaluacionTrabajador.objects.create(
                 trabajador=request.user
             )
-            puntaje_map = {
-                'Malo': 1,
-                'Regular': 3,
-                'Bueno': 5,
-            }
             for key, valoracion in form.cleaned_data.items():
                 indicador_id = int(key.replace('indicador_', ''))
-                valoracion_normalizada = valoracion.strip().capitalize()
-                puntaje = puntaje_map.get(valoracion_normalizada, 0)
+                puntaje = int(valoracion)
                 RespuestaAutoevaluacionTrabajador.objects.create(
                     autoevaluacion=evaluacion,
                     indicador_id=indicador_id,
-                    valoracion=valoracion_normalizada,
+                    valoracion=valoracion,  # Guarda '1', '2', ..., '5'
                     puntaje=puntaje
                 )
             return redirect('evaluacion_exitosa')
@@ -536,3 +533,55 @@ def autoevaluacion_view(request):
         'indicadores': indicadores,
     })
 
+#####################################
+
+@login_required
+def lista_evaluaciones(request):
+    usuario = request.user
+
+    # 1) cargar periodo
+    periodo = PeriodoEvaluacion.objects.filter(puesto=usuario.puesto).first()
+    periodo_activo = periodo.esta_activo() if periodo else False
+
+    # 2) filtrar según rol del evaluador
+    puesto_nombre = usuario.puesto.nombre.lower() if usuario.puesto else ''
+
+    if puesto_nombre == 'supervisor':
+        # Supervisor ve a todos los trabajadores excepto supervisores/gerentes (y a sí mismo)
+        empleados = Usuario.objects.filter(rol='trabajador')\
+            .exclude(
+                Q(puesto__nombre__iexact='supervisor') |
+                Q(puesto__nombre__iexact='gerente') |
+                Q(pk=usuario.pk)
+            )
+
+    elif puesto_nombre == 'gerente':
+        # Gerente ve SOLO a los Supervisores
+        empleados = Usuario.objects.filter(
+            rol='trabajador',
+            puesto__nombre__iexact='supervisor'
+        )
+
+    else:
+        # Resto de usuarios no evalúan
+        empleados = Usuario.objects.none()
+
+    # 3) pre-crear evaluaciones pendientes
+    for emp in empleados:
+        EvaluacionTrabajador.objects.get_or_create(
+            evaluador=usuario,
+            evaluado=emp,
+            defaults={
+                'fecha_activacion': periodo.fecha_inicio if periodo else timezone.now(),
+                'estado': 'PENDIENTE'
+            }
+        )
+
+    # 4) recuperarlas para el template
+    evaluaciones = EvaluacionTrabajador.objects.filter(evaluador=usuario)
+
+    return render(request, 'lista_evaluaciones.html', {
+        'evaluaciones':   evaluaciones,
+        'periodo':        periodo,
+        'periodo_activo': periodo_activo,
+    })

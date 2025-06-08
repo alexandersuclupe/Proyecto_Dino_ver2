@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Evaluaciones de Empleados</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Tailwind CDN para estilos rápidos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100">
+
+    <div class="max-w-7xl mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-8">Evaluaciones de Empleados</h1>
+
+        <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {% for ev in evaluaciones %}
+            <div class="bg-white rounded-2xl shadow p-6 flex flex-col">
+                <!-- Icono según el puesto -->
+                <div class="text-4xl mb-4">
+                    {% if ev.evaluado.puesto.nombre == "Vendedor" %}
+                    🛍️
+                    {% elif ev.evaluado.puesto.nombre == "Cajero" %}
+                    💰
+                    {% elif ev.evaluado.puesto.nombre == "Almacén" %}
+                    📦
+                    {% else %}
+                    👤
+                    {% endif %}
+                </div>
+
+                <h2 class="text-xl font-semibold mb-1">{{ ev.evaluado.get_full_name }}</h2>
+                <p class="text-gray-500 mb-6">{{ ev.evaluado.puesto.nombre }}</p>
+
+                {% if periodo_activo %}
+                <a href="{% url 'editar_evaluacion_trabajador' ev.id %}">
+                    <button class="mt-auto bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl w-full">
+                        {% if ev.estado == 'PENDIENTE' %}Evaluar{% else %}Continuar{% endif %}
+                    </button>
+                </a>
+                {% else %}
+                <button disabled class="mt-auto bg-gray-300 text-gray-500 py-2 rounded-xl w-full cursor-not-allowed">
+                    Fuera de fechas
+                </button>
+                {% endif %}
+
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</body>
+
+</html>

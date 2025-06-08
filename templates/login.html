@@ -9,6 +9,14 @@
 </head>
 <body>
   <div class="encuesta-container">
+    <div style="text-align: left; margin-bottom: 20px;">
+  <a href="{% url 'index' %}">
+    <button style="background-color: #09be18; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+      ← Volver al inicio
+    </button>
+  </a>
+</div>
+
     <h2>Iniciar sesión</h2>
     {% if messages %}
       {% for message in messages %}

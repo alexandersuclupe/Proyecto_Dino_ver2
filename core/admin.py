@@ -1,6 +1,6 @@
 from django.contrib import admin
 from jsonschema import ValidationError
-from .models import AutoevaluacionTrabajador, Cliente, Producto, RespuestaAutoevaluacionTrabajador, Venta, DetalleVenta, Usuario, EvaluacionTrabajador, Criterio, Indicador, RespuestaEvaluacionTrabajador, EvaluacionVenta, RespuestaEvaluacionVenta, Puesto
+from .models import AutoevaluacionTrabajador, Cliente, Producto, RespuestaAutoevaluacionTrabajador, Venta, DetalleVenta, Usuario, EvaluacionTrabajador, Criterio, Indicador, RespuestaEvaluacionTrabajador, EvaluacionVenta, RespuestaEvaluacionVenta, Puesto ,PeriodoEvaluacion ,ResultadoTotal ,PesoEvaluacion
 from django import forms
 from django.contrib.auth.admin import UserAdmin
 
@@ -185,6 +185,64 @@ class RespuestaEvaluacionTrabajadorInline(admin.TabularInline):
     mostrar_indicador.short_description = 'Indicador'
 
 
+@admin.register(EvaluacionTrabajador)
+class EvaluacionTrabajadorAdmin(admin.ModelAdmin):
+    change_form_template = "admin/change_form.html"
+    #inlines = [RespuestaEvaluacionTrabajadorInline]
+
+    list_display = (
+        'id',
+        'evaluador',
+        'evaluado',
+        'estado',
+        'fecha_creacion',
+        'fecha_activacion',
+    )
+    list_filter = (
+        'estado',
+        'fecha_activacion',
+    )
+    search_fields = (
+        'evaluador__username',
+        'evaluado__username',
+        'observaciones',
+    )
+    date_hierarchy = 'fecha_creacion'
+    ordering = ('-fecha_creacion',)
+
+    readonly_fields = (
+        'id',
+        'fecha_creacion',
+    )
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        ev = self.get_object(request, object_id)
+
+        # 1) Agrupar respuestas por criterio
+        agrupado = {}
+        for r in ev.respuestas.select_related('indicador__criterio').all():
+            crit = r.indicador.criterio
+            agrupado.setdefault(crit, []).append(r)
+
+        # 2) Construir una lista de tuplas (criterio, total, lista_de_respuestas)
+        grouped_list = [
+            (crit, sum(r.puntaje for r in respuestas), respuestas)
+            for crit, respuestas in agrupado.items()
+        ]
+
+        # 3) Calcular el gran total
+        grand_total = sum(total for (_, total, _) in grouped_list)
+
+        extra_context = extra_context or {}
+        extra_context.update({
+            'grouped_list': grouped_list,
+            'grand_total':  grand_total,
+        })
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
+
+###########################################################
+
+
 class RespuestaAutoevaluacionForm(forms.ModelForm):
     class Meta:
         model = RespuestaAutoevaluacionTrabajador
@@ -203,6 +261,8 @@ class RespuestaAutoevaluacionForm(forms.ModelForm):
             self.fields['puntaje'].widget.attrs.update({'max': 5, 'min': 0})
 
 # Ahora el inline que usa este formulario
+
+
 class RespuestaAutoevaluacionInline(admin.TabularInline):
     model = RespuestaAutoevaluacionTrabajador
     form = RespuestaAutoevaluacionForm
@@ -210,16 +270,54 @@ class RespuestaAutoevaluacionInline(admin.TabularInline):
     can_delete = False
 
 # Modificación del admin de AutoevaluacionTrabajador
+
+
 @admin.register(AutoevaluacionTrabajador)
 class AutoevaluacionTrabajadorAdmin(admin.ModelAdmin):
-    list_display = ('trabajador', 'fecha', 'mostrar_indicadores', 'total_puntaje')
+    list_display = ('trabajador', 'fecha',
+                    'mostrar_indicadores', 'total_puntaje')
     inlines = [RespuestaAutoevaluacionInline]
 
     def mostrar_indicadores(self, obj):
-        indicadores = [f"{resp.indicador.nombre} ({resp.valoracion})" for resp in obj.respuestas.all()]
+        indicadores = [
+            f"{resp.indicador.nombre} ({resp.valoracion})" for resp in obj.respuestas.all()]
         return ", ".join(indicadores) if indicadores else "Sin indicadores"
     mostrar_indicadores.short_description = 'Indicadores'
 
     def total_puntaje(self, obj):
         return sum(resp.puntaje for resp in obj.respuestas.all())
     total_puntaje.short_description = 'Puntaje Total'
+
+
+#################################### PEESOS #######################################33
+
+# ——— Admin para PeriodoEvaluacion ———
+@admin.register(PeriodoEvaluacion)
+class PeriodoEvaluacionAdmin(admin.ModelAdmin):
+    list_display  = ('puesto', 'fecha_inicio', 'fecha_fin', 'esta_activo')
+    list_filter   = ('puesto',)
+    search_fields = ('puesto__nombre',)
+    ordering      = ('puesto', 'fecha_inicio')
+    date_hierarchy = 'fecha_inicio'
+
+    def esta_activo(self, obj):
+        return obj.esta_activo()
+    esta_activo.boolean = True
+    esta_activo.short_description = 'Activo ahora?'
+
+# ——— Admin para PesoEvaluacion ———
+@admin.register(PesoEvaluacion)
+class PesoEvaluacionAdmin(admin.ModelAdmin):
+    list_display  = ('puesto', 'get_tipo_display', 'peso')
+    list_filter   = ('puesto', 'tipo')
+    search_fields = ('puesto__nombre',)
+    ordering      = ('puesto', 'tipo')
+
+# ——— Admin para ResultadoTotal ———
+@admin.register(ResultadoTotal)
+class ResultadoTotalAdmin(admin.ModelAdmin):
+    list_display  = ('trabajador', 'fecha_ejecucion', 'puntaje_total')
+    list_filter   = ('fecha_ejecucion', 'trabajador__puesto')
+    search_fields = ('trabajador__username',)
+    date_hierarchy = 'fecha_ejecucion'
+    ordering      = ('-fecha_ejecucion',)

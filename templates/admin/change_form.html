@@ -1,0 +1,38 @@
+{% extends "admin/change_form.html" %}
+
+{% block content %}
+  {{ block.super }}
+
+  <div class="module">
+    <h2>Respuestas por criterio</h2>
+
+    {% for criterio, total, respuestas in grouped_list %}
+      <h3 style="background:#f5f5f5; padding:8px;">
+        {{ criterio.nombre }}
+        <span style="float:right;">Total: {{ total }}</span>
+      </h3>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Indicador</th>
+            <th style="text-align:right;">Puntaje</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for resp in respuestas %}
+            <tr>
+              <td>{{ resp.indicador.nombre }}</td>
+              <td style="text-align:right;">{{ resp.puntaje }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endfor %}
+
+    {# Bloque de totales al final #}
+    <div style="margin-top:1.5em; border-top:1px solid #ddd; padding-top:1em;">
+      <p><strong>Total de criterios:</strong> {{ grouped_list|length }}</p>
+      <p><strong>Puntaje total:</strong> {{ grand_total }}</p>
+    </div>
+  </div>
+{% endblock %}

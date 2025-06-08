@@ -5,6 +5,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
+
 class Rol(models.Model):
     nombre = models.CharField(max_length=50, unique=True)
     descripcion = models.TextField(blank=True, null=True)
@@ -253,6 +254,14 @@ class EvaluacionVenta(models.Model):
 
     def __str__(self):
         return f"Evaluación venta #{self.venta.id} - Cliente: {self.cliente} - Trabajador: {self.trabajador}"
+    
+    ###
+    
+    @property
+    def puntaje_total(self):
+        agg = self.respuestas.aggregate(total=Sum('puntaje'))['total']
+        return agg or 0
+
 
 
 class RespuestaEvaluacionVenta(models.Model):
@@ -296,6 +305,31 @@ class EvaluacionTrabajador(models.Model):
             raise ValueError(
                 "No se puede crear una evaluación antes de la fecha de activación.")
         super().save(*args, **kwargs)
+    ##### agrege 
+    @property
+    def puntaje_por_criterio(self):
+        """
+        Agrupa las respuestas por criterio y suma sus puntajes.
+        Devuelve un dict { criterio_nombre: suma_puntaje }.
+        """
+        qs = self.respuestas.values(
+            'indicador__criterio__nombre'
+        ).annotate(total=Sum('puntaje'))
+        return {
+            entry['indicador__criterio__nombre']: entry['total'] or 0
+            for entry in qs
+        }
+
+    # @property
+    # def puntaje_total(self):
+    #     """
+    #     Suma todos los subtotales por criterio para devolver un único puntaje.
+    #     """
+    #     return sum(self.puntaje_por_criterio.values())
+    @property
+    def puntaje_total(self):
+        agg = self.respuestas.aggregate(total=Sum('puntaje'))['total']
+        return agg or 0
 
 
 class RespuestaEvaluacionTrabajador(models.Model):
@@ -307,6 +341,8 @@ class RespuestaEvaluacionTrabajador(models.Model):
     def __str__(self):
         return f"{self.indicador.nombre}: {self.puntaje}"
 
+
+############## AUTOEVALUACION #######################
 class AutoevaluacionTrabajador(models.Model):
     trabajador = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -318,9 +354,33 @@ class AutoevaluacionTrabajador(models.Model):
     def __str__(self):
         return f"{self.trabajador} - {self.fecha}"
 
+    # @property
+    # def total_puntaje(self):
+    #     return sum(res.puntaje for res in self.respuestas.all())
     @property
-    def total_puntaje(self):
-        return sum(res.puntaje for res in self.respuestas.all())
+    def puntaje_por_criterio(self):
+        """
+        Igual que en EvaluacionTrabajador: agrupa las respuestas de la autoevaluación
+        por criterio y suma sus puntajes.
+        """
+        qs = self.respuestas.values(
+            'indicador__criterio__nombre'
+        ).annotate(total=Sum('puntaje'))
+        return {
+            entry['indicador__criterio__nombre']: entry['total'] or 0
+            for entry in qs
+        }
+
+    # @property
+    # def puntaje_total(self):
+    #     """
+    #     Suma de los subtotales por criterio para esta autoevaluación.
+    #     """
+    #     return sum(self.puntaje_por_criterio.values())
+    @property
+    def puntaje_total(self):
+        return sum(r.puntaje for r in self.respuestas.all())
+
 
 class RespuestaAutoevaluacionTrabajador(models.Model):
     autoevaluacion = models.ForeignKey(
@@ -331,37 +391,33 @@ class RespuestaAutoevaluacionTrabajador(models.Model):
     indicador = models.ForeignKey('Indicador', on_delete=models.PROTECT)
 
     VALORACION_CHOICES = [
-        ('Malo', 'Malo'),
-        ('Regular', 'Regular'),
-        ('Bueno', 'Bueno'),
+        (1, 'Muy malo'),
+        (2, 'Malo'),
+        (3, 'Regular'),
+        (4, 'Bueno'),
+        (5, 'Excelente'),
     ]
 
-    valoracion = models.CharField(
-        max_length=10,
+    valoracion = models.PositiveSmallIntegerField(
         choices=VALORACION_CHOICES,
-        default='Regular'
+        default=3
     )
 
-    puntaje = models.PositiveIntegerField(default=0)  # Se calcula automáticamente, pero se mantiene visible
+    puntaje = models.PositiveIntegerField(
+        default=0)  # Se calcula automáticamente
 
     def save(self, *args, **kwargs):
-        # Establece el puntaje automáticamente según la valoración
-        if self.valoracion == 'Malo':
-            self.puntaje = 1
-        elif self.valoracion == 'Regular':
-            self.puntaje = 3
-        elif self.valoracion == 'Bueno':
-            self.puntaje = 5
-        else:
-            self.puntaje = 0  # Valor por defecto si no coincide
-
+        # Asignamos el puntaje igual a la valoración numérica
+        self.puntaje = self.valoracion
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.indicador.nombre} - {self.valoracion} ({self.puntaje})"
+        return f"{self.indicador.nombre} - {self.get_valoracion_display()} ({self.puntaje})"
+
 
 class PuntajeIndicador(models.Model):
-    indicador = models.ForeignKey('Indicador', on_delete=models.CASCADE, related_name="puntajes")
+    indicador = models.ForeignKey(
+        'Indicador', on_delete=models.CASCADE, related_name="puntajes")
     malo = models.FloatField(default=0.0)
     regular = models.FloatField(default=0.0)
     bueno = models.FloatField(default=0.0)
@@ -371,3 +427,67 @@ class PuntajeIndicador(models.Model):
 
     def __str__(self):
         return f'Puntajes para {self.indicador.nombre}'
+
+
+#######################################################################
+
+# al inicio de tu models.py, junto a Puesto:
+class TipoEvaluacion(models.TextChoices):
+    AUTOEVALUACION = 'AUTO', 'Autoevaluación'
+    EVALUACION_TRABAJADOR = 'TRAB', 'Evaluación Trabajador'
+    EVALUACION_CLIENTE = 'CLIE', 'Evaluación Cliente'
+
+
+class PesoEvaluacion(models.Model):
+    puesto = models.ForeignKey(
+        Puesto,
+        on_delete=models.CASCADE,
+        related_name='pesos_evaluacion'
+    )
+    tipo = models.CharField(max_length=4, choices=TipoEvaluacion.choices)
+    peso = models.FloatField(
+        help_text="Decimal entre 0 y 1, e.g. 0.5"
+    )
+
+    class Meta:
+        unique_together = ('puesto', 'tipo')
+        verbose_name = 'Peso de Evaluación'
+
+    def __str__(self):
+        return f"{self.puesto.nombre} – {self.get_tipo_display()}: {self.peso}"
+
+
+class PeriodoEvaluacion(models.Model):
+    puesto = models.ForeignKey(
+        Puesto,
+        on_delete=models.CASCADE,
+        related_name='periodos_evaluacion'
+    )
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+
+    class Meta:
+        unique_together = ('puesto', 'fecha_inicio', 'fecha_fin')
+
+    def esta_activo(self):
+        hoy = timezone.now().date()
+        return self.fecha_inicio <= hoy <= self.fecha_fin
+
+    def __str__(self):
+        return f"{self.puesto.nombre}: {self.fecha_inicio} → {self.fecha_fin}"
+
+
+class ResultadoTotal(models.Model):
+    trabajador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='resultados_totales'
+    )
+    fecha_ejecucion = models.DateField(auto_now_add=True)
+    puntaje_total = models.FloatField(default=0.0)
+
+    class Meta:
+        ordering = ['-fecha_ejecucion']
+
+    def __str__(self):
+        return f"{self.trabajador.username} @ {self.fecha_ejecucion}: {self.puntaje_total:.2f}"

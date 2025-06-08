@@ -61,5 +61,9 @@ urlpatterns = [
     # path('evaluaciones/', views.mostrar_evaluaciones, name='mostrar_evaluaciones'),
     # path('evaluaciones/', views.evaluar_trabajadores, name='evaluar_trabajadores'),
     # path('guardar_evaluacion/<int:evaluacion_id>/', views.guardar_evaluacion, name='guardar_evaluacion'),
-
+      path(
+        'evaluaciones/',
+        views.lista_evaluaciones,
+        name='lista_evaluaciones'
+    ),
 ]
