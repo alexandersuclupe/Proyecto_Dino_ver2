@@ -119,15 +119,11 @@ class AutoevaluacionForm(forms.Form):
         super().__init__(*args, **kwargs)
         for indicador in indicadores:
             self.fields[f'indicador_{indicador.id}'] = forms.ChoiceField(
-                choices=[
-                    ('Malo', 'Malo'),
-                    ('Regular', 'Regular'),
-                    ('Bueno', 'Bueno'),
-                ],
+                choices=[(str(i), str(i)) for i in range(1, 6)],
                 widget=forms.RadioSelect,
                 label=indicador.nombre
             )
-
+            
 RespuestaAutoevaluacionFormSet = forms.modelformset_factory(
     RespuestaAutoevaluacionTrabajador,
     form=RespuestaAutoevaluacionForm,  # tu form personalizado para cada respuesta

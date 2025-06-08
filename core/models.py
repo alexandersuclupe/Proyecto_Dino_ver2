@@ -331,35 +331,28 @@ class RespuestaAutoevaluacionTrabajador(models.Model):
     indicador = models.ForeignKey('Indicador', on_delete=models.PROTECT)
 
     VALORACION_CHOICES = [
-        ('Malo', 'Malo'),
-        ('Regular', 'Regular'),
-        ('Bueno', 'Bueno'),
+        (1, 'Muy malo'),
+        (2, 'Malo'),
+        (3, 'Regular'),
+        (4, 'Bueno'),
+        (5, 'Excelente'),
     ]
 
-    valoracion = models.CharField(
-        max_length=10,
+    valoracion = models.PositiveSmallIntegerField(
         choices=VALORACION_CHOICES,
-        default='Regular'
+        default=3
     )
 
-    puntaje = models.PositiveIntegerField(default=0)  # Se calcula automáticamente, pero se mantiene visible
+    puntaje = models.PositiveIntegerField(default=0)  # Se calcula automáticamente
 
     def save(self, *args, **kwargs):
-        # Establece el puntaje automáticamente según la valoración
-        if self.valoracion == 'Malo':
-            self.puntaje = 1
-        elif self.valoracion == 'Regular':
-            self.puntaje = 3
-        elif self.valoracion == 'Bueno':
-            self.puntaje = 5
-        else:
-            self.puntaje = 0  # Valor por defecto si no coincide
-
+        # Asignamos el puntaje igual a la valoración numérica
+        self.puntaje = self.valoracion
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.indicador.nombre} - {self.valoracion} ({self.puntaje})"
-
+        return f"{self.indicador.nombre} - {self.get_valoracion_display()} ({self.puntaje})"
+    
 class PuntajeIndicador(models.Model):
     indicador = models.ForeignKey('Indicador', on_delete=models.CASCADE, related_name="puntajes")
     malo = models.FloatField(default=0.0)

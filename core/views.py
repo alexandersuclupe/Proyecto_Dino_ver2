@@ -465,23 +465,17 @@ def realizar_autoevaluacion(request):
 
     if request.method == 'POST':
         form = AutoevaluacionForm(indicadores, request.POST)
-        if form.is_valid(): 
+        if form.is_valid():
             evaluacion = AutoevaluacionTrabajador.objects.create(
                 trabajador=request.user
             )
-            puntaje_map = {
-                'Malo': 1,
-                'Regular': 3,
-                'Bueno': 5,
-            }
             for key, valoracion in form.cleaned_data.items():
                 indicador_id = int(key.replace('indicador_', ''))
-                valoracion_normalizada = valoracion.strip().capitalize()
-                puntaje = puntaje_map.get(valoracion_normalizada, 0)
+                puntaje = int(valoracion)
                 RespuestaAutoevaluacionTrabajador.objects.create(
                     autoevaluacion=evaluacion,
                     indicador_id=indicador_id,
-                    valoracion=valoracion_normalizada,
+                    valoracion=valoracion,  # Guarda '1', '2', ..., '5'
                     puntaje=puntaje
                 )
             return redirect('evaluacion_exitosa')
