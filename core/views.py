@@ -1,9 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import AutoevaluacionTrabajador, RespuestaAutoevaluacionTrabajador, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador, PeriodoEvaluacion
-<<<<<<< HEAD
 from .forms import EmpleadoForm
-=======
->>>>>>> f4d62ce64831ee08618a1b6c747858738b634675
 from .forms import AutoevaluacionForm, AutoevaluacionTrabajadorForm, RespuestaAutoevaluacionFormSet, RespuestaForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
@@ -483,7 +480,6 @@ def lista_evaluaciones(request):
         'periodo':        periodo,
         'periodo_activo': periodo_activo,
     })
-<<<<<<< HEAD
 
 from django.db.models import Q
 
@@ -537,5 +533,3 @@ def eliminar_empleado(request, id):
     empleado = get_object_or_404(Usuario, id=id)
     empleado.delete()
     return redirect('gestion_empleados')
-=======
->>>>>>> f4d62ce64831ee08618a1b6c747858738b634675
