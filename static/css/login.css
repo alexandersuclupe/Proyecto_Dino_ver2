@@ -93,3 +93,20 @@ p.error-message {
 .register-link a:hover {
   text-decoration: underline;
 }
+
+.login-description {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* misma fuente que body */
+  font-size: 15px;             /* tamaño legible pero discreto */
+  color: #444;                 /* gris medio */
+  text-align: center;
+  max-width: 360px;            /* para no estirarse demasiado */
+  margin: 12px auto 15px auto; /* margen superior, margen inferior */
+  line-height: 1.4;
+}
+
+.login-divider {
+  border: none;
+  height: 1px;
+  background-color: #ccc;
+  margin-bottom: 20px;
+}

@@ -2,17 +2,252 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <title>Dino — Panel de administración</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons para íconos -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Dino — Panel de administración</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-color: #36965e;
+      --primary-light: #e7f0e7;
+      --card-bg: #fff;
+      --card-shadow: rgba(0, 0, 0, 0.1);
+    }
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+    }
+    /* Navbar */
+    nav.navbar {
+      background-color: #fff;
+      border-bottom: 1px solid #ddd;
+      height: 60px;
+    }
+    /* Layout principal */
+    .main-container {
+      display: flex;
+      height: calc(100vh - 60px);
+    }
+    /* Sidebar */
+    aside.sidebar {
+      width: 260px;
+      background: linear-gradient(180deg, #2a6f47, #4dab6f);
+      color: #eef6ed;
+      display: flex;
+      flex-direction: column;
+      padding-top: 2rem;
+      box-shadow: 2px 0 10px rgb(0 0 0 / 0.15);
+      user-select: none;
+    }
+    aside.sidebar h3 {
+      font-weight: 800;
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 2.5rem;
+      letter-spacing: 2px;
+      color: #d0e8c6;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.25);
+    }
+    aside.sidebar nav {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      padding: 0 1rem;
+    }
+    aside.sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 14px 20px;
+      color: #d0e8c6;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      border-radius: 12px;
+      transition: background-color 0.25s ease, box-shadow 0.3s ease, color 0.3s ease;
+      box-shadow: inset 0 0 0 2px transparent;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    aside.sidebar nav a i {
+      font-size: 1.4rem;
+      color: #a8d5a3;
+      transition: color 0.3s ease;
+      flex-shrink: 0;
+    }
+    aside.sidebar nav a:hover {
+      background-color: rgba(255 255 255 / 0.15);
+      color: #f0f9f4;
+      box-shadow: inset 0 0 8px 2px rgba(255 255 255 / 0.2);
+    }
+    aside.sidebar nav a:hover i {
+      color: #e6f0e8;
+      transform: scale(1.2);
+    }
+    aside.sidebar nav a.active {
+      background-color: #c0e1ac;
+      color: #1e3a10;
+      box-shadow: 0 0 10px 1px #b3d395;
+    }
+    aside.sidebar nav a.active i {
+      color: #2f4a10;
+      transform: scale(1.3);
+    }
+    aside.sidebar nav a span {
+      white-space: nowrap;
+    }
+
+    /* Contenido principal */
+    main.content {
+      flex-grow: 1;
+      padding: 2rem 3rem;
+      overflow-y: auto;
+    }
+    main.content h2 {
+      color: var(--primary-color);
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      border-bottom: 3px solid var(--primary-color);
+      padding-bottom: 0.3rem;
+      user-select: none;
+    }
+
+    /* Info sesión */
+    #resumen .info-session {
+      background: var(--primary-light);
+      border-left: 6px solid var(--primary-color);
+      padding: 1.5rem 2rem;
+      margin-bottom: 2.5rem;
+      border-radius: 8px;
+      color: #1f4229;
+      user-select: none;
+    }
+    #resumen .info-session h5 {
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.2rem;
+    }
+
+    /* Estadísticas resumen */
+    .row.g-4.mb-5 > .col-md-3 {
+      display: flex;
+    }
+    #resumen .stat-card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px var(--card-shadow);
+      padding: 2rem 1.5rem;
+      width: 100%;
+      transition: transform 0.2s ease-in-out;
+      cursor: default;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+    }
+    #resumen .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    #resumen .stat-card .icon-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+    #resumen .stat-card .icon-label i {
+      font-size: 1.7rem;
+      color: #3a8f5e;
+    }
+    #resumen .stat-card h3 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 0;
+    }
+    #resumen .stat-card small.text-muted {
+      font-size: 0.9rem;
+      color: #666;
+      user-select: none;
+    }
+
+    /* Top empleados */
+    #resumen .card.shadow-sm {
+      border-radius: 12px;
+      box-shadow: 0 4px 12px var(--card-shadow);
+      user-select: none;
+    }
+    #resumen .card h5 {
+      color: var(--primary-color);
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    #resumen .card p.text-muted {
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    #resumen .list-group-item {
+      border: none;
+      padding-left: 0;
+      padding-right: 0;
+      user-select: none;
+    }
+    #resumen .list-group-item.d-flex {
+      align-items: center;
+      gap: 1rem;
+      padding: 0.5rem 0;
+    }
+    #resumen .list-group-item .rounded-circle {
+      width: 44px;
+      height: 44px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      line-height: 44px;
+      text-align: center;
+      background-color: #3a8f5e;
+      color: white;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    #resumen .list-group-item strong {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    #resumen .list-group-item small.text-muted {
+      font-size: 0.85rem;
+      color: #666;
+    }
+    #resumen .list-group-item .badge {
+      font-size: 0.9rem;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 0.4em 0.8em;
+      border-radius: 20px;
+      user-select: none;
+    }
+    #resumen .list-group-item.text-center.text-muted {
+      user-select: none;
+      font-style: italic;
+      color: #999;
+    }
+  </style>
 </head>
 <body>
-<!-- Navbar -->
-  <nav class="navbar navbar-light bg-white border-bottom shadow-sm px-4 py-3">
-    <a class="navbar-brand d-flex align-items-center fw-bold fs-5">
-      <img src="{% static 'img/logo_dino.png' %}" alt="Logo" width="150" class="me-2">
+  <!-- Navbar -->
+  <nav class="navbar d-flex justify-content-between px-4 align-items-center shadow-sm">
+    <a class="navbar-brand d-flex align-items-center fw-bold fs-5 text-dark">
+      <img src="{% static 'img/logo_dino.png' %}" alt="Logo" width="150" class="me-2" />
       | Panel de administración
     </a>
     <div class="d-flex align-items-center gap-4">
@@ -28,420 +263,125 @@
     </div>
   </nav>
 
-<div class="container">
-    <h2>Panel de Administración</h2>
-    <p>Gestiona empleados, evaluaciones y reportes del sistema</p>
+  <div class="main-container">
+    <!-- Sidebar menú -->
+    <aside class="sidebar">
+      <h3>Menú</h3>
+      <nav>
+        <a href="#" id="menu-resumen" class="active" title="Resumen">
+          <i class="bi bi-speedometer2"></i>
+          <span>Resumen</span>
+        </a>
+        <a href="{% url 'realizar_autoevaluacion' %}" id="menu-autoevaluacion" title="Autoevaluación">
+          <i class="bi bi-pencil-square"></i>
+          <span>Autoevaluación</span>
+        </a>
+      </nav>
+    </aside>
 
-    <ul class="nav nav-tabs" id="adminTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="resumen-tab" data-bs-toggle="tab" data-bs-target="#resumen" type="button" role="tab">Resumen</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="empleados-tab" data-bs-toggle="tab" data-bs-target="#empleados" type="button" role="tab">Empleados</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="evaluaciones-tab" data-bs-toggle="tab" data-bs-target="#evaluaciones" type="button" role="tab">Evaluaciones</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="incidencias-tab" data-bs-toggle="tab" data-bs-target="#incidencias" type="button" role="tab">Incidencias</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="roles-tab" data-bs-toggle="tab" data-bs-target="#roles" type="button" role="tab">Roles</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="reportes-tab" data-bs-toggle="tab" data-bs-target="#reportes" type="button"
-                role="tab">Reportes</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <a class="nav-link" id="autoevaluaciones-tab" href="{% url 'realizar_autoevaluacion' %}"
-                role="tab">Autoevaluaciones</a>
-        </li>
-        </ul>
+    <!-- Contenido -->
+    <main class="content" id="content">
+      <!-- Contenido de Resumen -->
+      <section id="resumen">
+        <h2>Resumen del personal</h2>
 
-    <div class="tab-content mt-3" id="adminTabsContent">
-        <!-- Resumen -->
-        <div class="tab-pane fade show active" id="resumen" role="tabpanel" aria-labelledby="resumen-tab">
-            <h4>Resumen</h4>
+        <!-- Info sesión -->
+        <div class="info-session">
+          <h5><i class="bi bi-person-check-fill"></i> Información de la sesión actual</h5>
+          <p>Usuario: <strong>{{ request.user.get_full_name|default:request.user.username }}</strong></p>
+          <p>Hora actual: <strong>{{ current_time }}</strong></p>
+          <p>Fecha actual: <strong>{{ current_date }}</strong></p>
+        </div>
 
-            <!-- Info sesión -->
-            <div class="card mb-4" style="background-color: #e7f1ff; border-radius: 8px; padding: 20px;">
-              <h5><i class="bi bi-shield-lock"></i> Información de Sesión</h5>
-              <div class="row mt-3">
-                <div class="col-md-4">
-                  <strong>Usuario</strong><br>
-                  {{ request.user.get_full_name|default:request.user.username }}
-                </div>
-                <div class="col-md-4">
-                  <strong>Email</strong><br>
-                  {{ request.user.email }}
-                </div>
-                <div class="col-md-4">
-                  <strong>Rol</strong><br>
-                  <span class="badge bg-primary" style="font-size: 0.9em;">
-                    {% if request.user.rol %}
-                      {{ request.user.rol }}
-                    {% else %}
-                      Sin rol
-                    {% endif %}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Estadísticas resumen -->
-            <div class="row g-3 mb-4">
+        <!-- Estadísticas resumen -->
+        <div id="resumen" class="container-fluid">
+            <div class="row g-4 mb-5">
                 <div class="col-md-3">
-                    <div class="card shadow-sm p-3 h-100">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span>Total Empleados</span>
-                            <i class="bi bi-people-fill fs-4"></i>
-                        </div>
-                        <h3>{{ total_empleados }}</h3>
-                        <small class="text-muted">+2 este mes</small>
+                <div class="stat-card text-center" onclick="/* TODO: Agregar redirección a evaluaciones pendientes */" style="cursor: pointer;">
+                    <div class="icon-label">
+                    <i class="bi bi-hourglass-split"></i>
+                    <span>Evaluaciones pendientes</span>
                     </div>
+                </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card shadow-sm p-3 h-100">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span>Evaluaciones Completadas</span>
-                            <i class="bi bi-file-text fs-4"></i>
-                        </div>
-                        <h3>{{ total_evaluaciones_cliente }}</h3>
-                        <small class="text-muted">Este mes</small>
+                <div class="stat-card text-center" onclick="/* TODO: Agregar redirección a gestión de empleados */" style="cursor: pointer;">
+                    <div class="icon-label">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Gestión de empleados</span>
                     </div>
+                </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card shadow-sm p-3 h-100">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span>Incidencias Activas</span>
-                            <i class="bi bi-exclamation-triangle-fill fs-4"></i>
-                        </div>
-                        <h3>{{ incidencias_activas }}</h3>
-                        <small class="text-muted">-2 vs semana anterior</small>
+                <div class="stat-card text-center" onclick="/* TODO: Agregar redirección a historial completo */" style="cursor: pointer;">
+                    <div class="icon-label">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Historial completo</span>
                     </div>
+                </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card shadow-sm p-3 h-100">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span>Promedio General</span>
-                            <i class="bi bi-graph-up fs-4"></i>
-                        </div>
-                        <h3>{{ promedio_general }}</h3>
-                        <small class="text-muted">+3.2% vs mes anterior</small>
+                <div class="stat-card text-center" onclick="/* TODO: Agregar redirección a análisis de resultados */" style="cursor: pointer;">
+                    <div class="icon-label">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    <span>Análisis de resultados</span>
                     </div>
                 </div>
+                </div>
             </div>
+        </div>
 
-            <!-- Top empleados e incidencias recientes -->
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card shadow-sm p-3 mb-4">
-                        <h5>Top Empleados</h5>
-                        <p class="text-muted">Mejores calificaciones este mes</p>
-                        <ul class="list-group list-group-flush">
-                            {% for empleado in top_empleados %}
-                            <li class="list-group-item d-flex align-items-center">
-                                <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-3" style="width: 40px; height: 40px;">
-                                    {{ empleado.iniciales }}
-                                </div>
-                                <div class="flex-grow-1">
-                                    <strong>{{ empleado.nombre }}</strong><br>
-                                    <small class="text-muted">{{ empleado.area }}</small>
-                                </div>
-                                <span class="badge bg-dark rounded-pill">{{ empleado.puntaje }} pts</span>
-                            </li>
-                            {% endfor %}
-                        </ul>
+        <!-- Top empleados destacados -->
+        <div class="row">
+          <div class="col-md-12 col-lg-6 mb-4">
+            <div class="card shadow-sm p-4">
+              <h5>Top 5 empleados más evaluados</h5>
+              <p class="text-muted">Usuarios con mayor número de evaluaciones</p>
+              <ul class="list-group list-group-flush">
+                {% if top_evaluados %}
+                  {% for user in top_evaluados %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="rounded-circle">{{ forloop.counter }}</span>
+                    <div>
+                      <strong>{{ user.get_full_name|default:user.username }}</strong><br />
+                      <small class="text-muted">{{ user.username }}</small>
                     </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="card shadow-sm p-3 mb-4">
-                        <h5>Incidencias Recientes</h5>
-                        <p class="text-muted">Últimos reportes de clientes</p>
-                        <ul class="list-group list-group-flush">
-                            {% for incidencia in incidencias_recientes %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>{{ incidencia.empleado }}</strong><br>
-                                    <small>{{ incidencia.descripcion }}</small>
-                                </div>
-                                <span class="badge 
-                                    {% if incidencia.estado == 'Abierta' %}bg-danger
-                                    {% elif incidencia.estado == 'En proceso' %}bg-warning text-dark
-                                    {% elif incidencia.estado == 'Cerrada' %}bg-secondary
-                                    {% else %}bg-light text-dark
-                                    {% endif %}
-                                    rounded-pill">
-                                    {{ incidencia.estado }}
-                                </span>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Empleados -->
-<div class="tab-pane fade" id="empleados" role="tabpanel" aria-labelledby="empleados-tab">
-    <h4>Gestión de Empleados</h4>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <button class="btn btn-dark d-flex align-items-center gap-2">
-            <i class="bi bi-person-plus-fill"></i> Agregar Empleado
-        </button>
-        <div class="d-flex gap-2">
-            <input type="search" class="form-control" placeholder="Buscar empleados..." style="min-width: 250px;">
-            <button class="btn btn-outline-secondary d-flex align-items-center gap-1">
-                <i class="bi bi-funnel-fill"></i> Filtros
-            </button>
-        </div>
-    </div>
-
-    <ul class="list-group">
-        {% for emp in empleados %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center" style="width: 40px; height: 40px; font-weight: 700;">
-                    {{ emp.username|slice:":2"|upper }}
-                </div>
-                <div>
-                    <div style="font-weight: 600;">{{ emp.get_full_name|default:emp.username }}</div>
-                    <small class="text-muted">{{ emp.rol|title }}</small>
-                </div>
-            </div>
-            <div class="d-flex align-items-center gap-4">
-                <div class="text-center">
-                    <div style="font-weight: 600;">85</div>
-                    <small class="text-muted">Promedio</small>
-                </div>
-                <div class="text-center">
-                    <div style="font-weight: 600;">12</div>
-                    <small class="text-muted">Evaluaciones</small>
-                </div>
-                <div class="text-center">
-                    <div style="font-weight: 600; color: red;">1</div>
-                    <small class="text-muted">Incidencias</small>
-                </div>
-                <button class="btn btn-outline-primary btn-sm">Ver Detalles</button>
-            </div>
-        </li>
-        {% empty %}
-        <li class="list-group-item text-center text-muted">No hay empleados disponibles.</li>
-        {% endfor %}
-    </ul>
-</div>
-
-
-<div class="tab-pane fade" id="evaluaciones" role="tabpanel" aria-labelledby="evaluaciones-tab">
-    <h4>Gestión de Evaluaciones</h4>
-    <div class="d-flex gap-3 flex-wrap justify-content-between">
-        <!-- Evaluación Cliente -->
-        <div class="card shadow-sm p-3 d-flex flex-column justify-content-between" style="flex: 1 1 32%; max-width: 33%;">
-            <div>
-                <h5 class="card-title fw-bold">Evaluación Cliente</h5>
-                <p class="card-subtitle mb-3 text-muted">Evaluaciones de clientes a empleados</p>
-                <ul class="list-unstyled mb-4">
-                    <li><strong>Completadas:</strong> {{ evaluacion_cliente.completadas }}</li>
-                    <li><strong>Pendientes:</strong> {{ evaluacion_cliente.pendientes }}</li>
-                    <li><strong>Promedio:</strong> {{ evaluacion_cliente.promedio }}</li>
-                </ul>
-            </div>
-            <button class="btn btn-dark w-100 mt-auto">Configurar</button>
-        </div>
-
-        <!-- Evaluación Gerencial -->
-        <div class="card shadow-sm p-3 d-flex flex-column justify-content-between" style="flex: 1 1 32%; max-width: 33%;">
-            <div>
-                <h5 class="card-title fw-bold">Evaluación Gerencial</h5>
-                <p class="card-subtitle mb-3 text-muted">Evaluaciones de gerentes a empleados</p>
-                <ul class="list-unstyled mb-4">
-                    <li><strong>Completadas:</strong> {{ evaluacion_gerencial.completadas }}</li>
-                    <li><strong>Pendientes:</strong> {{ evaluacion_gerencial.pendientes }}</li>
-                    <li><strong>Promedio:</strong> {{ evaluacion_gerencial.promedio }}</li>
-                </ul>
-            </div>
-            <button class="btn btn-dark w-100 mt-auto">Configurar</button>
-        </div>
-
-        <!-- Autoevaluación -->
-        <div class="card shadow-sm p-3 d-flex flex-column justify-content-between" style="flex: 1 1 32%; max-width: 33%;">
-            <div>
-                <h5 class="card-title fw-bold">Autoevaluación</h5>
-                <p class="card-subtitle mb-3 text-muted">Autoevaluaciones de empleados</p>
-                <ul class="list-unstyled mb-4">
-                    <li><strong>Completadas:</strong> {{ autoevaluacion.completadas }}</li>
-                    <li><strong>Pendientes:</strong> {{ autoevaluacion.pendientes }}</li>
-                    <li><strong>Promedio:</strong> {{ autoevaluacion.promedio }}</li>
-                </ul>
-            </div>
-            <button class="btn btn-dark w-100 mt-auto">Configurar</button>
-        </div>
-    </div>
-</div>
-
-        <!-- Incidencias -->
-<div class="tab-pane fade" id="incidencias" role="tabpanel" aria-labelledby="incidencias-tab">
-    <h4>Gestión de Incidencias</h4>
-    <div class="list-group">
-        {% for incidencia in incidencias %}
-        <div class="list-group-item d-flex justify-content-between align-items-center rounded mb-3 shadow-sm">
-            <div class="d-flex flex-column">
-                <strong>{{ incidencia.titulo }}</strong>
-                <span>
-                    Empleado: {{ incidencia.empleado.get_full_name|default:incidencia.empleado.username }}
-                </span>
-            </div>
-            <div class="d-flex flex-column text-center">
-                <span>Cliente: {{ incidencia.cliente.nombre }}</span>
-                <span>Fecha: {{ incidencia.fecha|date:"Y-m-d" }}</span>
-            </div>
-            <div class="d-flex align-items-center gap-3">
-                {% if incidencia.estado == 'abierta' %}
-                <span class="badge rounded-pill bg-danger">Abierta</span>
-                {% elif incidencia.estado == 'en_proceso' %}
-                <span class="badge rounded-pill bg-warning text-dark">En proceso</span>
-                {% elif incidencia.estado == 'cerrada' %}
-                <span class="badge rounded-pill bg-dark">Cerrada</span>
+                    <span class="badge">{{ user.evaluations_count }}</span>
+                  </li>
+                  {% endfor %}
                 {% else %}
-                <span class="badge rounded-pill bg-secondary">Desconocido</span>
+                  <li class="list-group-item text-center text-muted">No hay datos disponibles</li>
                 {% endif %}
-                <a href="{% url 'ver_incidencia' incidencia.id %}" class="btn btn-outline-secondary btn-sm">Ver</a>
-                <a href="{% url 'gestionar_incidencia' incidencia.id %}" class="btn btn-primary btn-sm">Gestionar</a>
+              </ul>
             </div>
+          </div>
+
+          <div class="col-md-12 col-lg-6 mb-4">
+            <div class="card shadow-sm p-4">
+              <h5>Top 5 empleados menos evaluados</h5>
+              <p class="text-muted">Usuarios con menos evaluaciones</p>
+              <ul class="list-group list-group-flush">
+                {% if top_menos_evaluados %}
+                  {% for user in top_menos_evaluados %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="rounded-circle">{{ forloop.counter }}</span>
+                    <div>
+                      <strong>{{ user.get_full_name|default:user.username }}</strong><br />
+                      <small class="text-muted">{{ user.username }}</small>
+                    </div>
+                    <span class="badge">{{ user.evaluations_count }}</span>
+                  </li>
+                  {% endfor %}
+                {% else %}
+                  <li class="list-group-item text-center text-muted">No hay datos disponibles</li>
+                {% endif %}
+              </ul>
+            </div>
+          </div>
         </div>
-        {% empty %}
-        <p>No hay incidencias registradas.</p>
-        {% endfor %}
-    </div>
-</div>
-
-
-        <!-- Roles -->
-<div class="tab-pane fade" id="roles" role="tabpanel" aria-labelledby="roles-tab">
-    <h4>Gestión de Roles</h4>
-    <button class="btn btn-dark mb-3 float-end"><i class="bi bi-shield-lock"></i> Crear Rol</button>
-    <div class="list-group">
-        {% for rol in roles %}
-        <div class="list-group-item d-flex justify-content-between align-items-center mb-2 rounded shadow-sm">
-            <div>
-                <h5 class="mb-1">{{ rol.nombre }} 
-                    <span class="badge rounded-pill bg-{{ rol.nombre|lower }}">
-                        {{ rol.nombre }}
-                    </span>
-                </h5>
-                <small class="text-muted">Acceso
-                    {% if rol.nombre == "Administrador" %}
-                        completo al sistema
-                    {% elif rol.nombre == "Gerente" %}
-                        de equipos y evaluaciones
-                    {% else %}
-                        básico para empleados
-                    {% endif %}
-                </small>
-                <div class="mt-2">
-                    <span class="badge bg-secondary me-1"><i class="bi bi-people"></i> {{ rol.usuarios.count }} Usuarios</span>
-                    {% if rol.nombre == "Administrador" %}
-                        <span class="badge bg-primary me-1">Gestión completa</span>
-                        <span class="badge bg-primary me-1">Reportes</span>
-                        <span class="badge bg-primary me-1">Usuarios</span>
-                    {% elif rol.nombre == "Gerente" %}
-                        <span class="badge bg-info me-1">Evaluaciones</span>
-                        <span class="badge bg-info me-1">Reportes</span>
-                        <span class="badge bg-info me-1">Incidencias</span>
-                    {% else %}
-                        <span class="badge bg-success me-1">Ver evaluaciones</span>
-                        <span class="badge bg-success me-1">Autoevaluación</span>
-                    {% endif %}
-                </div>
-            </div>
-            <div>
-                <small class="text-muted d-block mb-1">Usuarios</small>
-                <a href="#" class="btn btn-outline-primary btn-sm">Editar</a>
-            </div>
-        </div>
-        {% empty %}
-        <p>No hay roles registrados.</p>
-        {% endfor %}
-    </div>
-</div>
-
-
-        <!-- Reportes -->
-<div class="tab-pane fade" id="reportes" role="tabpanel" aria-labelledby="reportes-tab">
-  <h4>Reportes y Análisis</h4>
-  <p class="text-muted mb-4">Genera reportes detallados del desempeño</p>
-
-  <div class="d-flex justify-content-end mb-3">
-    <button class="btn btn-dark">
-      <i class="bi bi-download me-2"></i> Exportar Todo
-    </button>
+      </section>
+    </main>
   </div>
 
-  <div class="card p-3 mb-3">
-    <h5>Configurar Reportes</h5>
-    <form class="row g-3">
-      <div class="col-md-3">
-        <label for="fecha_desde" class="form-label">Fecha Desde</label>
-        <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" placeholder="Seleccionar">
-      </div>
-      <div class="col-md-3">
-        <label for="fecha_hasta" class="form-label">Fecha Hasta</label>
-        <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" placeholder="Seleccionar">
-      </div>
-      <div class="col-md-3">
-        <label for="departamento" class="form-label">Departamento</label>
-        <select id="departamento" name="departamento" class="form-select">
-          <option selected>Seleccionar</option>
-          <!-- Opciones de departamentos -->
-        </select>
-      </div>
-      <div class="col-md-3">
-        <label for="formato" class="form-label">Formato</label>
-        <select id="formato" name="formato" class="form-select">
-          <option selected>PDF</option>
-          <option>Excel</option>
-          <option>CSV</option>
-        </select>
-      </div>
-    </form>
-  </div>
-
-  <div class="row g-3">
-    <div class="col-md-6">
-      <div class="card p-3">
-        <h6><i class="bi bi-graph-up"></i> Reporte de Desempeño</h6>
-        <p class="text-muted">Análisis completo por empleado</p>
-        <button class="btn btn-dark w-100">Generar Reporte</button>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="card p-3">
-        <h6><i class="bi bi-file-text"></i> Reporte de Incidencias</h6>
-        <p class="text-muted">Análisis de problemas reportados</p>
-        <button class="btn btn-dark w-100">Generar Reporte</button>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="card p-3">
-        <h6><i class="bi bi-people"></i> Reporte Departamental</h6>
-        <p class="text-muted">Análisis por departamento</p>
-        <button class="btn btn-dark w-100">Generar Reporte</button>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="card p-3">
-        <h6><i class="bi bi-calendar-event"></i> Reporte Mensual</h6>
-        <p class="text-muted">Resumen ejecutivo mensual</p>
-        <button class="btn btn-dark w-100">Generar Reporte</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

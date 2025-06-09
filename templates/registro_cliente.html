@@ -7,6 +7,7 @@
   <title>Dino — Registrarse</title>
   <link rel="stylesheet" href="{% static 'css/registro_cliente.css' %}">
   <style>
+    /* Solo estilos muy puntuales que quieras inline (error messages y borde rojo) */
     .error-message {
       color: red;
       font-size: 0.9em;
@@ -15,20 +16,27 @@
     input.error {
       border: 1px solid red;
     }
+    .login-description {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+      font-size: 15px !important;
+      color: #444 !important;
+      text-align: center !important;
+      max-width: 360px !important;
+      margin: 12px auto 15px auto !important;
+      line-height: 1.4 !important;
+    }
   </style>
 </head>
 <body>
-  
   <div class="encuesta-container">
-    <div style="text-align: left; margin-bottom: 20px;">
-  <a href="{% url 'index' %}">
-    <button style="background-color: #09be18; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-      ← Volver al inicio
-    </button>
-  </a>
-</div>
-    
     <h2>Registrarse</h2>
+
+    <p class="login-description">
+      Completa todos los campos correctamente para lograr un registro exitoso. Si no logras hacerlo adecuadamente, se te informará qué está erróneo.
+    </p>
+
+    <hr class="login-divider">
+
     <form method="post" novalidate>
       {% csrf_token %}
       
@@ -71,7 +79,9 @@
       <button type="submit">Registrarse</button>
     </form>
 
-    <p class="register-link" style="color: #000000">¿Ya tienes cuenta? <a style="color: #36965e" href="{% url 'login' %}">Inicia sesión aquí</a></p>
+    <p class="register-link" style="color: #000000">
+      ¿Ya tienes cuenta? <a style="color: #36965e" href="{% url 'login' %}">Inicia sesión aquí</a> o retorna <a style="color: #36965e" href="{% url 'index' %}">aquí</a>
+    </p>
   </div>
 
   <script>
@@ -88,7 +98,6 @@
         if (errorDiv) errorDiv.innerText = '';
       }
 
-      // Nombres y Apellidos: solo letras
       ['id_first_name', 'id_last_name'].forEach(id => {
         const input = document.getElementById(id);
         input.addEventListener('input', () => {
@@ -101,7 +110,6 @@
         });
       });
 
-      // Username: letras, números, guion bajo; verificar repetidos
       const username = document.getElementById('id_username');
       const existingUsernames = ['kar_12', 'admin', 'juan2024']; // Simulación
 
@@ -116,7 +124,6 @@
         }
       });
 
-      // Email: debe contener @ y dominio
       const email = document.getElementById('id_email');
       email.addEventListener('blur', () => {
         const val = email.value.trim();
@@ -127,7 +134,6 @@
         }
       });
 
-      // Password: mínimo 8, una mayúscula, una minúscula, un número
       const password = document.getElementById('id_password');
       password.addEventListener('blur', () => {
         const val = password.value;
@@ -138,7 +144,6 @@
         }
       });
 
-      // Dirección: mínimo 5 caracteres
       const direccion = document.getElementById('id_direccion');
       direccion.addEventListener('blur', () => {
         const val = direccion.value.trim();
@@ -149,10 +154,9 @@
         }
       });
 
-      // Teléfono: solo números, 9 dígitos
       const telefono = document.getElementById('id_telefono');
       telefono.addEventListener('input', () => {
-        telefono.value = telefono.value.replace(/\D/g, ''); // eliminar letras
+        telefono.value = telefono.value.replace(/\D/g, '');
       });
       telefono.addEventListener('blur', () => {
         if (!/^\d{9}$/.test(telefono.value)) {
