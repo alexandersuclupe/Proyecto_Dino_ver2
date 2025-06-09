@@ -5,24 +5,22 @@
   <meta charset="UTF-8">
   <title>Dino — Iniciar sesión</title>
   <link rel="stylesheet" href="{% static 'css/login.css' %}">
-  <link rel="stylesheet" href="{% static 'css/index.css' %}">
 </head>
 <body>
   <div class="encuesta-container">
-    <div style="text-align: left; margin-bottom: 20px;">
-  <a href="{% url 'index' %}">
-    <button style="background-color: #09be18; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-      ← Volver al inicio
-    </button>
-  </a>
-</div>
-
     <h2>Iniciar sesión</h2>
+    <p class="login-description">
+      Accede a tu cuenta para visualizar las evaluaciones pendientes y ya realizadas, este será tu panel de cliente personal.
+    </p>
+
+    <hr class="login-divider">
+
     {% if messages %}
       {% for message in messages %}
         <p style="color: red;">{{ message }}</p>
       {% endfor %}
     {% endif %}
+
     <form method="post">
       {% csrf_token %}
       <label for="username">Usuario o correo electrónico:</label>
@@ -34,11 +32,10 @@
       <button type="submit">Ingresar</button>
     </form>
 
-    <!-- ENLACE A REGISTRO -->
     <p style="margin-top: 18px; text-align: center; color: #000000;">
       ¿Aún no tienes cuenta?
       <a style="color: #36965e" href="{% url 'registro_cliente' %}">Regístrate aquí</a>
-    </p>
+    o retorna <a style="color: #36965e" href="{% url 'index' %}">aquí</a></p>
   </div>
 </body>
 </html>

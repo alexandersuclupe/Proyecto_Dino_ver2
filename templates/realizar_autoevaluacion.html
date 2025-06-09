@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Autoevaluación - {{ trabajador.get_full_name|default:trabajador.username }}</title>
+  <title>Dino — Autoevaluación</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -22,7 +22,7 @@
 
     h1 {
       text-align: center;
-      color: #4a148c;
+      color: #36965e;
       margin-bottom: 30px;
     }
 
@@ -39,7 +39,7 @@
     }
 
     th {
-      background-color: #9c27b0;
+      background-color: #36965e;
       color: white;
     }
 
@@ -51,7 +51,7 @@
 
     input[type="radio"] {
       transform: scale(1.3);
-      accent-color: #8e24aa;
+      accent-color: #36965e;
       cursor: pointer;
     }
 
@@ -65,7 +65,7 @@
     }
 
     .progress-bar {
-      background-color: #6a1b9a;
+      background-color: #36965e;
       height: 100%;
       width: 0%;
       transition: width 0.3s ease;
@@ -76,7 +76,7 @@
       top: 2px;
       font-size: 13px;
       font-weight: bold;
-      color: #4a148c;
+      color: black;
     }
 
     .progress-left-text {
@@ -99,20 +99,20 @@
       border: none;
       border-radius: 6px;
       color: white;
-      background-color: #7b1fa2;
+      background-color: #36965e;
       text-decoration: none;
       cursor: pointer;
       transition: background 0.2s ease;
     }
 
     button:hover, .back-button:hover {
-      background-color: #4a148c;
+      background-color: #29794a;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Autoevaluación - {{ trabajador.get_full_name|default:trabajador.username }}</h1>
+    <h1>Autoevaluación de {{ trabajador.get_full_name|default:trabajador.username }}</h1>
 
     <!-- Barra de progreso -->
     <div class="progress-container">
@@ -150,8 +150,8 @@
       </table>
 
       <div class="button-group">
-        <button type="submit">Enviar</button>
         <a href="{% url 'admin_dashboard' %}" class="back-button">Volver</a>
+        <button type="submit">Enviar</button>
       </div>
     </form>
   </div>
