@@ -66,4 +66,10 @@ urlpatterns = [
         views.lista_evaluaciones,
         name='lista_evaluaciones'
     ),
+
+    path('empleados/', views.gestion_empleados, name='gestion_empleados'),
+    path('empleados/agregar/', views.agregar_empleado, name='agregar_empleado'),
+    path('empleados/editar/<int:id>/', views.editar_empleado, name='editar_empleado'),
+    path('empleados/eliminar/<int:id>/', views.eliminar_empleado, name='eliminar_empleado'),
+
 ]

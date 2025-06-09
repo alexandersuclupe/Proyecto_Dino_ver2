@@ -2,6 +2,8 @@ from django import forms
 from .models import AutoevaluacionTrabajador, Cliente, Indicador, RespuestaAutoevaluacionTrabajador  # Asegúrate de tener este modelo
 from django.contrib.auth import get_user_model
 User = get_user_model()
+from core.models import Usuario
+
 
 
 
@@ -130,3 +132,16 @@ RespuestaAutoevaluacionFormSet = forms.modelformset_factory(
     extra=0,  # o el número de formularios extra que quieras
     can_delete=False,
 )
+
+class EmpleadoForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = ['username', 'first_name', 'last_name', 'email', 'puesto', 'rol_admin']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de usuario'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombres'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellidos'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo'}),
+            'puesto': forms.Select(attrs={'class': 'form-select'}),
+            'rol_admin': forms.Select(attrs={'class': 'form-select'}),
+        }

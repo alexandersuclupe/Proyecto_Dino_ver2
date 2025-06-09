@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import AutoevaluacionTrabajador, RespuestaAutoevaluacionTrabajador, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador,PeriodoEvaluacion
+from .models import AutoevaluacionTrabajador, RespuestaAutoevaluacionTrabajador, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador, PeriodoEvaluacion
+from .forms import EmpleadoForm
 from .forms import AutoevaluacionForm, AutoevaluacionTrabajadorForm, RespuestaAutoevaluacionFormSet, RespuestaForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
@@ -585,3 +586,56 @@ def lista_evaluaciones(request):
         'periodo':        periodo,
         'periodo_activo': periodo_activo,
     })
+
+from django.db.models import Q
+
+@login_required
+def gestion_empleados(request):
+    query = request.GET.get('q', '')
+    lista_empleados = Usuario.objects.filter(rol='trabajador')
+
+    if query:
+        lista_empleados = lista_empleados.filter(
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query)
+        )
+
+    paginator = Paginator(lista_empleados, 6)  # 6 empleados por página
+    page = request.GET.get('page')
+    empleados = paginator.get_page(page)
+
+    return render(request, 'empleados/lista.html', {
+        'empleados': empleados,
+        'query': query
+    })
+
+
+@login_required
+def agregar_empleado(request):
+    if request.method == 'POST':
+        form = EmpleadoForm(request.POST)
+        if form.is_valid():
+            empleado = form.save(commit=False)
+            empleado.rol = 'trabajador'
+            empleado.set_password('123456')  # Contraseña por defecto (puedes mejorar esto)
+            empleado.save()
+            return redirect('gestion_empleados')
+    else:
+        form = EmpleadoForm()
+    return render(request, 'empleados/formulario.html', {'form': form, 'titulo': 'Agregar nuevo empleado'})
+
+@login_required
+def editar_empleado(request, id):
+    empleado = get_object_or_404(Usuario, id=id)
+    form = EmpleadoForm(request.POST or None, instance=empleado)
+    if form.is_valid():
+        form.save()
+        return redirect('gestion_empleados')
+    return render(request, 'empleados/formulario.html', {'form': form, 'titulo': 'Editar Empleado'})
+
+@login_required
+def eliminar_empleado(request, id):
+    empleado = get_object_or_404(Usuario, id=id)
+    empleado.delete()
+    return redirect('gestion_empleados')

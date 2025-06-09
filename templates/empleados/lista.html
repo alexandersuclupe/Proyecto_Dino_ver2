@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de empleados</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/empleados.css' %}">
+</head>
+<body>
+    <div class="container mt-4">
+
+        <!-- 🔙 Volver -->
+        <div class="mb-3">
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-success">
+                <i class="bi bi-arrow-left-circle-fill"></i> Volver al panel principal
+            </a>
+        </div>
+
+        <!-- Título + agregar -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="titulo"><i class="bi bi-people-fill icono-verde"></i> Lista de empleados</h2>
+            <a href="{% url 'agregar_empleado' %}" class="btn btn-success">
+                <i class="bi bi-person-plus-fill"></i> Agregar empleado
+            </a>
+        </div>
+
+        <!-- 🔍 Buscador -->
+        <form method="get" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Buscar por nombre o usuario..." value="{{ query }}">
+                <button class="btn btn-success" type="submit">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+            </div>
+        </form>
+
+        <!-- 👥 Lista -->
+        <div class="row">
+            {% for empleado in empleados %}
+            <div class="col-md-4">
+                <div class="card p-3 mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-person-circle icono-verde"></i>
+                            {{ empleado.first_name }} {{ empleado.last_name }}
+                        </h5>
+                        <p class="card-text mb-1">
+                            <strong>Usuario:</strong> {{ empleado.username }}
+                        </p>
+                        <p class="card-text">
+                            <strong>Puesto:</strong>
+                            <span class="badge-puesto">{{ empleado.puesto.nombre|default:"No asignado" }}</span>
+                        </p>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'editar_empleado' empleado.id %}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-pencil-fill"></i> Editar
+                            </a>
+                            <a href="{% url 'eliminar_empleado' empleado.id %}" class="btn btn-sm btn-danger"
+                               onclick="return confirm('¿Eliminar a {{ empleado.username }}?')">
+                                <i class="bi bi-trash3-fill"></i> Eliminar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <p class="text-muted">No hay empleados registrados.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 🔢 Paginación -->
+        {% if empleados.has_other_pages %}
+        <nav aria-label="Paginación empleados">
+            <ul class="pagination justify-content-center">
+                {% if empleados.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&page={{ empleados.previous_page_number }}">&laquo;</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                {% endif %}
+
+                {% for num in empleados.paginator.page_range %}
+                <li class="page-item {% if empleados.number == num %}active{% endif %}">
+                    <a class="page-link" href="?q={{ query }}&page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+
+                {% if empleados.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&page={{ empleados.next_page_number }}">&raquo;</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</body>
+</html>
