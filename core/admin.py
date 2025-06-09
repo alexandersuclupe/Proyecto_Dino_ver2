@@ -1,10 +1,10 @@
 from django.contrib import admin
 from jsonschema import ValidationError
-from .models import AutoevaluacionTrabajador, Cliente, Producto, RespuestaAutoevaluacionTrabajador, Venta, DetalleVenta, Usuario, EvaluacionTrabajador, Criterio, Indicador, RespuestaEvaluacionTrabajador, EvaluacionVenta, RespuestaEvaluacionVenta, Puesto ,PeriodoEvaluacion ,ResultadoTotal ,PesoEvaluacion
+from .models import AutoevaluacionTrabajador, Cliente, Producto, RespuestaAutoevaluacionTrabajador, Venta, DetalleVenta, Usuario, EvaluacionTrabajador, Criterio, Indicador, RespuestaEvaluacionTrabajador, EvaluacionVenta, RespuestaEvaluacionVenta, Puesto ,PeriodoEvaluacion ,ResultadoTotal ,PesoEvaluacion , Trabajador
 from django import forms
 from django.contrib.auth.admin import UserAdmin
 
-
+###################################### CLIENTE #########################################
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
     list_display = ('nombre_completo', 'correo', 'direccion', 'telefono')
@@ -52,47 +52,38 @@ class DetalleVentaInline(admin.TabularInline):
 
 @admin.register(Venta)
 class VentaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'cliente', 'usuario', 'fecha', 'tiempo_inicio',
-                    'tiempo_fin', 'duracion_venta_formateada', 'get_total')
+    list_display = (
+        'id', 'cliente', 'usuario', 'fecha',
+        'tiempo_inicio', 'tiempo_fin',
+        'duracion_venta_formateada', 'get_total'
+    )
     readonly_fields = ('tiempo_inicio', 'tiempo_fin')
-    # exclude = ('usuario',)  # oculta el campo 'usuario' del formulario
     inlines = [DetalleVentaInline]
     list_per_page = 5
 
-    # Filtrar solo usuarios con rol 'trabajador' y puesto 'vendedor'
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # Solo para el campo 'usuario', mostramos Trabajadores con puesto 'vendedor'
         if db_field.name == "usuario":
-            # Filtramos por rol 'trabajador' y puesto 'vendedor'
-            kwargs["queryset"] = Usuario.objects.filter(
-                rol='trabajador', puesto__nombre='vendedor')
+            kwargs["queryset"] = Trabajador.objects.filter(
+                puesto__nombre__iexact='vendedor'
+            )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def save_model(self, request, obj, form, change):
-        # Primero, guardamos la venta
-        obj.save()  # Guarda la venta en la base de datos
-
-        if not change:  # Si es una nueva venta, crea la evaluación
-            # Crear la EvaluacionVenta automáticamente con los datos
+        super().save_model(request, obj, form, change)
+        if not change:
+            # Creamos EvaluacionVenta al guardar por primera vez
             evaluacion = EvaluacionVenta.objects.create(
-                venta=obj,  # Relacionar con la venta que ya ha sido guardada
-                trabajador=obj.usuario,  # El trabajador que atendió la venta
-                cliente=obj.cliente,  # El cliente de la venta
+                venta=obj,
+                trabajador=obj.usuario,   # obj.usuario es un Trabajador
+                cliente=obj.cliente,
             )
-
-            # Crear los indicadores y puntajes si están definidos
-            indicadores = Indicador.objects.all()  # O lo que necesites para los indicadores
-            for indicador in indicadores:
-                # Aquí agregas los puntajes por cada indicador
-                puntaje = 0  # Aquí puede ir la lógica para calcular el puntaje
+            for indicador in Indicador.objects.all():
                 RespuestaEvaluacionVenta.objects.create(
                     evaluacion=evaluacion,
                     indicador=indicador,
-                    puntaje=puntaje
+                    puntaje=0
                 )
-
-        else:
-            # Si la venta ya existe, solo guardamos los cambios sin crear la evaluación
-            super().save_model(request, obj, form, change)
 
     def get_total(self, obj):
         return obj.total
@@ -100,10 +91,10 @@ class VentaAdmin(admin.ModelAdmin):
 
     def duracion_venta_formateada(self, obj):
         if obj.duracion_venta:
-            total_seconds = int(obj.duracion_venta.total_seconds())
-            minutos, segundos = divmod(total_seconds, 60)
-            horas, minutos = divmod(minutos, 60)
-            return f'{horas}h {minutos}m {segundos}s'
+            total_sec = int(obj.duracion_venta.total_seconds())
+            mins, secs = divmod(total_sec, 60)
+            hrs, mins = divmod(mins, 60)
+            return f'{hrs}h {mins}m {secs}s'
         return "No calculado"
     duracion_venta_formateada.short_description = 'Duración de la venta'
 
@@ -117,6 +108,18 @@ class UsuarioAdmin(UserAdmin):
         (None, {'fields': ('rol', 'puesto')}),  # Reemplaza 'area' por 'puesto'
     )
 
+################################ TRABAJADOR #################################
+@admin.register(Trabajador)
+class TrabajadorAdmin(admin.ModelAdmin):
+    list_display = ('nombre_completo', 'puesto', 'telefono', 'direccion')
+
+    def nombre_completo(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}"
+    nombre_completo.short_description = 'Nombre completo'
+
+    def correo(self, obj):
+        return obj.user.email
+    list_per_page = 5
 
 # @admin.register(Evaluacion)
 # class EvaluacionAdmin(admin.ModelAdmin):

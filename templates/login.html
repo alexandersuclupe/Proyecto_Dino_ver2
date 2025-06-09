@@ -3,39 +3,130 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Dino — Iniciar sesión</title>
+  <title>
+    {% if is_colaborador %}Acceso Colaborador{% else %}Dino — Iniciar sesión{% endif %}
+  </title>
   <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <link rel="stylesheet" href="{% static 'css/index.css' %}">
+  <style>
+    /* Para el “ojito” dentro del input de contraseña */
+    .input-group { position: relative; }
+    .toggle-password {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      opacity: 0.6;
+    }
+    .toggle-password:hover { opacity: 1; }
+  </style>
 </head>
 <body>
   <div class="encuesta-container">
-    <h2>Iniciar sesión</h2>
-    <p class="login-description">
-      Accede a tu cuenta para visualizar las evaluaciones pendientes y ya realizadas, este será tu panel de cliente personal.
-    </p>
+    <!-- Botón “Volver al inicio” -->
+    <div style="text-align: left; margin-bottom: 20px;">
+      <a href="{% url 'index' %}">
+        <button style="
+          background-color: #09be18;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          cursor: pointer;
+        ">
+          ← Volver al inicio
+        </button>
+      </a>
+    </div>
 
-    <hr class="login-divider">
+    <!-- Cabecera del formulario -->
+    <div class="card-header" style="text-align: center; margin-bottom: 1.5rem;">
+      {% if is_colaborador %}
+        <img src="{% static 'img/icono-colaborador.svg' %}" alt="Colaborador" width="48">
+        <h2>Acceso Colaborador</h2>
+        <p style="color: #666; margin-top: .25rem;">Sistema de evaluación de desempeño</p>
+      {% else %}
+        <h2>Iniciar sesión</h2>
+      {% endif %}
+    </div>
 
+    <!-- Mensajes de error -->
     {% if messages %}
       {% for message in messages %}
-        <p style="color: red;">{{ message }}</p>
+        <p style="color: red; text-align: center;">{{ message }}</p>
       {% endfor %}
     {% endif %}
 
+    <!-- Formulario -->
     <form method="post">
       {% csrf_token %}
+
       <label for="username">Usuario o correo electrónico:</label>
-      <input type="text" name="username" required placeholder="Ingresa tu usuario o correo electrónico">
+      <input
+        type="text"
+        id="username"
+        name="username"
+        required
+        placeholder="Ingresa tu usuario o correo electrónico"
+        style="width: 100%; padding: .5rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 4px;"
+      >
 
       <label for="password">Contraseña:</label>
-      <input type="password" name="password" required placeholder="Ingresa tu contraseña">
+      <div class="input-group" style="margin-bottom: 1.5rem;">
+        <input
+          type="password"
+          id="password-field"
+          name="password"
+          required
+          placeholder="Ingresa tu contraseña"
+          style="width: 100%; padding: .5rem; border: 1px solid #ccc; border-radius: 4px;"
+        >
+        <span class="toggle-password" toggle="#password-field">
+          <!-- Icono de ojo -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+               fill="currentColor" viewBox="0 0 16 16">
+            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"/>
+            <path d="M8 5.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/>
+          </svg>
+        </span>
+      </div>
 
-      <button type="submit">Ingresar</button>
+      <button
+        type="submit"
+        style="
+          width: 100%;
+          background-color: #28a745;
+          color: white;
+          border: none;
+          padding: .75rem;
+          border-radius: 4px;
+          font-size: 1rem;
+          cursor: pointer;
+        ">
+        Iniciar Sesión
+      </button>
     </form>
 
-    <p style="margin-top: 18px; text-align: center; color: #000000;">
-      ¿Aún no tienes cuenta?
-      <a style="color: #36965e" href="{% url 'registro_cliente' %}">Regístrate aquí</a>
-    o retorna <a style="color: #36965e" href="{% url 'index' %}">aquí</a></p>
+    <!-- Enlace a registro, solo si NO es colaborador -->
+    {% if not is_colaborador %}
+      <p style="margin-top: 18px; text-align: center; color: #000;">
+        ¿Aún no tienes cuenta?
+        <a href="{% url 'registro_cliente' %}" style="color: #36965e;">
+          Regístrate aquí
+        </a>
+      </p>
+    {% endif %}
   </div>
+
+  <!-- Script para mostrar/ocultar contraseña -->
+  <script>
+    document.querySelectorAll('.toggle-password').forEach(icon => {
+      icon.addEventListener('click', () => {
+        const input = document.querySelector(icon.getAttribute('toggle'));
+        input.type = input.type === 'password' ? 'text' : 'password';
+      });
+    });
+  </script>
 </body>
 </html>

@@ -21,8 +21,8 @@ class Puesto(models.Model):
     def __str__(self):
         return self.nombre
 
-# En tu modelo Usuario (ya existente), agregas:
 
+# usuario ##########################################3
 
 class Usuario(AbstractUser):
     # Solo para clientes
@@ -48,15 +48,34 @@ class Usuario(AbstractUser):
         else:
             return self.username
 
+############################# CLIENTE ##########################################
+
 
 class Cliente(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE, null=True, blank=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE, related_name='cliente', null=True, blank=True)
     direccion = models.CharField(max_length=200, blank=True, null=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
 
     def __str__(self):
         return self.user.get_full_name() if self.user else "Cliente sin usuario"
+
+########################### TRABAJADOR #########################################
+
+
+class Trabajador(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE, related_name='trabajador', null=True, blank=True)
+    puesto = models.ForeignKey(
+        Puesto, on_delete=models.SET_NULL, null=True, blank=True)
+    telefono = models.CharField(max_length=20, blank=True)
+    direccion = models.CharField(max_length=200, blank=True)
+    # agrega aquí más campos personales si los necesitas
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} — {self.puesto.nombre}"
+
+##################################################################################
 
 
 class Producto(models.Model):
@@ -72,7 +91,9 @@ class Producto(models.Model):
 class Venta(models.Model):
     cliente = models.ForeignKey('Cliente', on_delete=models.CASCADE)
     usuario = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+        Trabajador,               # <-- ahora apunta a Trabajador
+        on_delete=models.PROTECT
+    )
     fecha = models.DateTimeField(auto_now_add=True)
 
     tiempo_inicio = models.DateTimeField(editable=False, null=True, blank=True)
@@ -244,8 +265,7 @@ class EvaluacionVenta(models.Model):
     ]
 
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
-    trabajador = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'rol': 'trabajador'})
+    trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE)
     # rol trabajador
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     fecha = models.DateTimeField(auto_now_add=True)
@@ -254,14 +274,13 @@ class EvaluacionVenta(models.Model):
 
     def __str__(self):
         return f"Evaluación venta #{self.venta.id} - Cliente: {self.cliente} - Trabajador: {self.trabajador}"
-    
+
     ###
-    
+
     @property
     def puntaje_total(self):
         agg = self.respuestas.aggregate(total=Sum('puntaje'))['total']
         return agg or 0
-
 
 
 class RespuestaEvaluacionVenta(models.Model):
@@ -305,7 +324,8 @@ class EvaluacionTrabajador(models.Model):
             raise ValueError(
                 "No se puede crear una evaluación antes de la fecha de activación.")
         super().save(*args, **kwargs)
-    ##### agrege 
+    # agrege
+
     @property
     def puntaje_por_criterio(self):
         """
