@@ -59,6 +59,10 @@ urlpatterns = [
 
     # Ruta para mostrar resultado resumen de evaluación
     #path('resultado/<int:venta_id>/', views.resultado_evaluacion, name='resultado_evaluacion'),
+    path('criterios/', views.lista_criterios, name='lista_criterios'),
+    path('criterios/nuevo/', views.crear_criterio, name='crear_criterio'),
+    path('criterios/<int:pk>/editar/', views.editar_criterio, name='editar_criterio'),
+    path('criterios/<int:pk>/eliminar/', views.eliminar_criterio, name='eliminar_criterio'),
 
     # Comentamos la antigua evaluación por trabajador simple
     # path('evaluar/<int:trabajador_id>/', views.evaluar_cliente, name='evaluar_cliente'),

@@ -1,6 +1,9 @@
 from django import forms
 from .models import AutoevaluacionTrabajador, Cliente, Indicador, RespuestaAutoevaluacionTrabajador  # Asegúrate de tener este modelo
 from django.contrib.auth import get_user_model
+from django import forms
+from .models import Criterio, Indicador
+from django.forms import inlineformset_factory
 User = get_user_model()
 from core.models import Usuario
 
@@ -70,9 +73,20 @@ class EvaluacionVentaForm(forms.Form):
                 # Aquí asignamos la descripción para usarla en el template
                 self.fields[f'indicador_{indicador.id}'].widget.attrs['descripcion'] = indicador.descripcion or "Sin descripción."
 
+class CriterioForm(forms.ModelForm):
+    class Meta:
+            model = Criterio
+            fields = ['nombre', 'descripcion', 'puesto', 'rango_min', 'rango_max']
+
+IndicadorFormSet = inlineformset_factory(
+    Criterio, Indicador,
+    fields=['nombre', 'descripcion', 'max_puntaje'],
+    extra=1, can_delete=True
+)
 
 
-from django import forms
+
+
 
 class EvaluacionTrabajadorForm(forms.Form):
     def __init__(self, *args, indicadores=None, **kwargs):
