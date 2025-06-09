@@ -533,3 +533,57 @@ def eliminar_empleado(request, id):
     empleado = get_object_or_404(Usuario, id=id)
     empleado.delete()
     return redirect('gestion_empleados')
+
+# core/views.py
+
+def lista_criterios(request):
+    criterios = Criterio.objects.all()
+    total_indicadores = sum(c.indicadores.count() for c in criterios)
+    return render(request, 'criterios/lista.html', {
+        'criterios': criterios,
+        'total_indicadores': total_indicadores
+    })
+
+def crear_criterio(request):
+    if request.method == 'POST':
+        form = CriterioForm(request.POST)
+        formset = IndicadorFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            criterio = form.save()
+            formset.instance = criterio
+            formset.save()
+            return redirect('lista_criterios')
+    else:
+        form = CriterioForm()
+        formset = IndicadorFormSet()
+    return render(request, 'criterios/formulario.html', {
+        'form': form,
+        'formset': formset,
+        'modo': 'crear'
+    })
+
+def editar_criterio(request, pk):
+    criterio = get_object_or_404(Criterio, pk=pk)
+    if request.method == 'POST':
+        form = CriterioForm(request.POST, instance=criterio)
+        formset = IndicadorFormSet(request.POST, instance=criterio)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect('lista_criterios')
+    else:
+        form = CriterioForm(instance=criterio)
+        formset = IndicadorFormSet(instance=criterio)
+    return render(request, 'criterios/formulario.html', {
+        'form': form,
+        'formset': formset,
+        'modo': 'editar'
+    })
+
+def eliminar_criterio(request, pk):
+    criterio = get_object_or_404(Criterio, pk=pk)
+    if request.method == 'POST':
+        criterio.delete()
+        return redirect('lista_criterios')
+    return render(request, 'criterios/confirmar_eliminar.html', {'criterio': criterio})
+
