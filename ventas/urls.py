@@ -32,7 +32,15 @@ urlpatterns = [
     # path('gracias/', views.gracias_encuesta, name='gracias_encuesta'),
 
     path('', views.index, name='index'),
+    #path('login/', views.login_view, name='login'),
+        # login “normal” (clientes y trabajadores)
     path('login/', views.login_view, name='login'),
+    # login exclusivo para colaboradores (trabajadores)
+    path('login/colaborador/', 
+         views.login_view, 
+         {'is_colaborador': True}, 
+         name='login_colaborador'),
+         
     path('registrar/', views.registro_cliente, name='registro_cliente'),
     path('autoevaluacion/nueva/', views.crear_autoevaluacion, name='crear_autoevaluacion'),
     path('autoevaluacion/lista/', views.lista_autoevaluaciones, name='lista_autoevaluaciones'),
