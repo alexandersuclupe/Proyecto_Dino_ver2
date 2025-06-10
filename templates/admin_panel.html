@@ -293,8 +293,9 @@
         <div class="info-session">
           <h5><i class="bi bi-person-check-fill"></i> Información de la sesión actual</h5>
           <p>Usuario: <strong>{{ request.user.get_full_name|default:request.user.username }}</strong></p>
-          <p>Hora actual: <strong>{{ current_time }}</strong></p>
-          <p>Fecha actual: <strong>{{ current_date }}</strong></p>
+          <p>Correo electrónico: <strong>{{ request.user.email }}</strong></p>
+          <p>Nombre de usuario: <strong>{{ request.user.username }}</strong></p>
+
         </div>
 
         <!-- Estadísticas resumen -->
