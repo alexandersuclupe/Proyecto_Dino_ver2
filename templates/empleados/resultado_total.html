@@ -15,6 +15,7 @@
             border-radius: 10px;
             border-left: 6px solid #2e7d32;
             margin-bottom: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .barra-progreso {
             height: 22px;
@@ -28,6 +29,12 @@
         .estado-aprobado { background-color: #2e7d32; color: white; }
         .estado-proceso { background-color: #fbc02d; color: black; }
         .estado-riesgo { background-color: #d32f2f; color: white; }
+        .progress-bar {
+            transition: width 1s ease;
+        }
+        .progress {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -42,6 +49,11 @@
                 <h6>Autoevaluación</h6>
                 <p class="fw-bold text-success">{{ puntaje_autoeval }} pts</p>
                 <span class="badge bg-success">Peso: {{ peso_auto|floatformat:2 }}</span>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-success" style="width: {{ puntaje_autoeval }}%" role="progressbar">
+                        {{ puntaje_autoeval }}%
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-md-3">
@@ -49,6 +61,11 @@
                 <h6>Evaluación del Cliente</h6>
                 <p class="fw-bold text-primary">{{ puntaje_cliente }} pts</p>
                 <span class="badge bg-primary">Peso: {{ peso_cliente|floatformat:2 }}</span>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-primary" style="width: {{ puntaje_cliente }}%" role="progressbar">
+                        {{ puntaje_cliente }}%
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-md-3">
@@ -56,6 +73,11 @@
                 <h6>Evaluación Interna</h6>
                 <p class="fw-bold text-warning">{{ puntaje_interno }} pts</p>
                 <span class="badge bg-warning text-dark">Peso: {{ peso_interno|floatformat:2 }}</span>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-warning" style="width: {{ puntaje_interno }}%" role="progressbar">
+                        {{ puntaje_interno }}%
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-md-3">
@@ -65,11 +87,17 @@
                 <span class="estado-etiqueta {% if leyenda == 'Aprobado' %}estado-aprobado{% elif leyenda == 'En proceso' %}estado-proceso{% else %}estado-riesgo{% endif %}">
                     {{ leyenda }}
                 </span>
+                <div class="progress mt-2">
+                    <div class="progress-bar {% if leyenda == 'Aprobado' %}bg-success{% elif leyenda == 'En proceso' %}bg-warning{% else %}bg-danger{% endif %}" 
+                         style="width: {{ total }}%" role="progressbar">
+                        {{ total }}%
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="text-end">
+    <div class="text-end mt-3">
         <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-success">
             <i class="bi bi-arrow-left-circle"></i> Volver
         </a>
