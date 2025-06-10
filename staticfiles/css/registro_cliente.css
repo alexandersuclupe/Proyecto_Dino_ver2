@@ -1,0 +1,119 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f7fa;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.encuesta-container {
+  background: #fff;
+  padding: 5px 20px;
+  padding-top: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-radius: 10px;
+  width: 100%;
+  max-width: 400px;
+  border: 2px solid #36965e; /* Borde verde */
+}
+
+.encuesta-container h2 {
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+h2 {
+  text-align: center;
+  color: #000000;
+  margin-bottom: 25px;
+}
+
+/* Usamos grid para el form, dos columnas y espacio */
+form {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* dos columnas iguales */
+  gap: 20px 30px; /* filas 20px, columnas 30px */
+}
+
+/* Hacemos que el label tome toda la columna en la que está */
+form label {
+  grid-column: span 2; /* que label ocupe ambas columnas para que quede encima del input */
+  font-weight: 600;
+  color: #000000;
+  margin-bottom: 6px;
+}
+
+/* Los inputs, select, textarea dentro del form ocuparán solo una columna */
+form input, form select, form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1.8px solid #bdc3c7;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+  grid-column: span 1; /* cada input en una columna */
+  margin-bottom: -5px;
+}
+
+form input:focus, form select:focus, form textarea:focus {
+  border-color: #36965e;
+  outline: none;
+  box-shadow: 0 0 5px rgba(41, 128, 185, 0.4);
+}
+
+/* El botón de submit debe ocupar ambas columnas y estar centrado */
+button[type="submit"] {
+  margin-top: -2px;
+  background-color: #36965e;
+  color: white;
+  font-size: 17px;
+  padding: 12px 0;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: background-color 0.3s ease;
+  grid-column: span 2;
+  margin-bottom: -5px;
+}
+
+button[type="submit"]:hover {
+  background-color: #19693b;
+}
+
+p.error-message {
+  color: red;
+  text-align: center;
+  margin-top: 10px;
+  grid-column: span 2;
+  font-weight: 600;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 15px;
+  grid-column: span 2;
+}
+
+.register-description {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* misma fuente que body */
+  font-size: 15px;             /* tamaño legible pero discreto */
+  color: #444;                 /* gris medio */
+  text-align: center;
+  max-width: 360px;            /* para no estirarse demasiado */
+  margin: 12px auto 15px auto; /* margen superior, margen inferior */
+  line-height: 1.4;
+}
+
+.login-divider {
+  border: none;
+  height: 1px;
+  background-color: #ccc;
+  margin-bottom: 20px;
+}
