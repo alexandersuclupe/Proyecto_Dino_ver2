@@ -11,6 +11,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="icon" type="image/png" href="{% static 'img/favicon_dino.jpg' %}">
 
+  <!-- SweetAlert2 -->
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.17/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -24,58 +26,42 @@
       <span class="text-success fw-medium d-flex align-items-center">
         <i class="bi bi-circle-fill me-1" style="font-size: 0.6rem;"></i> En línea como cliente: {{ request.user.get_full_name|default:request.user.username }}
       </span>
-      <form action="{% url 'index' %}" method="post" style="display: inline;">
+      <!-- Formulario de cerrar sesión -->
+      <form id="logoutForm" action="{% url 'index' %}" method="post" style="display: inline;">
         {% csrf_token %}
-        <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius: 8px; padding: 8px 16px; font-weight: bold;">
-  <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
-</button>
-
+        <button type="button" id="logoutButton" class="btn btn-outline-danger btn-sm" style="border-radius: 8px; padding: 8px 16px; font-weight: bold;">
+          <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+        </button>
       </form>
     </div>
   </nav>
 
-  <!-- Contenido -->
-  <div class="container mt-5 mb-5">
-    <div class="mb-4 text-center">
-      <h2 class="fw-bold" style="color: #000000">Panel de cliente</h2>
-      <p class="text-muted">Estás visualizando tu área personal. Podrás observar las evaluaciones pendientes y realizadas.</p>
-    </div>
-
-    <!-- Estadísticas -->
-    <div class="row g-4 my-4">
-      <div class="col-md-3">
-        <div class="card stat-card text-center">
-          <div class="card-body">
-            <h3 class="stat-number">{{ total_pedidos }}</h3>
-            <p class="text-muted">Pedidos</p>
-          </div>
+   <!-- Estadísticas -->
+<div class="row g-4 my-4">
+  <div class="col-md-6">
+    <div class="card text-center p-4">
+          <h4 class="fw-bold" style="color: #000000">¡Bienvenido, {{ request.user.get_full_name|default:request.user.username }}!</h4>
+          <p class="text-muted">Nos alegra verte de vuelta. Aquí puedes ver tus evaluaciones pendientes y realizadas.</p>
         </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card stat-card text-center">
-          <div class="card-body">
-            <h3 class="stat-number">{{ en_carrito }}</h3>
-            <p class="text-muted">En el carrito</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card stat-card text-center">
-          <div class="card-body">
-            <h3 class="stat-number">{{ evaluaciones_realizadas|length }}</h3>
-            <p class="text-muted">Evaluaciones realizadas</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card stat-card text-center">
-          <div class="card-body">
-            <h3 class="stat-number">{{ ventas_pendientes|length }}</h3>
-            <p class="text-muted">Evaluaciones pendientes</p>
-          </div>
-        </div>
+  </div>
+  
+  <div class="col-md-3">
+    <div class="card stat-card text-center">
+      <div class="card-body">
+        <h3 class="stat-number">{{ evaluaciones_realizadas|length }}</h3>
+        <p class="text-muted">Evaluaciones realizadas</p>
       </div>
     </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card stat-card text-center">
+      <div class="card-body">
+        <h3 class="stat-number">{{ ventas_pendientes|length }}</h3>
+        <p class="text-muted">Evaluaciones pendientes</p>
+      </div>
+    </div>
+  </div>
+</div>
 
     <!-- Evaluaciones -->
     <div class="row g-4">
@@ -125,5 +111,32 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Agregar el script de SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.17/dist/sweetalert2.min.js"></script>
+  
+  <script>
+    document.getElementById("logoutButton").onclick = function(event) {
+      event.preventDefault(); // Evita que el formulario cierre sesión inmediatamente
+
+      // Muestra el popup de confirmación de SweetAlert2
+      Swal.fire({
+        title: '¿Estás seguro de que deseas cerrar sesión?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, cerrar sesión',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Si el usuario confirma, envía el formulario
+          document.getElementById("logoutForm").submit();
+        }
+      });
+    };
+  </script>
+
 </body>
+
 </html>

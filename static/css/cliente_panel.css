@@ -1,50 +1,58 @@
-body {
-  background-color: #f8f9fa;
-  font-family: 'Segoe UI', sans-serif;
-  color: #333;
-}
-
-.navbar-brand img {
-  max-height: 50px;
-}
-
-.card {
-  border: 1px solid #36965e; /* Borde verde para todas las cards */
-  border-radius: 12px;
-  background-color: #fff;
-  transition: box-shadow 0.3s ease;
-}
-
-.card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-}
-
 .stat-card {
-  padding: 1rem 0.5rem;
-  border: 1px solid #36965e; /* Borde verde también en tarjetas estadísticas */
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+    background-color: #f8f9fa; /* Fondo claro */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transición suave */
+}
+
+.stat-card:hover {
+    transform: translateY(-10px); /* Elevación cuando se pasa el ratón */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
 }
 
 .stat-number {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #000000;
+    font-size: 2.5rem; /* Tamaño grande para el número */
+    font-weight: bold;
+    color: #2d3e50; /* Color oscuro para el número */
 }
 
-.btn-sm {
-  border-radius: 8px;
-  padding: 6px 14px;
-  font-size: 0.85rem;
-  font-weight: 500;
+.stat-card .card-body {
+    padding: 30px; /* Espaciado dentro de la tarjeta */
 }
 
-ul li {
-  background-color: #fefefe;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  border: 1px solid #36965e; /* Borde verde para cada ítem de lista */
+.stat-card .card-body p {
+    font-size: 1.1rem;
+    color: #6c757d; /* Color gris para el texto */
 }
 
-.border-start {
-  background-color: #6db86d;
-  border-left: 3px solid #36965e; /* Línea verde para evaluaciones realizadas */
+.stat-card .card-body h3 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #36965e; /* Color verde para los números */
+}
+
+/* Botones de las tarjetas */
+.stat-card .btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    background-color: #FFCC00; /* Amarillo brillante */
+    color: white;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.stat-card .btn:hover {
+    background-color: #f1b500; /* Amarillo más oscuro */
+}
+
+/* Estilo para los números de la tarjeta */
+.stat-number {
+    color: #2e7d32; /* Verde para los números */
+}
+
+/* Estilo para los textos secundarios */
+.stat-card .card-body p {
+    color: #6c757d; /* Gris suave para los textos */
 }
