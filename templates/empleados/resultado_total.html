@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Análisis de Resultados - {{ trabajador.get_full_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0fff5;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .card {
+            border-radius: 10px;
+            border-left: 6px solid #2e7d32;
+            margin-bottom: 1.5rem;
+        }
+        .barra-progreso {
+            height: 22px;
+            border-radius: 10px;
+        }
+        .estado-etiqueta {
+            font-size: 0.9rem;
+            padding: 4px 10px;
+            border-radius: 5px;
+        }
+        .estado-aprobado { background-color: #2e7d32; color: white; }
+        .estado-proceso { background-color: #fbc02d; color: black; }
+        .estado-riesgo { background-color: #d32f2f; color: white; }
+    </style>
+</head>
+<body>
+<div class="container py-4">
+    <h3 class="mb-4 text-success">
+        <i class="bi bi-bar-chart-line-fill"></i> Análisis de desempeño - {{ trabajador.get_full_name }}
+    </h3>
+
+    <div class="row text-center mb-4">
+        <div class="col-md-3">
+            <div class="card p-3 shadow-sm">
+                <h6>Autoevaluación</h6>
+                <p class="fw-bold text-success">{{ puntaje_autoeval }} pts</p>
+                <span class="badge bg-success">Peso: {{ peso_auto|floatformat:2 }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 shadow-sm">
+                <h6>Evaluación del Cliente</h6>
+                <p class="fw-bold text-primary">{{ puntaje_cliente }} pts</p>
+                <span class="badge bg-primary">Peso: {{ peso_cliente|floatformat:2 }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 shadow-sm">
+                <h6>Evaluación Interna</h6>
+                <p class="fw-bold text-warning">{{ puntaje_interno }} pts</p>
+                <span class="badge bg-warning text-dark">Peso: {{ peso_interno|floatformat:2 }}</span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 shadow-sm">
+                <h6>Puntaje Total</h6>
+                <p class="fw-bold fs-4">{{ total }}/100</p>
+                <span class="estado-etiqueta {% if leyenda == 'Aprobado' %}estado-aprobado{% elif leyenda == 'En proceso' %}estado-proceso{% else %}estado-riesgo{% endif %}">
+                    {{ leyenda }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-end">
+        <a href="{% url 'gestion_empleados' %}" class="btn btn-outline-success">
+            <i class="bi bi-arrow-left-circle"></i> Volver
+        </a>
+    </div>
+</div>
+</body>
+</html>

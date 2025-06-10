@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import AutoevaluacionTrabajador, RespuestaAutoevaluacionTrabajador, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador, PeriodoEvaluacion
+from .models import AutoevaluacionTrabajador, RespuestaAutoevaluacionTrabajador, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador, PeriodoEvaluacion, PesoEvaluacion, ResultadoTotal, Trabajador
 from .forms import EmpleadoForm
 from .forms import AutoevaluacionForm, AutoevaluacionTrabajadorForm, RespuestaAutoevaluacionFormSet, RespuestaForm
 from django.shortcuts import render, redirect
@@ -15,52 +15,12 @@ from django.db.models import Q
 from .decorators import only_trabajador, only_cliente
 
 
-# def encuesta_satisfaccion(request, venta_id):
-#     venta = get_object_or_404(Venta, id=venta_id)
-
-#     if EncuestaSatisfaccion.objects.filter(venta=venta).exists():
-#         return render(request, 'gracias.html')
-
-#     if request.method == 'POST':
-#         form = EncuestaSatisfaccionForm(request.POST)
-#         if form.is_valid():
-#             encuesta = form.save(commit=False)
-#             encuesta.venta = venta
-#             encuesta.trabajador = venta.usuario  # Asumiendo que 'usuario' es el trabajador
-#             encuesta.save()
-#             return redirect('gracias_encuesta')
-#     else:
-#         form = EncuestaSatisfaccionForm()
-
-#     return render(request, 'encuesta_form.html', {
-#         'form': form,
-#         'venta': venta,
-#         'trabajador': venta.usuario  # ✅ Aquí se añade al contexto
-#     })
-
 def gracias_encuesta(request):
     return render(request, 'gracias.html')
 
 
 def index(request):
     return render(request, 'index.html')
-
-# login inicial ###############3
-# def login_view(request):
-#     if request.method == 'POST':
-#         # Puede ser email o username según tu modelo
-#         username = request.POST.get('username')
-#         password = request.POST.get('password')
-#         user = authenticate(request, username=username, password=password)
-#         if user is not None:
-#             login(request, user)
-#             # Redirige al inicio después del login
-#             return redirect('cliente_panel')
-#         else:
-#             messages.error(
-#                 request, 'Credenciales inválidas. Intenta nuevamente.')
-
-#     return render(request, 'login.html')
 
 ############## login con trabajador ################################
 
@@ -533,6 +493,59 @@ def eliminar_empleado(request, id):
     empleado = get_object_or_404(Usuario, id=id)
     empleado.delete()
     return redirect('gestion_empleados')
+
+# para calcular los pesos de los trabajadores
+@login_required
+@only_trabajador
+def calcular_resultado_final(request, trabajador_id):
+    trabajador = get_object_or_404(Usuario, id=trabajador_id, rol='trabajador')
+
+    pesos = {peso.tipo: peso.peso for peso in PesoEvaluacion.objects.filter(puesto=trabajador.puesto)}
+
+    # Autoevaluaciones
+    auto = AutoevaluacionTrabajador.objects.filter(trabajador=trabajador)
+    auto_puntaje = sum([r.puntaje for a in auto for r in a.respuestas.all()]) if auto.exists() else 0
+
+    # Evaluaciones del cliente
+    cliente_puntaje = 0
+    trabajador_obj = Trabajador.objects.filter(user=trabajador).first()
+    if trabajador_obj:
+        cliente = EvaluacionVenta.objects.filter(trabajador=trabajador_obj, estado="COMPLETADA")
+        cliente_puntaje = sum([r.puntaje for e in cliente for r in e.respuestas.all()])
+
+    # Evaluaciones internas
+    interno = EvaluacionTrabajador.objects.filter(evaluado=trabajador, estado="COMPLETADA")
+    interno_puntaje = sum([r.puntaje for e in interno for r in e.respuestas.all()]) if interno.exists() else 0
+
+    total = (
+        auto_puntaje * pesos.get("AUTO", 0) +
+        cliente_puntaje * pesos.get("CLIE", 0) +
+        interno_puntaje * pesos.get("TRAB", 0)
+    )
+
+    ResultadoTotal.objects.update_or_create(
+        trabajador=trabajador,
+        defaults={"puntaje_total": total}
+    )
+
+    if total >= 80:
+        leyenda = "Aprobado"
+    elif total >= 50:
+        leyenda = "En proceso"
+    else:
+        leyenda = "En riesgo"
+
+    return render(request, "empleados/resultado_total.html", {
+        "trabajador": trabajador,
+        "puntaje_autoeval": auto_puntaje,
+        "puntaje_cliente": cliente_puntaje,
+        "puntaje_interno": interno_puntaje,
+        "peso_auto": pesos.get("AUTO", 0),
+        "peso_cliente": pesos.get("CLIE", 0),
+        "peso_interno": pesos.get("TRAB", 0),
+        "total": total,
+        "leyenda": leyenda
+    })
 
 # core/views.py
 

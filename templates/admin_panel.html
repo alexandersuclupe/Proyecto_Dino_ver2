@@ -321,7 +321,7 @@
                 </div>
                 </div>
                 <div class="col-md-3">
-                <div class="stat-card text-center" onclick="/* TODO: Agregar redirección a análisis de resultados */" style="cursor: pointer;">
+                <div class="stat-card text-center" onclick="location.href='{% url 'resultado_total' request.user.id %}'" style="cursor: pointer;">
                     <div class="icon-label">
                     <i class="bi bi-bar-chart-fill"></i>
                     <span>Análisis de resultados</span>
