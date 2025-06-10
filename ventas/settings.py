@@ -28,9 +28,6 @@ SECRET_KEY = 'django-insecure-yn%g1zqx*0kbyug@_*ap9e$j!tdv-h5inly2nnz1-gi+o3ii7f
 DEBUG = True
 
 ALLOWED_HOSTS = ['pryevaluacionesdinocodjango-production.up.railway.app', 'localhost', '127.0.0.1']
-CSRF_TRUSTED_ORIGINS = [
-    '',  # Añade tu dominio aquí
-]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://pryevaluacionesdinocodjango-production.up.railway.app',  # Añade tu dominio aquí
