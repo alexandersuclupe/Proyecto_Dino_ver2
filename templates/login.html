@@ -4,10 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <title>
-    {% if is_colaborador %}Acceso Colaborador{% else %}Dino — Iniciar sesión{% endif %}
+    {% if is_colaborador %}Acceso Colaborador{% else %}Dino - Iniciar sesión{% endif %}
   </title>
   <link rel="stylesheet" href="{% static 'css/login.css' %}">
   <link rel="stylesheet" href="{% static 'css/index.css' %}">
+  <link rel="icon" type="image/png" href="{% static 'img/favicon_dino.jpg' %}">
   <style>
     /* Para el “ojito” dentro del input de contraseña */
     .input-group { position: relative; }
