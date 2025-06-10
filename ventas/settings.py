@@ -29,9 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['pryevaluacionesdinocodjango-production.up.railway.app', 'localhost', '127.0.0.1']
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://pryevaluacionesdinocodjango-production.up.railway.app',  # Añade tu dominio aquí
-]
+CSRF_TRUSTED_ORIGINS = ['https://pryevaluacionesdinocodjango-production.up.railway.app']
 
 
 
@@ -136,5 +134,4 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
