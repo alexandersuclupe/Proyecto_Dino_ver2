@@ -1,6 +1,8 @@
+import csv
+from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import AutoevaluacionTrabajador, RespuestaAutoevaluacionTrabajador, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador, PeriodoEvaluacion, PesoEvaluacion, ResultadoTotal, Trabajador
-from .forms import EmpleadoForm
+from .models import AutoevaluacionTrabajador, Evaluacion, RespuestaAutoevaluacionTrabajador, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador, PeriodoEvaluacion, PesoEvaluacion, ResultadoTotal, Trabajador
+from .forms import CriterioForm, EmpleadoForm, FiltroEvaluacionForm, IndicadorFormSet
 from .forms import AutoevaluacionForm, AutoevaluacionTrabajadorForm, RespuestaAutoevaluacionFormSet, RespuestaForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
@@ -13,6 +15,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models import Q
 from .decorators import only_trabajador, only_cliente
+from datetime import datetime, date, time
+from django.utils.timezone import is_aware
 
 
 def gracias_encuesta(request):
@@ -600,3 +604,95 @@ def eliminar_criterio(request, pk):
         return redirect('lista_criterios')
     return render(request, 'criterios/confirmar_eliminar.html', {'criterio': criterio})
 
+TIPO_CHOICES = {
+    'AUTO': 'Autoevaluación',
+    'TRAB': 'Evaluación del Trabajador',
+    'CLIE': 'Evaluación del Cliente',
+}
+
+def normalizar_fecha(fecha):
+    if isinstance(fecha, datetime):
+        if is_aware(fecha):
+            return fecha.replace(tzinfo=None)
+        return fecha
+    elif isinstance(fecha, date):
+        return datetime.combine(fecha, time.min)
+    return None
+
+
+def historial_evaluaciones(request):
+    form = FiltroEvaluacionForm(request.GET or None)
+    tipo_filtro = request.GET.get('tipo', 'todas')
+    busqueda = request.GET.get('buscar', '').lower()
+
+    evaluaciones = []
+
+    # Autoevaluaciones
+    if tipo_filtro in ['todas', 'AUTO']:
+        for auto in AutoevaluacionTrabajador.objects.select_related('trabajador'):
+            if busqueda in str(auto.trabajador).lower():
+                evaluaciones.append({
+                    'evaluado': auto.trabajador,
+                    'evaluador': auto.trabajador,
+                    'fecha': auto.fecha,
+                    'tipo': 'AUTO',
+                    'get_tipo_display': TIPO_CHOICES['AUTO'],
+                    'puntaje': auto.puntaje_total,
+                    'estado': 'Completada',
+                })
+
+    # Evaluaciones del trabajador
+    if tipo_filtro in ['todas', 'TRAB']:
+        for e in EvaluacionTrabajador.objects.select_related('evaluador', 'evaluado'):
+            if busqueda in str(e.evaluado).lower() or busqueda in str(e.evaluador).lower():
+                evaluaciones.append({
+                    'evaluado': e.evaluado,
+                    'evaluador': e.evaluador,
+                    'fecha': e.fecha_creacion,
+                    'tipo': 'TRAB',
+                    'get_tipo_display': TIPO_CHOICES['TRAB'],
+                    'puntaje': e.puntaje_total,
+                    'estado': e.estado,
+                })
+
+    # Evaluaciones del cliente
+    if tipo_filtro in ['todas', 'CLIE']:
+        for ev in EvaluacionVenta.objects.select_related('trabajador', 'cliente'):
+            if busqueda in str(ev.trabajador).lower() or busqueda in str(ev.cliente).lower():
+                evaluaciones.append({
+                    'evaluado': ev.trabajador,
+                    'evaluador': ev.cliente,
+                    'fecha': ev.fecha,
+                    'tipo': 'CLIE',
+                    'get_tipo_display': TIPO_CHOICES['CLIE'],
+                    'puntaje': ev.puntaje_total,
+                    'estado': ev.estado,
+                })
+
+    # Ordenar evaluaciones por fecha descendente
+    evaluaciones.sort(key=lambda x: normalizar_fecha(x['fecha']), reverse=True)
+    
+    # Clase simulada para la plantilla
+    class TipoEvaluacion:
+        choices = [('AUTO', 'Autoevaluación'), ('TRAB', 'Evaluación del Trabajador'), ('CLIE', 'Evaluación del Cliente')]
+
+    return render(request, 'historial.html', {
+        'evaluaciones': evaluaciones,
+        'form': form,
+        'tipo_filtro': tipo_filtro,
+        'busqueda': request.GET.get('buscar', ''),
+        'TipoEvaluacion': TipoEvaluacion,
+    })
+
+def exportar_evaluaciones_excel(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="evaluaciones.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Evaluado', 'Evaluador', 'Fecha', 'Tipo', 'Puntaje', 'Estado'])
+
+    evaluaciones = Evaluacion.objects.all()
+    for e in evaluaciones:
+        writer.writerow([e.evaluado, e.evaluador, e.fecha, e.get_tipo_display(), e.puntaje, e.estado])
+
+    return response

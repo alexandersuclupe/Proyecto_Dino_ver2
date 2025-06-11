@@ -1,5 +1,5 @@
 from django import forms
-from .models import AutoevaluacionTrabajador, Cliente, Indicador, RespuestaAutoevaluacionTrabajador  # Asegúrate de tener este modelo
+from .models import AutoevaluacionTrabajador, Cliente, Indicador, RespuestaAutoevaluacionTrabajador, TipoEvaluacion  # Asegúrate de tener este modelo
 from django.contrib.auth import get_user_model
 from django import forms
 from .models import Criterio, Indicador
@@ -159,3 +159,11 @@ class EmpleadoForm(forms.ModelForm):
             'puesto': forms.Select(attrs={'class': 'form-select'}),
             'rol_admin': forms.Select(attrs={'class': 'form-select'}),
         }
+
+class FiltroEvaluacionForm(forms.Form):
+    buscar = forms.CharField(required=False, label='Buscar')
+    tipo = forms.ChoiceField(
+        required=False,
+        choices=[('todas', 'Todas las evaluaciones')] + list(TipoEvaluacion.choices),
+        label='Tipo'
+    )

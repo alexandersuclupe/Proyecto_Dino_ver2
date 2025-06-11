@@ -293,3 +293,13 @@ class ResultadoTotal(models.Model):
 
     def __str__(self):
         return f"{self.trabajador.username} @ {self.fecha_ejecucion}: {self.puntaje_total:.2f}"
+
+class Evaluacion(models.Model):
+    evaluador = models.CharField(max_length=100)
+    evaluado = models.CharField(max_length=100)
+    tipo = models.CharField(max_length=4, choices=TipoEvaluacion.choices)
+    puntaje = models.DecimalField(max_digits=5, decimal_places=2)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} - {self.evaluado}"
