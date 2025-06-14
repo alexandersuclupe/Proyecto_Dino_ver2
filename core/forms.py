@@ -76,8 +76,12 @@ class EvaluacionVentaForm(forms.Form):
 
 class CriterioForm(forms.ModelForm):
     class Meta:
-            model = Criterio
-            fields = ['nombre', 'descripcion', 'puesto', 'rango_min', 'rango_max']
+        model = Criterio
+        fields = ['nombre', 'descripcion', 'puestos', 'rango_min', 'rango_max']  # Aquí no debe aparecer 'puesto'
+        widgets = {
+            'puestos': forms.CheckboxSelectMultiple(),  # Muestra los puestos como checkboxes
+        }
+
 
 IndicadorFormSet = inlineformset_factory(
     Criterio, Indicador,
@@ -203,7 +207,7 @@ class TrabajadorForm(forms.ModelForm):
         # Si es edición (instance.pk existe), quitamos el campo password
         if self.instance.pk:
             self.fields.pop('password', None)
-            # Precargamos datos del user existente
+            # Precargamos datos del usuario existente
             u = self.instance.user
             self.fields['username'].initial   = u.username
             self.fields['email'].initial      = u.email
@@ -211,12 +215,9 @@ class TrabajadorForm(forms.ModelForm):
             self.fields['last_name'].initial  = u.last_name
             return
 
-        # En creación: generamos contraseña aleatoria 3 mayúsculas + 5 dígitos + 1 especial
-        letters = ''.join(random.choice(string.ascii_uppercase) for _ in range(3))
-        digits  = ''.join(random.choice(string.digits) for _ in range(5))
-        special = random.choice(SPECIAL_CHARS)
-        self.fields['password'].initial = f"{letters}{digits}{special}"
-
+        # En creación: generamos contraseña con 6 dígitos (del 1 al 6)
+        #self.fields['password'].initial = ''.join(random.choice('123456') for _ in range(6))
+        self.fields['password'].initial = '123456'
     def save(self, commit=True):
         data = self.cleaned_data
 
@@ -247,7 +248,7 @@ class TrabajadorForm(forms.ModelForm):
         if commit:
             trabajador.save()
         return trabajador
-    
+
 class FiltroEvaluacionForm(forms.Form):
     buscar = forms.CharField(required=False, label='Buscar')
     tipo = forms.ChoiceField(

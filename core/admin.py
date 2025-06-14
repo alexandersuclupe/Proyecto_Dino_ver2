@@ -137,13 +137,23 @@ class PuestoAdmin(admin.ModelAdmin):
     search_fields = ('nombre',)
 
 
+# @admin.register(Criterio)
+# class CriterioAdmin(admin.ModelAdmin):
+#     list_display = ('nombre', 'descripcion', 'puesto',
+#                     'rango_min', 'rango_max')
+#     list_filter = ('puesto',)
+
 @admin.register(Criterio)
 class CriterioAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'descripcion', 'puesto',
-                    'rango_min', 'rango_max')
-    list_filter = ('puesto',)
+    list_display = ('nombre', 'descripcion', 'mostrar_puestos', 'rango_min', 'rango_max')
+    list_filter = ('puestos',)  # Filtro para el campo puestos (relación many to many)
+    search_fields = ('nombre', 'descripcion')  # Permitir búsqueda por nombre y descripción
 
-
+    # Método para mostrar los puestos asociados
+    def mostrar_puestos(self, obj):
+        return ", ".join([puesto.nombre for puesto in obj.puestos.all()])
+    mostrar_puestos.short_description = 'Puestos'
+    
 @admin.register(Indicador)
 class IndicadorAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'get_criterio_nombre', 'max_puntaje')

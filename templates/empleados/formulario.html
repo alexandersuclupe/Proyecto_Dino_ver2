@@ -79,6 +79,16 @@
                         {{ form.telefono.errors }}
                     </div>
 
+                    <!-- Contraseña -->
+                    {% if not form.instance.pk %}
+                    <div class="col-md-6">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            Contraseña inicial
+                        </label>
+                        {{ form.password }}
+                    </div>
+                    {% endif %}
+
                 </div>
 
                 <div class="mt-4">

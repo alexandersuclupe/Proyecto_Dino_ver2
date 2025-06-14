@@ -169,12 +169,11 @@ def evaluar_venta(request, venta_id):
 @login_required
 def editar_evaluacion_trabajador(request, evaluacion_id):
     evaluacion = get_object_or_404(EvaluacionTrabajador, id=evaluacion_id)
-    evaluado = evaluacion.evaluado
-    # Si es FK, está bien. Si es M2M, tomar el primero: evaluado.puesto.first()
-    puesto = evaluado.puesto
+    evaluado = evaluacion.evaluado  # El usuario que está siendo evaluado
+    puesto_evaluado = evaluado.puesto  # Obtener el puesto del evaluado
 
-    # Obtener criterios asignados al puesto del evaluado
-    criterios = Criterio.objects.filter(puesto=puesto)
+    # Filtrar los criterios asociados al puesto del evaluado
+    criterios = Criterio.objects.filter(puestos=puesto_evaluado)
 
     # Obtener indicadores relacionados a esos criterios
     indicadores = Indicador.objects.filter(criterio__in=criterios)
@@ -187,8 +186,7 @@ def editar_evaluacion_trabajador(request, evaluacion_id):
         form = EvaluacionTrabajadorForm(request.POST, indicadores=indicadores)
         if form.is_valid():
             for indicador in indicadores:
-                puntaje = int(form.cleaned_data.get(
-                    f'indicador_{indicador.id}', 0))
+                puntaje = int(form.cleaned_data.get(f'indicador_{indicador.id}', 0))
                 RespuestaEvaluacionTrabajador.objects.update_or_create(
                     evaluacion=evaluacion,
                     indicador=indicador,
@@ -198,17 +196,15 @@ def editar_evaluacion_trabajador(request, evaluacion_id):
             evaluacion.save()
             return redirect('admin_dashboard')  # Cambia según tu ruta deseada
     else:
-        initial_data = {f'indicador_{ind.id}': respuestas_actuales.get(
-            ind.id, 0) for ind in indicadores}
-        form = EvaluacionTrabajadorForm(
-            indicadores=indicadores, initial=initial_data)
+        initial_data = {f'indicador_{ind.id}': respuestas_actuales.get(ind.id, 0) for ind in indicadores}
+        form = EvaluacionTrabajadorForm(indicadores=indicadores, initial=initial_data)
 
     return render(request, 'evaluacion_trabajador_form.html', {
         'form': form,
         'evaluacion': evaluacion,
         'evaluado': evaluado,
         'criterios': criterios,
-        'puesto': puesto,
+        'puesto': puesto_evaluado,
     })
 
 
@@ -408,30 +404,32 @@ def lista_evaluaciones(request):
     puesto_nombre = usuario.puesto.nombre.lower() if usuario.puesto else ''
 
     if puesto_nombre == 'supervisor':
-        # Supervisor ve a todos los trabajadores excepto supervisores/gerentes (y a sí mismo)
-        empleados = Usuario.objects.filter(rol='trabajador')\
-            .exclude(
-                Q(puesto__nombre__iexact='supervisor') |
-                Q(puesto__nombre__iexact='gerente') |
-                Q(pk=usuario.pk)
+        # Supervisor ve solo los trabajadores con puesto 'vendedor', 'cajero' o 'almacen', excepto a sí mismo
+        empleados = Trabajador.objects.filter(
+            puesto__nombre__iexact='vendedor'
+        ) | Trabajador.objects.filter(
+            puesto__nombre__iexact='cajero'
+        ) | Trabajador.objects.filter(
+            puesto__nombre__iexact='almacen'
         )
+        # Excluir el propio supervisor
+        empleados = empleados.exclude(user=usuario)
 
     elif puesto_nombre == 'gerente':
         # Gerente ve SOLO a los Supervisores
-        empleados = Usuario.objects.filter(
-            rol='trabajador',
+        empleados = Trabajador.objects.filter(
             puesto__nombre__iexact='supervisor'
         )
 
     else:
         # Resto de usuarios no evalúan
-        empleados = Usuario.objects.none()
+        empleados = Trabajador.objects.none()
 
     # 3) pre-crear evaluaciones pendientes
     for emp in empleados:
         EvaluacionTrabajador.objects.get_or_create(
             evaluador=usuario,
-            evaluado=emp,
+            evaluado=emp.user,  # Accedemos al usuario del trabajador
             defaults={
                 'fecha_activacion': periodo.fecha_inicio if periodo else timezone.now(),
                 'estado': 'PENDIENTE'

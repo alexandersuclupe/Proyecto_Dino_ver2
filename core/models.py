@@ -135,7 +135,8 @@ class TipoEvaluacion(models.TextChoices):
 class Criterio(models.Model):
     nombre = models.CharField(max_length=100, default='Sin nombre')
     descripcion = models.CharField(max_length=200, blank=True, null=True)
-    puesto = models.ForeignKey(Puesto, on_delete=models.SET_NULL, null=True, blank=True)
+   # puesto = models.ForeignKey(Puesto, on_delete=models.SET_NULL, null=True, blank=True)
+    puestos = models.ManyToManyField(Puesto)
     rango_min = models.IntegerField()
     rango_max = models.IntegerField()
 
@@ -145,6 +146,7 @@ class Criterio(models.Model):
     @property
     def puntaje(self):
         return self.indicadores.aggregate(total=models.Sum('max_puntaje'))['total'] or 0
+
 
 
 class Indicador(models.Model):
