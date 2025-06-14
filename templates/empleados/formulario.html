@@ -23,17 +23,7 @@
             <form method="post">
                 {% csrf_token %}
                 <div class="row g-3">
-
-                    <!-- Contraseña (solo creación) -->
-                    {% if form.password %}
-                    <div class="col-md-6">
-                        <label for="{{ form.password.id_for_label }}" class="form-label">
-                            Contraseña inicial
-                        </label>
-                        {{ form.password }}
-                    </div>
-                    {% endif %}
-
+            
                     <!-- Usuario y Correo -->
                     <div class="col-md-6">
                         <label for="{{ form.username.id_for_label }}" class="form-label">
