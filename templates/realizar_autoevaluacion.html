@@ -6,7 +6,7 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f8f9fa;
+      background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
       margin: 0;
       padding: 20px;
     }
@@ -15,15 +15,23 @@
       max-width: 1000px;
       margin: auto;
       background: #fff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 40px 45px;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
       text-align: center;
-      color: #36965e;
-      margin-bottom: 30px;
+      color: #2e7d32;
+      margin-bottom: 35px;
+      font-size: 2rem;
+      text-shadow: 1px 1px 2px rgba(46, 125, 50, 0.2);
     }
 
     table {
@@ -33,30 +41,32 @@
     }
 
     th, td {
-      border: 1px solid #ccc;
+      border: 1px solid #c8e6c9;
       text-align: center;
-      padding: 10px;
+      padding: 12px 8px;
     }
 
     th {
-      background-color: #36965e;
+      background: linear-gradient(135deg, #43a047, #2e7d32);
       color: white;
+      font-size: 1rem;
     }
 
     td:first-child {
       text-align: left;
       font-weight: 500;
-      background-color: #f3e5f5;
+      background-color: #f1f8e9;
+      color: #2e7d32;
     }
 
     input[type="radio"] {
-      transform: scale(1.3);
-      accent-color: #36965e;
+      transform: scale(1.4);
+      accent-color: #388e3c;
       cursor: pointer;
     }
 
     .progress-container {
-      background-color: #e1bee7;
+      background-color: #dcedc8;
       border-radius: 10px;
       overflow: hidden;
       height: 24px;
@@ -65,7 +75,7 @@
     }
 
     .progress-bar {
-      background-color: #36965e;
+      background-color: #4caf50;
       height: 100%;
       width: 0%;
       transition: width 0.3s ease;
@@ -73,10 +83,10 @@
 
     .progress-left-text, .progress-right-text {
       position: absolute;
-      top: 2px;
+      top: 3px;
       font-size: 13px;
       font-weight: bold;
-      color: black;
+      color: #33691e;
     }
 
     .progress-left-text {
@@ -88,25 +98,29 @@
     }
 
     .button-group {
-      margin-top: 30px;
+      margin-top: 35px;
       display: flex;
       justify-content: space-between;
     }
 
     button, .back-button {
-      padding: 12px 20px;
+      padding: 14px 26px;
       font-weight: bold;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       color: white;
-      background-color: #36965e;
+      background: linear-gradient(135deg, #66bb6a, #388e3c);
       text-decoration: none;
       cursor: pointer;
-      transition: background 0.2s ease;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
     }
 
     button:hover, .back-button:hover {
-      background-color: #29794a;
+      background: linear-gradient(135deg, #388e3c, #2e7d32);
+      transform: scale(1.03);
+      box-shadow: 0 6px 18px rgba(56, 142, 60, 0.5);
     }
   </style>
 </head>
@@ -150,8 +164,8 @@
       </table>
 
       <div class="button-group">
-        <a href="{% url 'admin_dashboard' %}" class="back-button">Volver</a>
-        <button type="submit">Enviar</button>
+        <a href="{% url 'admin_dashboard' %}" class="back-button">← Volver</a>
+        <button type="submit">Enviar Evaluación</button>
       </div>
     </form>
   </div>

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from jsonschema import ValidationError
-from .models import AutoevaluacionTrabajador, Cliente, Evaluacion, Producto, RespuestaAutoevaluacionTrabajador, Venta, DetalleVenta, Usuario, EvaluacionTrabajador, Criterio, Indicador, RespuestaEvaluacionTrabajador, EvaluacionVenta, RespuestaEvaluacionVenta, Puesto ,PeriodoEvaluacion ,ResultadoTotal ,PesoEvaluacion , Trabajador
+from .models import AutoevaluacionTrabajador, Cliente,Producto, RespuestaAutoevaluacionTrabajador, Venta, DetalleVenta, Usuario, EvaluacionTrabajador, Criterio, Indicador, RespuestaEvaluacionTrabajador, EvaluacionVenta, RespuestaEvaluacionVenta, Puesto ,PeriodoEvaluacion ,ResultadoTotal ,PesoEvaluacion , Trabajador
 from django import forms
 from django.contrib.auth.admin import UserAdmin
 
@@ -335,8 +335,3 @@ class ResultadoTotalAdmin(admin.ModelAdmin):
     date_hierarchy = 'fecha_ejecucion'
     ordering      = ('-fecha_ejecucion',)
 
-@admin.register(Evaluacion)
-class EvaluacionAdmin(admin.ModelAdmin):
-    list_display = ('evaluador', 'evaluado', 'tipo', 'puntaje', 'fecha')
-    list_filter = ('tipo', 'fecha')
-    search_fields = ('evaluador', 'evaluado')

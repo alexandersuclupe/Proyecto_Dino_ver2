@@ -1,7 +1,8 @@
 import csv
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import AutoevaluacionTrabajador, Evaluacion, RespuestaAutoevaluacionTrabajador, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador, PeriodoEvaluacion, PesoEvaluacion, ResultadoTotal, Trabajador
+from openpyxl import Workbook
+from .models import AutoevaluacionTrabajador, RespuestaAutoevaluacionTrabajador, TipoEvaluacion, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador, PeriodoEvaluacion, PesoEvaluacion, ResultadoTotal, Trabajador
 from .forms import CriterioForm, FiltroEvaluacionForm, IndicadorFormSet
 from .forms import AutoevaluacionForm, AutoevaluacionTrabajadorForm, RespuestaAutoevaluacionFormSet, RespuestaForm, TrabajadorForm
 from django.shortcuts import render, redirect
@@ -17,6 +18,7 @@ from django.db.models import Q
 from .decorators import only_trabajador, only_cliente
 from datetime import datetime, date, time
 from django.utils.timezone import is_aware
+from django.db.models import Sum
 
 
 def gracias_encuesta(request):
@@ -666,83 +668,185 @@ def normalizar_fecha(fecha):
     return None
 
 
+
+@login_required
 def historial_evaluaciones(request):
-    form = FiltroEvaluacionForm(request.GET or None)
+ 
+    form        = FiltroEvaluacionForm(request.GET or None)
     tipo_filtro = request.GET.get('tipo', 'todas')
-    busqueda = request.GET.get('buscar', '').lower()
+    busqueda    = request.GET.get('buscar', '').lower().strip()
+
+    user              = request.user
+    puesto_usuario    = getattr(getattr(user, 'trabajador', None), 'puesto', None)
+    nombre_puesto     = (puesto_usuario.nombre.lower() if puesto_usuario else '')
+    es_supervisor     = user.is_superuser or nombre_puesto == 'supervisor'
 
     evaluaciones = []
 
-    # Autoevaluaciones
+    # AUTOEVALUACIONES
+    auto_qs = AutoevaluacionTrabajador.objects.select_related('trabajador')
+    if not es_supervisor:
+        auto_qs = auto_qs.filter(trabajador=user)
     if tipo_filtro in ['todas', 'AUTO']:
-        for auto in AutoevaluacionTrabajador.objects.select_related('trabajador'):
+        for auto in auto_qs:
             if busqueda in str(auto.trabajador).lower():
                 evaluaciones.append({
-                    'evaluado': auto.trabajador,
-                    'evaluador': auto.trabajador,
-                    'fecha': auto.fecha,
-                    'tipo': 'AUTO',
-                    'get_tipo_display': TIPO_CHOICES['AUTO'],
-                    'puntaje': auto.puntaje_total,
-                    'estado': 'Completada',
+                    'id'                : auto.id,
+                    'evaluado'          : auto.trabajador,
+                    'evaluador'         : auto.trabajador,
+                    'fecha'             : auto.fecha,
+                    'tipo'              : 'AUTO',
+                    'get_tipo_display'  : TIPO_CHOICES['AUTO'],
+                    'puntaje'           : auto.puntaje_total,
+                    'estado'            : 'Completada',
                 })
 
-    # Evaluaciones del trabajador
+    # EVALUACIONES TRABAJADOR
+    et_qs = EvaluacionTrabajador.objects.select_related('evaluador', 'evaluado') \
+                                        .filter(estado__iexact='Completada')
+    if not es_supervisor:
+        et_qs = et_qs.filter(evaluado=user)
     if tipo_filtro in ['todas', 'TRAB']:
-        for e in EvaluacionTrabajador.objects.select_related('evaluador', 'evaluado'):
+        for e in et_qs:
             if busqueda in str(e.evaluado).lower() or busqueda in str(e.evaluador).lower():
                 evaluaciones.append({
-                    'evaluado': e.evaluado,
-                    'evaluador': e.evaluador,
-                    'fecha': e.fecha_creacion,
-                    'tipo': 'TRAB',
-                    'get_tipo_display': TIPO_CHOICES['TRAB'],
-                    'puntaje': e.puntaje_total,
-                    'estado': e.estado,
+                    'id'                : e.id,  
+                    'evaluado'          : e.evaluado,
+                    'evaluador'         : e.evaluador,
+                    'fecha'             : e.fecha_creacion,
+                    'tipo'              : 'TRAB',
+                    'get_tipo_display'  : TIPO_CHOICES['TRAB'],
+                    'puntaje'           : e.puntaje_total,
+                    'estado'            : 'Completada',
                 })
 
-    # Evaluaciones del cliente
+    # EVALUACIONES CLIENTE
+    ev_qs = EvaluacionVenta.objects.select_related('trabajador', 'cliente') \
+                                   .filter(estado__iexact='Completada')
+    if not es_supervisor:
+        trabajador_inst = getattr(user, 'trabajador', None)
+        ev_qs = ev_qs.filter(trabajador=trabajador_inst)
     if tipo_filtro in ['todas', 'CLIE']:
-        for ev in EvaluacionVenta.objects.select_related('trabajador', 'cliente'):
+        for ev in ev_qs:
             if busqueda in str(ev.trabajador).lower() or busqueda in str(ev.cliente).lower():
                 evaluaciones.append({
-                    'evaluado': ev.trabajador,
-                    'evaluador': ev.cliente,
-                    'fecha': ev.fecha,
-                    'tipo': 'CLIE',
-                    'get_tipo_display': TIPO_CHOICES['CLIE'],
-                    'puntaje': ev.puntaje_total,
-                    'estado': ev.estado,
+                    'id'                : ev.id,
+                    'evaluado'          : ev.trabajador,
+                    'evaluador'         : ev.cliente,
+                    'fecha'             : ev.fecha,
+                    'tipo'              : 'CLIE',
+                    'get_tipo_display'  : TIPO_CHOICES['CLIE'],
+                    'puntaje'           : ev.puntaje_total,
+                    'estado'            : 'Completada',
                 })
 
-    # Ordenar evaluaciones por fecha descendente
+    # Ordenar por fecha descendente
     evaluaciones.sort(key=lambda x: normalizar_fecha(x['fecha']), reverse=True)
 
-    # Clase simulada para la plantilla
-    class TipoEvaluacion:
-        choices = [('AUTO', 'Autoevaluación'), ('TRAB',
-                                                'Evaluación del Trabajador'), ('CLIE', 'Evaluación del Cliente')]
+    context = {
+        'evaluaciones' : evaluaciones,
+        'form'         : form,
+        'tipo_filtro'  : tipo_filtro,
+        'busqueda'     : request.GET.get('buscar', ''),
+        'TipoEvaluacion': TipoEvaluacion  # para el <select> del filtro
+    }
+    return render(request, 'historial.html', context)
 
-    return render(request, 'historial.html', {
-        'evaluaciones': evaluaciones,
-        'form': form,
-        'tipo_filtro': tipo_filtro,
-        'busqueda': request.GET.get('buscar', ''),
-        'TipoEvaluacion': TipoEvaluacion,
-    })
-
+from core.models import (
+    AutoevaluacionTrabajador,
+    EvaluacionTrabajador,
+    EvaluacionVenta,
+)
 
 def exportar_evaluaciones_excel(request):
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="evaluaciones.csv"'
+    user = request.user
+    try:
+        trabajador = Trabajador.objects.get(user=user)
+    except Trabajador.DoesNotExist:
+        trabajador = None
 
-    writer = csv.writer(response)
-    writer.writerow(['Evaluado', 'Evaluador', 'Fecha',
-                    'Tipo', 'Puntaje', 'Estado'])
+    es_admin = user.is_superuser or (
+        trabajador and trabajador.puesto and trabajador.puesto.nombre.lower() == "supervisor"
+    )
 
-    evaluaciones = Evaluacion.objects.all()
-    for e in evaluaciones:
-        writer.writerow([e.evaluado, e.evaluador, e.fecha,
-                        e.get_tipo_display(), e.puntaje, e.estado])
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Evaluaciones"
+    ws.append(['Evaluado', 'Evaluador', 'Fecha', 'Tipo', 'Puntaje', 'Estado'])
 
+    auto_qs = AutoevaluacionTrabajador.objects.select_related('trabajador')
+    if not es_admin:
+        auto_qs = auto_qs.filter(trabajador=user)        
+
+    for auto in auto_qs:
+        puntaje = auto.respuestas.aggregate(
+            total=Sum('puntaje')
+        )['total'] or 0
+        ws.append([
+            str(auto.trabajador),
+            str(auto.trabajador),
+            auto.fecha.strftime('%Y-%m-%d'),
+            "Autoevaluación",
+            puntaje,
+            "COMPLETADA",
+        ])
+
+    trab_qs = (
+        EvaluacionTrabajador.objects
+        .filter(estado='COMPLETADA')
+        .select_related('evaluado', 'evaluador')
+    )
+    if not es_admin:
+        trab_qs = trab_qs.filter(evaluado=user)          
+
+    for ev in trab_qs:
+        ws.append([
+            str(ev.evaluado),
+            str(ev.evaluador),
+            ev.fecha_creacion.strftime('%Y-%m-%d'),
+            "Evaluación del Trabajador",
+            ev.puntaje_total,
+            ev.estado,
+        ])
+
+    cli_qs = (
+        EvaluacionVenta.objects
+        .filter(estado='COMPLETADA')
+        .select_related('trabajador', 'cliente')
+    )
+    if not es_admin and trabajador:
+        cli_qs = cli_qs.filter(trabajador=trabajador)     
+
+    for ev in cli_qs:
+        ws.append([
+            str(ev.trabajador),
+            str(ev.cliente),
+            ev.fecha.strftime('%Y-%m-%d'),
+            "Evaluación del Cliente",
+            ev.puntaje_total,
+            ev.estado,
+        ])
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="evaluaciones_completadas.xlsx"'
+    wb.save(response)
     return response
+
+
+def ver_evaluacion(request, tipo, id):
+    try:
+        if tipo == 'AUTO':
+            evaluacion = AutoevaluacionTrabajador.objects.get(id=id)
+        elif tipo == 'TRAB':
+            evaluacion = EvaluacionTrabajador.objects.get(id=id)
+        elif tipo == 'CLIE':
+            evaluacion = EvaluacionVenta.objects.get(id=id)
+        else:
+            return HttpResponse("Tipo de evaluación no válido", status=400)
+
+        return render(request, 'ver_evaluacion.html', {'evaluacion': evaluacion, 'tipo': tipo})
+
+    except (AutoevaluacionTrabajador.DoesNotExist, EvaluacionTrabajador.DoesNotExist, EvaluacionVenta.DoesNotExist):
+        raise Http404(f"Evaluación no encontrada: No {tipo} con ID {id}")
