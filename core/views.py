@@ -526,11 +526,10 @@ def editar_empleado(request, id):
     })
 
 
-@login_required
 def eliminar_empleado(request, id):
-    empleado = get_object_or_404(Usuario, id=id)
-    empleado.delete()
-    return redirect('gestion_empleados')
+    empleado = get_object_or_404(Trabajador, id=id)  # Obtener el empleado con el ID proporcionado
+    empleado.delete()  # Eliminar el empleado
+    return redirect('gestion_empleados')  # Redirigir a la lista de empleados después de eliminar
 
 # para calcular los pesos de los trabajadores
 

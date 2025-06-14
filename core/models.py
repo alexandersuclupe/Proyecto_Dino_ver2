@@ -23,22 +23,31 @@ class Puesto(models.Model):
         return self.nombre
 
 
+# class Usuario(AbstractUser):
+#     ROL_TIPOS = [
+#         ('cliente', 'Cliente'),
+#         ('trabajador', 'Trabajador'),
+#     ]
+#     rol = models.CharField(max_length=20, choices=ROL_TIPOS, blank=True, null=True)
+#     rol_admin = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True, related_name='usuarios')
+#     puesto = models.ForeignKey(Puesto, on_delete=models.SET_NULL, null=True, blank=True)
+
+#     def __str__(self):
+#         if self.rol_admin:
+#             return f"{self.username} ({self.rol_admin.nombre})"
+#         elif self.rol:
+#             return f"{self.username} ({self.get_rol_display()})"
+#         return self.username
+
 class Usuario(AbstractUser):
-    ROL_TIPOS = [
-        ('cliente', 'Cliente'),
-        ('trabajador', 'Trabajador'),
-    ]
-    rol = models.CharField(max_length=20, choices=ROL_TIPOS, blank=True, null=True)
-    rol_admin = models.ForeignKey(Rol, on_delete=models.SET_NULL, null=True, blank=True, related_name='usuarios')
-    puesto = models.ForeignKey(Puesto, on_delete=models.SET_NULL, null=True, blank=True)
+    """
+    Modelo personalizado para el usuario, heredando de AbstractUser.
+    Este modelo ahora solo contiene los campos estándar del usuario.
+    """
 
     def __str__(self):
-        if self.rol_admin:
-            return f"{self.username} ({self.rol_admin.nombre})"
-        elif self.rol:
-            return f"{self.username} ({self.get_rol_display()})"
-        return self.username
-
+        return self.username  # Representación del objeto Usuario, devuelve solo el nombre de usuario.
+    
 
 ### --- CLIENTES Y TRABAJADORES --- ###
 
@@ -284,7 +293,9 @@ class PeriodoEvaluacion(models.Model):
 
 
 class ResultadoTotal(models.Model):
-    trabajador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='resultados_totales')
+    
+    #trabajador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='resultados_totales')
+    trabajador = models.ForeignKey(Trabajador, on_delete=models.CASCADE)
     fecha_ejecucion = models.DateField(auto_now_add=True)
     puntaje_total = models.FloatField(default=0.0)
 
@@ -295,6 +306,7 @@ class ResultadoTotal(models.Model):
             return "En proceso"
         return "En riesgo"
 
-    def __str__(self):
-        return f"{self.trabajador.username} @ {self.fecha_ejecucion}: {self.puntaje_total:.2f}"
+    # def __str__(self):
+    #     return f"{self.trabajador.username} @ {self.fecha_ejecucion}: {self.puntaje_total:.2f}"
+    
 

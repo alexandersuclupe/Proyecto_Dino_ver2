@@ -99,14 +99,39 @@ class VentaAdmin(admin.ModelAdmin):
     duracion_venta_formateada.short_description = 'Duración de la venta'
 
 
-@admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):
-    model = Usuario
-    # agregué 'puesto' para mostrar
-    list_display = ('username', 'email', 'rol')
-    fieldsets = UserAdmin.fieldsets + (
-        (None, {'fields': ('rol', 'puesto')}),  # Reemplaza 'area' por 'puesto'
+    # Especificar los campos que se deben mostrar en el listado de usuarios
+    list_display = ('username', 'email', 'nombre_completo')
+
+    # Método para mostrar el nombre completo
+    def nombre_completo(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
+    nombre_completo.short_description = 'Nombre Completo'  # Encabezado personalizado en la interfaz
+
+    # Los campos que se mostrarán al crear/editar un usuario
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),  # Campos para autenticación
+        ('Información personal', {'fields': ('first_name', 'last_name', 'email')}),  # Datos personales
+        #('Permisos', {'fields': ('is_active', 'is_staff', 'is_superuser')}),  # Permisos del usuario
+        #('Fechas importantes', {'fields': ('last_login', 'date_joined')}),  # Fechas
     )
+
+    # Los campos que se mostrarán al agregar un nuevo usuario
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'password1', 'password2', 'first_name', 'last_name', 'email', 'is_active', 'is_staff')}
+        ),
+    )
+
+    # Permitir búsqueda por username o email
+    search_fields = ('username', 'email')  
+
+    # Ordenar por username
+    ordering = ('username',)  
+
+# Registrar el modelo Usuario con su configuración de administración personalizada
+admin.site.register(Usuario, UsuarioAdmin)
 
 ################################ TRABAJADOR #################################
 @admin.register(Trabajador)
@@ -330,8 +355,8 @@ class PesoEvaluacionAdmin(admin.ModelAdmin):
 @admin.register(ResultadoTotal)
 class ResultadoTotalAdmin(admin.ModelAdmin):
     list_display  = ('trabajador', 'fecha_ejecucion', 'puntaje_total')
-    list_filter   = ('fecha_ejecucion', 'trabajador__puesto')
-    search_fields = ('trabajador__username',)
+    list_filter = ('trabajador__puesto',)  # Filtrar por el puesto del trabajador
+    
     date_hierarchy = 'fecha_ejecucion'
     ordering      = ('-fecha_ejecucion',)
 
