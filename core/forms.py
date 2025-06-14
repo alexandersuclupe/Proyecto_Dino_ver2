@@ -1,13 +1,14 @@
 from django import forms
-from .models import AutoevaluacionTrabajador, Cliente, Indicador, RespuestaAutoevaluacionTrabajador, TipoEvaluacion  # Asegúrate de tener este modelo
+from .models import AutoevaluacionTrabajador, Cliente, Indicador, RespuestaAutoevaluacionTrabajador, TipoEvaluacion, Trabajador
 from django.contrib.auth import get_user_model
 from django import forms
 from .models import Criterio, Indicador
 from django.forms import inlineformset_factory
 User = get_user_model()
 from core.models import Usuario
-
-
+import random
+import string
+SPECIAL_CHARS = "!@#$%^&*"
 
 
 
@@ -147,19 +148,106 @@ RespuestaAutoevaluacionFormSet = forms.modelformset_factory(
     can_delete=False,
 )
 
-class EmpleadoForm(forms.ModelForm):
+############################33 1er form de trabajador ############################333
+# class EmpleadoForm(forms.ModelForm):
+#     class Meta:
+#         model = Usuario
+#         fields = ['username', 'first_name', 'last_name', 'email', 'puesto', 'rol_admin']
+#         widgets = {
+#             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de usuario'}),
+#             'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombres'}),
+#             'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellidos'}),
+#             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo'}),
+#             'puesto': forms.Select(attrs={'class': 'form-select'}),
+#             'rol_admin': forms.Select(attrs={'class': 'form-select'}),
+#         }
+
+class TrabajadorForm(forms.ModelForm):
+    # Campos de usuario
+    username   = forms.CharField(
+        label='Nombre de usuario',
+        widget=forms.TextInput(attrs={'class':'form-control','placeholder':'Usuario'})
+    )
+    email      = forms.EmailField(
+        label='Correo electrónico',
+        widget=forms.EmailInput(attrs={'class':'form-control','placeholder':'Correo'})
+    )
+    password   = forms.CharField(
+        label='Contraseña inicial',
+        widget=forms.TextInput(attrs={'class':'form-control','readonly':'readonly'})
+    )
+    first_name = forms.CharField(
+        label='Nombre',
+        widget=forms.TextInput(attrs={'class':'form-control','placeholder':'Nombre'})
+    )
+    last_name  = forms.CharField(
+        label='Apellidos',
+        widget=forms.TextInput(attrs={'class':'form-control','placeholder':'Apellidos'})
+    )
+
     class Meta:
-        model = Usuario
-        fields = ['username', 'first_name', 'last_name', 'email', 'puesto', 'rol_admin']
+        model = Trabajador
+        fields = [
+            'username','email','password','first_name','last_name',
+            'puesto','direccion','telefono'
+        ]
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de usuario'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombres'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellidos'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Correo'}),
-            'puesto': forms.Select(attrs={'class': 'form-select'}),
-            'rol_admin': forms.Select(attrs={'class': 'form-select'}),
+            'puesto':    forms.Select(attrs={'class':'form-select'}),
+            'direccion': forms.TextInput(attrs={'class':'form-control','placeholder':'Dirección'}),
+            'telefono':  forms.TextInput(attrs={'class':'form-control','placeholder':'Teléfono'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Si es edición (instance.pk existe), quitamos el campo password
+        if self.instance.pk:
+            self.fields.pop('password', None)
+            # Precargamos datos del user existente
+            u = self.instance.user
+            self.fields['username'].initial   = u.username
+            self.fields['email'].initial      = u.email
+            self.fields['first_name'].initial = u.first_name
+            self.fields['last_name'].initial  = u.last_name
+            return
+
+        # En creación: generamos contraseña aleatoria 3 mayúsculas + 5 dígitos + 1 especial
+        letters = ''.join(random.choice(string.ascii_uppercase) for _ in range(3))
+        digits  = ''.join(random.choice(string.digits) for _ in range(5))
+        special = random.choice(SPECIAL_CHARS)
+        self.fields['password'].initial = f"{letters}{digits}{special}"
+
+    def save(self, commit=True):
+        data = self.cleaned_data
+
+        # 1) Crear o actualizar User
+        if self.instance.pk:
+            # Edición: actualiza usuario existente
+            user = self.instance.user
+            user.username   = data['username']
+            user.email      = data['email']
+            user.first_name = data['first_name']
+            user.last_name  = data['last_name']
+        else:
+            # Creación: crea nuevo user con la contraseña generada
+            user = User.objects.create_user(
+                username   = data['username'],
+                email      = data['email'],
+                password   = data['password'],
+                first_name = data['first_name'],
+                last_name  = data['last_name'],
+            )
+
+        if commit:
+            user.save()
+
+        # 2) Guardar Trabajador
+        trabajador = super().save(commit=False)
+        trabajador.user = user
+        if commit:
+            trabajador.save()
+        return trabajador
+    
 class FiltroEvaluacionForm(forms.Form):
     buscar = forms.CharField(required=False, label='Buscar')
     tipo = forms.ChoiceField(

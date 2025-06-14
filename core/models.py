@@ -56,11 +56,13 @@ class Trabajador(models.Model):
     puesto = models.ForeignKey(Puesto, on_delete=models.SET_NULL, null=True, blank=True)
     telefono = models.CharField(max_length=20, blank=True)
     direccion = models.CharField(max_length=200, blank=True)
+# <- NUEVO: campo para guardar la contraseña inicial
+   # initial_password = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.get_full_name()} — {self.puesto.nombre}"
 
-
+    
 ### --- PRODUCTOS Y VENTAS --- ###
 
 class Producto(models.Model):

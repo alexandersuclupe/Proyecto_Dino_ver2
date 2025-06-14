@@ -12,44 +12,88 @@
 <body>
     <div class="container mt-5">
         <a href="{% url 'gestion_empleados' %}" class="btn btn-outline-success mb-3">
-            <i class="bi bi-arrow-left-circle-fill"></i> Volver a empleados
+            <i class="bi bi-arrow-left-circle-fill"></i> Volver a trabajadores
         </a>
 
         <div class="card shadow-sm p-4">
-            <h3 class="titulo mb-4"><i class="bi bi-person-plus-fill icono-verde"></i> {{ titulo }}</h3>
+            <h3 class="titulo mb-4">
+                <i class="bi bi-person-plus-fill icono-verde"></i> {{ titulo }}
+            </h3>
 
             <form method="post">
                 {% csrf_token %}
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="id_username" class="form-label">Nombre de usuario</label>
+                <div class="row g-3">
+
+                    <!-- Contraseña (solo creación) -->
+                    {% if form.password %}
+                    <div class="col-md-6">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            Contraseña inicial
+                        </label>
+                        {{ form.password }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Usuario y Correo -->
+                    <div class="col-md-6">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            Nombre de usuario
+                        </label>
                         {{ form.username }}
+                        {{ form.username.errors }}
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="id_email" class="form-label">Correo electrónico</label>
+                    <div class="col-md-6">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            Correo electrónico
+                        </label>
                         {{ form.email }}
+                        {{ form.email.errors }}
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="id_first_name" class="form-label">Nombres</label>
+
+                    <!-- Nombres y Apellidos -->
+                    <div class="col-md-6">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                            Nombres
+                        </label>
                         {{ form.first_name }}
+                        {{ form.first_name.errors }}
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="id_last_name" class="form-label">Apellidos</label>
+                    <div class="col-md-6">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                            Apellidos
+                        </label>
                         {{ form.last_name }}
+                        {{ form.last_name.errors }}
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="id_puesto" class="form-label">Puesto</label>
+
+                    <!-- Puesto, Dirección y Teléfono -->
+                    <div class="col-md-4">
+                        <label for="{{ form.puesto.id_for_label }}" class="form-label">
+                            Puesto
+                        </label>
                         {{ form.puesto }}
+                        {{ form.puesto.errors }}
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="id_rol_admin" class="form-label">Rol administrativo</label>
-                        {{ form.rol_admin }}
+                    <div class="col-md-4">
+                        <label for="{{ form.direccion.id_for_label }}" class="form-label">
+                            Dirección
+                        </label>
+                        {{ form.direccion }}
+                        {{ form.direccion.errors }}
                     </div>
+                    <div class="col-md-4">
+                        <label for="{{ form.telefono.id_for_label }}" class="form-label">
+                            Teléfono
+                        </label>
+                        {{ form.telefono }}
+                        {{ form.telefono.errors }}
+                    </div>
+
                 </div>
 
                 <div class="mt-4">
                     <button type="submit" class="btn btn-success">
-                        <i class="bi bi-save-fill"></i> Guardar empleado
+                        <i class="bi bi-save-fill"></i> Guardar
                     </button>
                     <a href="{% url 'gestion_empleados' %}" class="btn btn-secondary">
                         Cancelar

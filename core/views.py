@@ -2,8 +2,8 @@ import csv
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import AutoevaluacionTrabajador, Evaluacion, RespuestaAutoevaluacionTrabajador, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador, PeriodoEvaluacion, PesoEvaluacion, ResultadoTotal, Trabajador
-from .forms import CriterioForm, EmpleadoForm, FiltroEvaluacionForm, IndicadorFormSet
-from .forms import AutoevaluacionForm, AutoevaluacionTrabajadorForm, RespuestaAutoevaluacionFormSet, RespuestaForm
+from .forms import CriterioForm, FiltroEvaluacionForm, IndicadorFormSet
+from .forms import AutoevaluacionForm, AutoevaluacionTrabajadorForm, RespuestaAutoevaluacionFormSet, RespuestaForm, TrabajadorForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -56,9 +56,11 @@ def login_view(request, is_colaborador=False):
                 if user and not is_colaborador:
                     if hasattr(user, 'cliente'):
                         login(request, user)
-                        return redirect('cliente_panel')    # ← aquí el nombre exacto
+                        # ← aquí el nombre exacto
+                        return redirect('cliente_panel')
                     else:
-                        messages.error(request, 'No tienes permisos de cliente.')
+                        messages.error(
+                            request, 'No tienes permisos de cliente.')
         else:
             messages.error(request, 'Usuario o contraseña incorrectos.')
 
@@ -87,7 +89,7 @@ def admin_dashboard(request):
 @login_required(login_url='login')
 @only_cliente
 def cliente_dashboard(request):
-    
+
     cliente = request.user.cliente
 
     evaluaciones_realizadas = EvaluacionVenta.objects.filter(
@@ -445,52 +447,84 @@ def lista_evaluaciones(request):
         'periodo_activo': periodo_activo,
     })
 
-from django.db.models import Q
 
 @login_required
 def gestion_empleados(request):
     query = request.GET.get('q', '')
-    lista_empleados = Usuario.objects.filter(rol='trabajador')
-
+    qs = Trabajador.objects.select_related('user')
     if query:
-        lista_empleados = lista_empleados.filter(
-            Q(username__icontains=query) |
-            Q(first_name__icontains=query) |
-            Q(last_name__icontains=query)
+        qs = qs.filter(
+            Q(user__username__icontains=query) |
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query)
         )
-
-    paginator = Paginator(lista_empleados, 6)  # 6 empleados por página
+    paginator = Paginator(qs, 6)
     page = request.GET.get('page')
-    empleados = paginator.get_page(page)
-
+    page_obj = paginator.get_page(page)
     return render(request, 'empleados/lista.html', {
-        'empleados': empleados,
+        'empleados': page_obj,
         'query': query
     })
+
+# @login_required
+# def agregar_empleado(request):
+#     if request.method == 'POST':
+#         form = EmpleadoForm(request.POST)
+#         if form.is_valid():
+#             empleado = form.save(commit=False)
+#             empleado.rol = 'trabajador'
+#             empleado.set_password('123456')  # Contraseña por defecto (puedes mejorar esto)
+#             empleado.save()
+#             return redirect('gestion_empleados')
+#     else:
+#         form = EmpleadoForm()
+#     return render(request, 'empleados/formulario.html', {'form': form, 'titulo': 'Agregar nuevo empleado'})
 
 
 @login_required
 def agregar_empleado(request):
     if request.method == 'POST':
-        form = EmpleadoForm(request.POST)
+        form = TrabajadorForm(request.POST)
         if form.is_valid():
-            empleado = form.save(commit=False)
-            empleado.rol = 'trabajador'
-            empleado.set_password('123456')  # Contraseña por defecto (puedes mejorar esto)
-            empleado.save()
+            form.save()
+            messages.success(
+                request, 'Registro exitoso.')
             return redirect('gestion_empleados')
     else:
-        form = EmpleadoForm()
-    return render(request, 'empleados/formulario.html', {'form': form, 'titulo': 'Agregar nuevo empleado'})
+        form = TrabajadorForm()
+
+    return render(
+        request,
+        'empleados/formulario.html',
+        {
+            'form': form,
+            'titulo': 'Agregar nuevo trabajador'
+        }
+    )
+
+
+# @login_required
+# def editar_empleado(request, id):
+#     empleado = get_object_or_404(Usuario, id=id)
+#     form = EmpleadoForm(request.POST or None, instance=empleado)
+#     if form.is_valid():
+#         form.save()
+#         return redirect('gestion_empleados')
+#     return render(request, 'empleados/formulario.html', {'form': form, 'titulo': 'Editar Empleado'})
 
 @login_required
 def editar_empleado(request, id):
-    empleado = get_object_or_404(Usuario, id=id)
-    form = EmpleadoForm(request.POST or None, instance=empleado)
+    trabajador = get_object_or_404(Trabajador, id=id)
+    form = TrabajadorForm(request.POST or None, instance=trabajador)
+
     if form.is_valid():
         form.save()
         return redirect('gestion_empleados')
-    return render(request, 'empleados/formulario.html', {'form': form, 'titulo': 'Editar Empleado'})
+    return render(request, 'empleados/formulario.html', {
+        'form':   form,
+        'titulo': 'Editar trabajador'
+    })
+
 
 @login_required
 def eliminar_empleado(request, id):
@@ -499,27 +533,35 @@ def eliminar_empleado(request, id):
     return redirect('gestion_empleados')
 
 # para calcular los pesos de los trabajadores
+
+
 @login_required
 @only_trabajador
 def calcular_resultado_final(request, trabajador_id):
     trabajador = get_object_or_404(Usuario, id=trabajador_id, rol='trabajador')
 
-    pesos = {peso.tipo: peso.peso for peso in PesoEvaluacion.objects.filter(puesto=trabajador.puesto)}
+    pesos = {peso.tipo: peso.peso for peso in PesoEvaluacion.objects.filter(
+        puesto=trabajador.puesto)}
 
     # Autoevaluaciones
     auto = AutoevaluacionTrabajador.objects.filter(trabajador=trabajador)
-    auto_puntaje = sum([r.puntaje for a in auto for r in a.respuestas.all()]) if auto.exists() else 0
+    auto_puntaje = sum(
+        [r.puntaje for a in auto for r in a.respuestas.all()]) if auto.exists() else 0
 
     # Evaluaciones del cliente
     cliente_puntaje = 0
     trabajador_obj = Trabajador.objects.filter(user=trabajador).first()
     if trabajador_obj:
-        cliente = EvaluacionVenta.objects.filter(trabajador=trabajador_obj, estado="COMPLETADA")
-        cliente_puntaje = sum([r.puntaje for e in cliente for r in e.respuestas.all()])
+        cliente = EvaluacionVenta.objects.filter(
+            trabajador=trabajador_obj, estado="COMPLETADA")
+        cliente_puntaje = sum(
+            [r.puntaje for e in cliente for r in e.respuestas.all()])
 
     # Evaluaciones internas
-    interno = EvaluacionTrabajador.objects.filter(evaluado=trabajador, estado="COMPLETADA")
-    interno_puntaje = sum([r.puntaje for e in interno for r in e.respuestas.all()]) if interno.exists() else 0
+    interno = EvaluacionTrabajador.objects.filter(
+        evaluado=trabajador, estado="COMPLETADA")
+    interno_puntaje = sum(
+        [r.puntaje for e in interno for r in e.respuestas.all()]) if interno.exists() else 0
 
     total = (
         auto_puntaje * pesos.get("AUTO", 0) +
@@ -553,6 +595,7 @@ def calcular_resultado_final(request, trabajador_id):
 
 # core/views.py
 
+
 def lista_criterios(request):
     criterios = Criterio.objects.all()
     total_indicadores = sum(c.indicadores.count() for c in criterios)
@@ -560,6 +603,7 @@ def lista_criterios(request):
         'criterios': criterios,
         'total_indicadores': total_indicadores
     })
+
 
 def crear_criterio(request):
     if request.method == 'POST':
@@ -579,6 +623,7 @@ def crear_criterio(request):
         'modo': 'crear'
     })
 
+
 def editar_criterio(request, pk):
     criterio = get_object_or_404(Criterio, pk=pk)
     if request.method == 'POST':
@@ -597,6 +642,7 @@ def editar_criterio(request, pk):
         'modo': 'editar'
     })
 
+
 def eliminar_criterio(request, pk):
     criterio = get_object_or_404(Criterio, pk=pk)
     if request.method == 'POST':
@@ -604,11 +650,13 @@ def eliminar_criterio(request, pk):
         return redirect('lista_criterios')
     return render(request, 'criterios/confirmar_eliminar.html', {'criterio': criterio})
 
+
 TIPO_CHOICES = {
     'AUTO': 'Autoevaluación',
     'TRAB': 'Evaluación del Trabajador',
     'CLIE': 'Evaluación del Cliente',
 }
+
 
 def normalizar_fecha(fecha):
     if isinstance(fecha, datetime):
@@ -671,10 +719,11 @@ def historial_evaluaciones(request):
 
     # Ordenar evaluaciones por fecha descendente
     evaluaciones.sort(key=lambda x: normalizar_fecha(x['fecha']), reverse=True)
-    
+
     # Clase simulada para la plantilla
     class TipoEvaluacion:
-        choices = [('AUTO', 'Autoevaluación'), ('TRAB', 'Evaluación del Trabajador'), ('CLIE', 'Evaluación del Cliente')]
+        choices = [('AUTO', 'Autoevaluación'), ('TRAB',
+                                                'Evaluación del Trabajador'), ('CLIE', 'Evaluación del Cliente')]
 
     return render(request, 'historial.html', {
         'evaluaciones': evaluaciones,
@@ -684,15 +733,18 @@ def historial_evaluaciones(request):
         'TipoEvaluacion': TipoEvaluacion,
     })
 
+
 def exportar_evaluaciones_excel(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="evaluaciones.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['Evaluado', 'Evaluador', 'Fecha', 'Tipo', 'Puntaje', 'Estado'])
+    writer.writerow(['Evaluado', 'Evaluador', 'Fecha',
+                    'Tipo', 'Puntaje', 'Estado'])
 
     evaluaciones = Evaluacion.objects.all()
     for e in evaluaciones:
-        writer.writerow([e.evaluado, e.evaluador, e.fecha, e.get_tipo_display(), e.puntaje, e.estado])
+        writer.writerow([e.evaluado, e.evaluador, e.fecha,
+                        e.get_tipo_display(), e.puntaje, e.estado])
 
     return response
