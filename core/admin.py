@@ -3,7 +3,8 @@ from jsonschema import ValidationError
 from .models import AutoevaluacionTrabajador, Cliente,Producto, RespuestaAutoevaluacionTrabajador, Venta, DetalleVenta, Usuario, EvaluacionTrabajador, Criterio, Indicador, RespuestaEvaluacionTrabajador, EvaluacionVenta, RespuestaEvaluacionVenta, Puesto ,PeriodoEvaluacion ,ResultadoTotal ,PesoEvaluacion , Trabajador
 from django import forms
 from django.contrib.auth.admin import UserAdmin
-
+from django.utils.html import format_html
+from django.urls import reverse
 ###################################### CLIENTE #########################################
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
@@ -170,14 +171,40 @@ class PuestoAdmin(admin.ModelAdmin):
 
 @admin.register(Criterio)
 class CriterioAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'descripcion', 'mostrar_puestos', 'rango_min', 'rango_max')
-    list_filter = ('puestos',)  # Filtro para el campo puestos (relación many to many)
-    search_fields = ('nombre', 'descripcion')  # Permitir búsqueda por nombre y descripción
+    list_display  = (
+        'nombre',
+        'descripcion',
+        'mostrar_puestos',
+        'peso',
+        'estado_badge',
+        'acciones',
+    )
+    list_filter   = ('puestos','estado')
+    search_fields = ('nombre','descripcion')
 
-    # Método para mostrar los puestos asociados
     def mostrar_puestos(self, obj):
-        return ", ".join([puesto.nombre for puesto in obj.puestos.all()])
+        return ", ".join(p.nombre for p in obj.puestos.all())
     mostrar_puestos.short_description = 'Puestos'
+
+    def estado_badge(self, obj):
+        color = 'green' if obj.estado == 'Activo' else 'red'
+        return format_html(
+            '<span style="background-color:{};color:#fff;padding:2px 6px;border-radius:4px;font-size:.9em;">{}</span>',
+            color,
+            obj.estado
+        )
+    estado_badge.short_description = 'Estado'
+
+    def acciones(self, obj):
+        edit_url   = reverse('admin:core_criterio_change',   args=[obj.pk])
+        delete_url = reverse('admin:core_criterio_delete', args=[obj.pk])
+        return format_html(
+            '<a class="btn btn-sm btn-outline-primary" href="{}">✎</a> '
+            '<a class="btn btn-sm btn-outline-danger" href="{}">🗑</a>',
+            edit_url, delete_url
+        )
+    acciones.short_description = 'Acciones'
+    acciones.allow_tags = True
     
 @admin.register(Indicador)
 class IndicadorAdmin(admin.ModelAdmin):
@@ -196,9 +223,14 @@ class IndicadorAdmin(admin.ModelAdmin):
 class RespuestaEvaluacionVentaInline(admin.TabularInline):
     model = RespuestaEvaluacionVenta
     extra = 0
+    can_delete = False
     readonly_fields = ('mostrar_indicador', 'puntaje')
     fields = ('mostrar_indicador', 'puntaje')
-    can_delete = False
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # aquí filtramos solo las respuestas de indicadores cuyo criterio sea “atencion”
+        return qs.filter(indicador__criterio__nombre="atencion")
 
     def mostrar_indicador(self, obj):
         return obj.indicador.nombre
@@ -207,10 +239,9 @@ class RespuestaEvaluacionVentaInline(admin.TabularInline):
 
 @admin.register(EvaluacionVenta)
 class EvaluacionVentaAdmin(admin.ModelAdmin):
-    inlines = [RespuestaEvaluacionVentaInline]
+    inlines      = [RespuestaEvaluacionVentaInline]
     list_display = ('id', 'cliente', 'trabajador', 'estado', 'fecha')
-    list_filter = ('estado',)
-
+    list_filter  = ('estado',)
 
 class RespuestaEvaluacionTrabajadorInline(admin.TabularInline):
     model = RespuestaEvaluacionTrabajador
@@ -329,19 +360,29 @@ class AutoevaluacionTrabajadorAdmin(admin.ModelAdmin):
 
 #################################### PEESOS #######################################33
 
-# ——— Admin para PeriodoEvaluacion ———
+# # ——— Admin para PeriodoEvaluacion ———
+# @admin.register(PeriodoEvaluacion)
+# class PeriodoEvaluacionAdmin(admin.ModelAdmin):
+#     list_display  = ('puesto', 'fecha_inicio', 'fecha_fin', 'esta_activo')
+#     list_filter   = ('puesto',)
+#     search_fields = ('puesto__nombre',)
+#     ordering      = ('puesto', 'fecha_inicio')
+#     date_hierarchy = 'fecha_inicio'
+
+#     def esta_activo(self, obj):
+#         return obj.esta_activo()
+#     esta_activo.boolean = True
+#     esta_activo.short_description = 'Activo ahora?'
 @admin.register(PeriodoEvaluacion)
 class PeriodoEvaluacionAdmin(admin.ModelAdmin):
-    list_display  = ('puesto', 'fecha_inicio', 'fecha_fin', 'esta_activo')
-    list_filter   = ('puesto',)
-    search_fields = ('puesto__nombre',)
-    ordering      = ('puesto', 'fecha_inicio')
-    date_hierarchy = 'fecha_inicio'
+    list_display = ('puesto', 'fecha_inicio', 'fecha_fin', 'activo_ahora')
 
-    def esta_activo(self, obj):
+    def activo_ahora(self, obj):
         return obj.esta_activo()
-    esta_activo.boolean = True
-    esta_activo.short_description = 'Activo ahora?'
+    activo_ahora.boolean = True
+    activo_ahora.short_description = '¿Activo ahora?'
+
+
 
 # ——— Admin para PesoEvaluacion ———
 @admin.register(PesoEvaluacion)

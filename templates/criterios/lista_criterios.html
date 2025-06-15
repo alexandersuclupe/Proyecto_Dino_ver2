@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestión de Criterios e Indicadores</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>Gestión de Criterios e Indicadores</h1>
+      <a href="{% url 'nuevo_criterio' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Nuevo Criterio
+      </a>
+    </div>
+    <table class="table table-striped align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Criterio</th>
+          <th>Descripción</th>
+          <th>Puestos</th>
+          <th>Peso (%)</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for c in criterios %}
+        <tr>
+          <td>
+            <a href="{% url 'detalle_criterio' c.pk %}">
+              {{ c.nombre }}
+            </a>
+          </td>
+          <td>{{ c.descripcion }}</td>
+          <td>
+            {% for p in c.puestos.all %}
+              {{ p.nombre }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          </td>
+          <td>{{ c.peso }}%</td>
+          <td>
+            {% if c.estado == 'Activo' %}
+              <span class="badge bg-success">Activo</span>
+            {% else %}
+              <span class="badge bg-secondary">Inactivo</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'editar_criterio' c.pk %}" class="btn btn-sm btn-outline-secondary me-1">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a href="{% url 'eliminar_criterio' c.pk %}" class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted">
+            No hay criterios registrados.
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

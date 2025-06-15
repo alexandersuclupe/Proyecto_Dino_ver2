@@ -51,8 +51,10 @@ urlpatterns = [
     path('evaluacion/<str:tipo>/<int:id>/', views.ver_evaluacion, name='ver_evaluacion'),
 
     path('cliente/dashboard/', views.cliente_dashboard, name='cliente_panel'),
-    path('evaluar_cliente/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta'),
-
+    
+    #path('evaluar_cliente/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta'),
+    
+    path('evaluar_cliente/<int:evaluacion_id>/', views.evaluar_venta, name='evaluar_venta'),
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
     #path('clientes/', views.cliente_panel, name='cliente_panel'),
 
@@ -62,10 +64,11 @@ urlpatterns = [
 
     # Ruta para mostrar resultado resumen de evaluación
     #path('resultado/<int:venta_id>/', views.resultado_evaluacion, name='resultado_evaluacion'),
-    path('criterios/', views.lista_criterios, name='lista_criterios'),
-    path('criterios/nuevo/', views.crear_criterio, name='crear_criterio'),
-    path('criterios/<int:pk>/editar/', views.editar_criterio, name='editar_criterio'),
-    path('criterios/<int:pk>/eliminar/', views.eliminar_criterio, name='eliminar_criterio'),
+     path('criterios/',                    views.lista_criterios,   name='lista_criterios'),
+    path('criterios/nuevo/',              views.nuevo_criterio,   name='nuevo_criterio'),
+    path('criterios/<int:pk>/editar/',    views.editar_criterio,  name='editar_criterio'),
+    path('criterios/<int:pk>/eliminar/',  views.eliminar_criterio,name='eliminar_criterio'),
+    path('criterios/<int:pk>/',           views.detalle_criterio, name='detalle_criterio'),
 
     # Comentamos la antigua evaluación por trabajador simple
     # path('evaluar/<int:trabajador_id>/', views.evaluar_cliente, name='evaluar_cliente'),

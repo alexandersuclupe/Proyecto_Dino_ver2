@@ -95,7 +95,7 @@ def cliente_dashboard(request):
     cliente = request.user.cliente
 
     evaluaciones_realizadas = EvaluacionVenta.objects.filter(
-        cliente=cliente, estado="COMPLETADO"
+        cliente=cliente, estado="COMPLETADA"
     )
     ventas_pendientes = EvaluacionVenta.objects.filter(
         cliente=cliente, estado="PENDIENTE"
@@ -110,43 +110,88 @@ def cliente_dashboard(request):
 
 
 #############################################################
+# @login_required
+# def evaluar_venta(request, venta_id):
+#     # # Validar rol cliente
+#     # if not hasattr(request.user, 'rol') or request.user.rol != 'cliente':
+#     #     return render(request, 'error.html', {
+#     #         'mensaje': 'No tienes permisos para acceder a esta página. Debes ser un cliente registrado.'
+#     #     })
+
+#     # Obtener cliente asociado
+#     try:
+#         cliente = Cliente.objects.get(user=request.user)
+#     except Cliente.DoesNotExist:
+#         return render(request, 'error.html', {
+#             'mensaje': 'No tienes un perfil de cliente asociado. Por favor contacta al administrador.'
+#         })
+
+#     # Obtener venta que pertenece a ese cliente
+#     try:
+#         venta = Venta.objects.get(id=venta_id, cliente=cliente)
+#     except Venta.DoesNotExist:
+#         return render(request, 'error.html', {
+#             'mensaje': 'No se encontró la venta solicitada o no te pertenece.'
+#         })
+
+#     trabajador = venta.usuario
+#     indicadores = Indicador.objects.filter(criterio__nombre="atencion")
+
+#     if request.method == 'POST':
+#         form = EvaluacionVentaForm(request.POST, indicadores=indicadores)
+#         if form.is_valid():
+#             evaluacion, creada = EvaluacionVenta.objects.update_or_create(
+#             venta=venta,
+#             cliente=cliente,
+#             trabajador=trabajador,
+#             defaults={'estado': 'COMPLETADA'}
+#         )
+#         # (Opcional) refrescar sus respuestas…
+#         for indicador in indicadores:
+#             puntaje = int(form.cleaned_data[f'indicador_{indicador.id}'])
+#             RespuestaEvaluacionVenta.objects.update_or_create(
+#                 evaluacion=evaluacion,
+#                 indicador=indicador,
+#                 defaults={'puntaje': puntaje}
+#             )
+#         return render(request, 'evaluacion_venta_ex.html')
+#     else:
+#         form = EvaluacionVentaForm(indicadores=indicadores)
+
+#     return render(request, 'evaluacion_venta_form.html', {
+#         'form': form,
+#         'venta': venta,
+#         'trabajador': trabajador,
+#         'cliente': cliente
+#     })
 @login_required
-def evaluar_venta(request, venta_id):
-    # Validar rol cliente
-    if not hasattr(request.user, 'rol') or request.user.rol != 'cliente':
-        return render(request, 'error.html', {
-            'mensaje': 'No tienes permisos para acceder a esta página. Debes ser un cliente registrado.'
-        })
+def evaluar_venta(request, evaluacion_id):
+    # 1) Recupero la evaluación (y compruebo que el cliente sea el suyo)
+    evaluacion = get_object_or_404(
+        EvaluacionVenta,
+        id=evaluacion_id,
+        cliente__user=request.user
+    )
 
-    # Obtener cliente asociado
-    try:
-        cliente = Cliente.objects.get(user=request.user)
-    except Cliente.DoesNotExist:
-        return render(request, 'error.html', {
-            'mensaje': 'No tienes un perfil de cliente asociado. Por favor contacta al administrador.'
-        })
+    # 2) Datos relacionados
+    venta      = evaluacion.venta
+    cliente    = evaluacion.cliente
+    trabajador = evaluacion.trabajador
 
-    # Obtener venta que pertenece a ese cliente
-    try:
-        venta = Venta.objects.get(id=venta_id, cliente=cliente)
-    except Venta.DoesNotExist:
-        return render(request, 'error.html', {
-            'mensaje': 'No se encontró la venta solicitada o no te pertenece.'
-        })
-
-    trabajador = venta.usuario
+    # 3) Indicadores del criterio “atencion”
     indicadores = Indicador.objects.filter(criterio__nombre="atencion")
 
     if request.method == 'POST':
         form = EvaluacionVentaForm(request.POST, indicadores=indicadores)
         if form.is_valid():
-            evaluacion = EvaluacionVenta.objects.create(
-                venta=venta,
-                trabajador=trabajador,
-                cliente=cliente,
-                estado='COMPLETADO'
+            # 4) Marcar COMPLETADA y borrar viejas respuestas
+            evaluacion.estado = 'COMPLETADA'
+            evaluacion.save()
+            RespuestaEvaluacionVenta.objects.filter(
+                evaluacion=evaluacion
+            ).delete()
 
-            )
+            # 5) Crear exactamente las nuevas
             for indicador in indicadores:
                 puntaje = int(form.cleaned_data[f'indicador_{indicador.id}'])
                 RespuestaEvaluacionVenta.objects.create(
@@ -154,35 +199,45 @@ def evaluar_venta(request, venta_id):
                     indicador=indicador,
                     puntaje=puntaje
                 )
-            evaluacion.estado = 'COMPLETADO'
-            evaluacion.save()
-            return render(request, 'evaluacion_venta_ex.html')
+
+            return render(request, 'evaluacion_venta_ex.html', {
+                'evaluacion': evaluacion
+            })
+
     else:
         form = EvaluacionVentaForm(indicadores=indicadores)
 
     return render(request, 'evaluacion_venta_form.html', {
-        'form': form,
-        'venta': venta,
+        'form':       form,
+        'evaluacion': evaluacion,
+        'venta':      venta,
         'trabajador': trabajador,
-        'cliente': cliente
+        'cliente':    cliente,
     })
-
 
 @login_required
 def editar_evaluacion_trabajador(request, evaluacion_id):
     evaluacion = get_object_or_404(EvaluacionTrabajador, id=evaluacion_id)
-    evaluado = evaluacion.evaluado  # El usuario que está siendo evaluado
-    puesto_evaluado = evaluado.puesto  # Obtener el puesto del evaluado
+    usuario_evaluado = evaluacion.evaluado  # Este es un objeto Usuario
 
-    # Filtrar los criterios asociados al puesto del evaluado
-    criterios = Criterio.objects.filter(puestos=puesto_evaluado)
+    # Obtener el puesto desde el perfil Trabajador vinculado al Usuario
+    try:
+        perfil = usuario_evaluado.trabajador
+        puesto_evaluado = perfil.puesto
+    except (Trabajador.DoesNotExist, AttributeError):
+        puesto_evaluado = None
 
-    # Obtener indicadores relacionados a esos criterios
+    # Filtrar criterios asociados a ese puesto
+    criterios = Criterio.objects.filter(puestos=puesto_evaluado) if puesto_evaluado else Criterio.objects.none()
+
+    # Obtener los indicadores de esos criterios
     indicadores = Indicador.objects.filter(criterio__in=criterios)
 
-    # Obtener respuestas previas para precargar el formulario
+    # Precargar respuestas previas
     respuestas_actuales = {
-        r.indicador_id: r.puntaje for r in evaluacion.respuestas.all()}
+        r.indicador_id: r.puntaje
+        for r in evaluacion.respuestas.all()
+    }
 
     if request.method == 'POST':
         form = EvaluacionTrabajadorForm(request.POST, indicadores=indicadores)
@@ -196,19 +251,21 @@ def editar_evaluacion_trabajador(request, evaluacion_id):
                 )
             evaluacion.estado = 'COMPLETADA'
             evaluacion.save()
-            return redirect('admin_dashboard')  # Cambia según tu ruta deseada
+            return redirect('admin_dashboard')  # Ajusta esto a tu URL deseada
     else:
-        initial_data = {f'indicador_{ind.id}': respuestas_actuales.get(ind.id, 0) for ind in indicadores}
+        initial_data = {
+            f'indicador_{ind.id}': respuestas_actuales.get(ind.id, 0)
+            for ind in indicadores
+        }
         form = EvaluacionTrabajadorForm(indicadores=indicadores, initial=initial_data)
 
     return render(request, 'evaluacion_trabajador_form.html', {
-        'form': form,
+        'form':       form,
         'evaluacion': evaluacion,
-        'evaluado': evaluado,
-        'criterios': criterios,
-        'puesto': puesto_evaluado,
+        'evaluado':   usuario_evaluado,
+        'criterios':  criterios,
+        'puesto':     puesto_evaluado,
     })
-
 
 # 333
 
@@ -396,51 +453,51 @@ def autoevaluacion_view(request):
 
 @login_required
 def lista_evaluaciones(request):
-    usuario = request.user
+    user = request.user
 
-    # 1) cargar periodo
-    periodo = PeriodoEvaluacion.objects.filter(puesto=usuario.puesto).first()
+    # 1) Intentar conseguir el perfil de Trabajador
+    try:
+        perfil = user.trabajador
+    except (Trabajador.DoesNotExist, AttributeError):
+        # Si el usuario no tiene perfil de Trabajador, no puede ver evaluaciones
+        return render(request, 'sin_permiso.html', status=403)
+
+    puesto = perfil.puesto
+    puesto_nombre = puesto.nombre.lower() if puesto else ''
+
+    # 2) Cargar el periodo activo para ese puesto
+    periodo = PeriodoEvaluacion.objects.filter(puesto=puesto).first()
     periodo_activo = periodo.esta_activo() if periodo else False
 
-    # 2) filtrar según rol del evaluador
-    puesto_nombre = usuario.puesto.nombre.lower() if usuario.puesto else ''
-
+    # 3) Filtrar empleados según rol (puesto) del evaluador
     if puesto_nombre == 'supervisor':
-        # Supervisor ve solo los trabajadores con puesto 'vendedor', 'cajero' o 'almacen', excepto a sí mismo
+        # Sólo vendedores, cajeros y almacenistas
+        candidatos = ['vendedor', 'cajero', 'almacen']
         empleados = Trabajador.objects.filter(
-            puesto__nombre__iexact='vendedor'
-        ) | Trabajador.objects.filter(
-            puesto__nombre__iexact='cajero'
-        ) | Trabajador.objects.filter(
-            puesto__nombre__iexact='almacen'
-        )
-        # Excluir el propio supervisor
-        empleados = empleados.exclude(user=usuario)
+            puesto__nombre__in=candidatos
+        ).exclude(user=user)
 
     elif puesto_nombre == 'gerente':
-        # Gerente ve SOLO a los Supervisores
-        empleados = Trabajador.objects.filter(
-            puesto__nombre__iexact='supervisor'
-        )
+        # Sólo supervisores
+        empleados = Trabajador.objects.filter(puesto__nombre__iexact='supervisor')
 
     else:
-        # Resto de usuarios no evalúan
+        # Resto no evalúan
         empleados = Trabajador.objects.none()
 
-    # 3) pre-crear evaluaciones pendientes
+    # 4) Pre-crear evaluaciones pendientes
     for emp in empleados:
         EvaluacionTrabajador.objects.get_or_create(
-            evaluador=usuario,
-            evaluado=emp.user,  # Accedemos al usuario del trabajador
+            evaluador=user,
+            evaluado=emp.user,
             defaults={
                 'fecha_activacion': periodo.fecha_inicio if periodo else timezone.now(),
                 'estado': 'PENDIENTE'
             }
         )
 
-    # 4) recuperarlas para el template
-    evaluaciones = EvaluacionTrabajador.objects.filter(evaluador=usuario)
-
+    # 5) Recuperar y renderizar
+    evaluaciones = EvaluacionTrabajador.objects.filter(evaluador=user)
     return render(request, 'lista_evaluaciones.html', {
         'evaluaciones':   evaluaciones,
         'periodo':        periodo,
@@ -537,42 +594,67 @@ def eliminar_empleado(request, id):
 @login_required
 @only_trabajador
 def calcular_resultado_final(request, trabajador_id):
-    trabajador = get_object_or_404(Usuario, id=trabajador_id, rol='trabajador')
+    # 1) Perfil de Trabajador
+    perfil = get_object_or_404(Trabajador, id=trabajador_id)
+    usuario_id = perfil.user_id
 
-    pesos = {peso.tipo: peso.peso for peso in PesoEvaluacion.objects.filter(
-        puesto=trabajador.puesto)}
+    # Determinamos si es vendedor
+    puesto_lower = perfil.puesto.nombre.lower() if perfil.puesto else ''
+    es_vendedor  = (puesto_lower == 'vendedor')
 
-    # Autoevaluaciones
-    auto = AutoevaluacionTrabajador.objects.filter(trabajador=trabajador)
+    # 2) Pesos según el puesto
+    pesos = {
+        peso.tipo: peso.peso
+        for peso in PesoEvaluacion.objects.filter(puesto_id=perfil.puesto_id)
+    }
+
+    # 3) Autoevaluaciones
+    auto_qs = AutoevaluacionTrabajador.objects.filter(trabajador_id=trabajador_id)
     auto_puntaje = sum(
-        [r.puntaje for a in auto for r in a.respuestas.all()]) if auto.exists() else 0
+        r.puntaje
+        for a in auto_qs
+        for r in a.respuestas.all()
+    ) if auto_qs.exists() else 0
 
-    # Evaluaciones del cliente
-    cliente_puntaje = 0
-    trabajador_obj = Trabajador.objects.filter(user=trabajador).first()
-    if trabajador_obj:
-        cliente = EvaluacionVenta.objects.filter(
-            trabajador=trabajador_obj, estado="COMPLETADA")
+    # 4) Evaluaciones de cliente — sólo si es vendedor
+    if es_vendedor:
+        cliente_qs = EvaluacionVenta.objects.filter(
+            trabajador_id=trabajador_id,
+            estado="COMPLETADA"
+        )
         cliente_puntaje = sum(
-            [r.puntaje for e in cliente for r in e.respuestas.all()])
+            r.puntaje
+            for e in cliente_qs
+            for r in e.respuestas.all()
+        ) if cliente_qs.exists() else 0
+    else:
+        cliente_puntaje = 0
 
-    # Evaluaciones internas
-    interno = EvaluacionTrabajador.objects.filter(
-        evaluado=trabajador, estado="COMPLETADA")
+    # 5) Evaluaciones internas
+    interno_qs = EvaluacionTrabajador.objects.filter(
+        evaluado_id=usuario_id,
+        estado="COMPLETADA"
+    )
     interno_puntaje = sum(
-        [r.puntaje for e in interno for r in e.respuestas.all()]) if interno.exists() else 0
+        r.puntaje
+        for e in interno_qs
+        for r in e.respuestas.all()
+    ) if interno_qs.exists() else 0
 
+    # 6) Cálculo total: si no es vendedor, el peso "CLIE" simplemente no suma nada
     total = (
-        auto_puntaje * pesos.get("AUTO", 0) +
+        auto_puntaje    * pesos.get("AUTO", 0) +
         cliente_puntaje * pesos.get("CLIE", 0) +
         interno_puntaje * pesos.get("TRAB", 0)
     )
 
+    # 7) Guardar/actualizar ResultadoTotal
     ResultadoTotal.objects.update_or_create(
-        trabajador=trabajador,
+        trabajador_id=trabajador_id,
         defaults={"puntaje_total": total}
     )
 
+    # 8) Leyenda
     if total >= 80:
         leyenda = "Aprobado"
     elif total >= 50:
@@ -581,80 +663,95 @@ def calcular_resultado_final(request, trabajador_id):
         leyenda = "En riesgo"
 
     return render(request, "empleados/resultado_total.html", {
-        "trabajador": trabajador,
+        "trabajador":       perfil,
+        "es_vendedor":      es_vendedor,
         "puntaje_autoeval": auto_puntaje,
-        "puntaje_cliente": cliente_puntaje,
-        "puntaje_interno": interno_puntaje,
-        "peso_auto": pesos.get("AUTO", 0),
-        "peso_cliente": pesos.get("CLIE", 0),
-        "peso_interno": pesos.get("TRAB", 0),
-        "total": total,
-        "leyenda": leyenda
+        "puntaje_cliente":  cliente_puntaje,
+        "puntaje_interno":  interno_puntaje,
+        "peso_auto":        pesos.get("AUTO", 0),
+        "peso_cliente":     pesos.get("CLIE", 0),
+        "peso_interno":     pesos.get("TRAB", 0),
+        "total":            total,
+        "leyenda":          leyenda,
     })
 
-# core/views.py
 
-
+@login_required
 def lista_criterios(request):
     criterios = Criterio.objects.all()
-    total_indicadores = sum(c.indicadores.count() for c in criterios)
-    return render(request, 'criterios/lista.html', {
-        'criterios': criterios,
-        'total_indicadores': total_indicadores
+    return render(request, 'criterios/lista_criterios.html', {
+        'criterios': criterios
     })
 
-
-def crear_criterio(request):
+@login_required
+def nuevo_criterio(request):
     if request.method == 'POST':
-        form = CriterioForm(request.POST)
+        form    = CriterioForm(request.POST)
         formset = IndicadorFormSet(request.POST)
         if form.is_valid() and formset.is_valid():
             criterio = form.save()
-            formset.instance = criterio
-            formset.save()
-            return redirect('lista_criterios')
+            formset.instance = criterio    # asociamos el formset al nuevo criterio
+            formset.save()                 # ¡guardamos los indicadores!
+            return redirect('detalle_criterio', pk=criterio.pk)
     else:
-        form = CriterioForm()
+        form    = CriterioForm()
         formset = IndicadorFormSet()
-    return render(request, 'criterios/formulario.html', {
-        'form': form,
+    return render(request, 'criterios/form_criterio.html', {
+        'form':    form,
         'formset': formset,
-        'modo': 'crear'
+        'titulo':  'Nuevo criterio e indicadores'
     })
 
-
+@login_required
 def editar_criterio(request, pk):
     criterio = get_object_or_404(Criterio, pk=pk)
+
     if request.method == 'POST':
-        form = CriterioForm(request.POST, instance=criterio)
+        # 1) Asociamos POST al form de Criterio (edición)
+        form    = CriterioForm(request.POST, instance=criterio)
+        # 2) Y al formset de Indicadores, vinculándolo al mismo criterio
         formset = IndicadorFormSet(request.POST, instance=criterio)
+
         if form.is_valid() and formset.is_valid():
+            # 3) Guardamos primero el criterio
             form.save()
+            # 4) ¡MUY IMPORTANTE!: guardamos los indicadores (nuevos, modificados o borrados)
             formset.save()
-            return redirect('lista_criterios')
+
+            # 5) Redirigimos a la vista de detalle, donde se verán los indicadores actualizados
+            return redirect('detalle_criterio', pk=criterio.pk)
+
     else:
-        form = CriterioForm(instance=criterio)
+        form    = CriterioForm(instance=criterio)
         formset = IndicadorFormSet(instance=criterio)
-    return render(request, 'criterios/formulario.html', {
-        'form': form,
+
+    return render(request, 'criterios/form_criterio.html', {
+        'form':    form,
         'formset': formset,
-        'modo': 'editar'
+        'titulo':  'Editar criterio e indicadores'
     })
 
+@login_required
+def detalle_criterio(request, pk):
+    criterio    = get_object_or_404(Criterio, pk=pk)
+    # Usa el related_name que tengas en el modelo Indicator->criterio.
+    # Si en tu modelo pusiste related_name="indicadores":
+    indicadores = criterio.indicadores.all()
+    return render(request, 'criterios/detalle_criterio.html', {
+        'criterio':    criterio,
+        'indicadores': indicadores,
+    })
 
+@login_required
 def eliminar_criterio(request, pk):
     criterio = get_object_or_404(Criterio, pk=pk)
     if request.method == 'POST':
         criterio.delete()
         return redirect('lista_criterios')
-    return render(request, 'criterios/confirmar_eliminar.html', {'criterio': criterio})
+    return render(request, 'criterios/confirmar_eliminacion.html', {
+        'criterio': criterio
+    })
 
-
-TIPO_CHOICES = {
-    'AUTO': 'Autoevaluación',
-    'TRAB': 'Evaluación del Trabajador',
-    'CLIE': 'Evaluación del Cliente',
-}
 
 
 def normalizar_fecha(fecha):

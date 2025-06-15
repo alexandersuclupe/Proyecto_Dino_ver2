@@ -2,53 +2,60 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <title>Evaluaciones de Empleados</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Tailwind CDN para estilos rápidos -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <title>Evaluaciones de Empleados</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Tailwind CDN para estilos rápidos -->
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-gray-100">
 
-    <div class="max-w-7xl mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-8">Evaluaciones de Empleados</h1>
+  <div class="max-w-7xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-8">Evaluaciones de Empleados</h1>
 
-        <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {% for ev in evaluaciones %}
-            <div class="bg-white rounded-2xl shadow p-6 flex flex-col">
-                <!-- Icono según el puesto -->
-                <div class="text-4xl mb-4">
-                    {% if ev.evaluado.puesto.nombre == "Vendedor" %}
-                    🛍️
-                    {% elif ev.evaluado.puesto.nombre == "Cajero" %}
-                    💰
-                    {% elif ev.evaluado.puesto.nombre == "Almacén" %}
-                    📦
-                    {% else %}
-                    👤
-                    {% endif %}
-                </div>
+    <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      {% for ev in evaluaciones %}
+        {% with perfil=ev.evaluado.trabajador %}
+        <a href="{% if periodo_activo %}{% url 'editar_evaluacion_trabajador' ev.id %}{% else %}#{% endif %}"
+           class="block bg-white rounded-2xl shadow p-6 flex flex-col hover:shadow-lg transition">
+          
+          <!-- Icono según el puesto -->
+          <div class="text-4xl mb-4">
+            {% with nombre_puest=perfil.puesto.nombre|lower %}
+              {% if nombre_puest == "vendedor" %}
+                🛍️
+              {% elif nombre_puest == "cajero" %}
+                💰
+              {% elif nombre_puest == "almacén" or nombre_puest == "almacen" %}
+                📦
+              {% else %}
+                👤
+              {% endif %}
+            {% endwith %}
+          </div>
 
-                <h2 class="text-xl font-semibold mb-1">{{ ev.evaluado.get_full_name }}</h2>
-                <p class="text-gray-500 mb-6">{{ ev.evaluado.puesto.nombre }}</p>
+          <h2 class="text-xl font-semibold mb-1">{{ ev.evaluado.get_full_name }}</h2>
+          <p class="text-gray-500 mb-6">{{ perfil.puesto.nombre|capfirst }}</p>
 
-                {% if periodo_activo %}
-                <a href="{% url 'editar_evaluacion_trabajador' ev.id %}">
-                    <button class="mt-auto bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl w-full">
-                        {% if ev.estado == 'PENDIENTE' %}Evaluar{% else %}Continuar{% endif %}
-                    </button>
-                </a>
-                {% else %}
-                <button disabled class="mt-auto bg-gray-300 text-gray-500 py-2 rounded-xl w-full cursor-not-allowed">
-                    Fuera de fechas
-                </button>
-                {% endif %}
+          {% if periodo_activo %}
+            <button class="mt-auto bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl w-full">
+              {% if ev.estado == 'PENDIENTE' %}Evaluar{% else %}Continuar{% endif %}
+            </button>
+          {% else %}
+            <button disabled 
+                    class="mt-auto bg-gray-300 text-gray-500 py-2 rounded-xl w-full cursor-not-allowed">
+              Fuera de fechas
+            </button>
+          {% endif %}
 
-            </div>
-            {% endfor %}
-        </div>
+        </a>
+        {% endwith %}
+      {% empty %}
+        <p class="col-span-3 text-center text-gray-600">No hay empleados para evaluar en este periodo.</p>
+      {% endfor %}
     </div>
+  </div>
 
 </body>
 

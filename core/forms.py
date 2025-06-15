@@ -74,21 +74,36 @@ class EvaluacionVentaForm(forms.Form):
                 # Aquí asignamos la descripción para usarla en el template
                 self.fields[f'indicador_{indicador.id}'].widget.attrs['descripcion'] = indicador.descripcion or "Sin descripción."
 
+
+#################### CRITERIO ########################################3
 class CriterioForm(forms.ModelForm):
     class Meta:
         model = Criterio
-        fields = ['nombre', 'descripcion', 'puestos', 'rango_min', 'rango_max']  # Aquí no debe aparecer 'puesto'
+        fields = ['nombre', 'descripcion', 'puestos', 'rango_min', 'rango_max', 'peso', 'estado']
         widgets = {
-            'puestos': forms.CheckboxSelectMultiple(),  # Muestra los puestos como checkboxes
+            'nombre':     forms.TextInput(attrs={'class':'form-control'}),
+            'descripcion':forms.Textarea(attrs={'class':'form-control','rows':2}),
+            'puestos':    forms.SelectMultiple(attrs={'class':'form-select'}),
+            'rango_min':  forms.NumberInput(attrs={'class':'form-control','min':0}),
+            'rango_max':  forms.NumberInput(attrs={'class':'form-control','min':0}),
+            'peso':       forms.NumberInput(attrs={'class':'form-control','min':0,'max':100}),
+            'estado':     forms.Select(attrs={'class':'form-select'}),
         }
 
-
+# Un formset para editar/crear indicadores en línea al editar un criterio
 IndicadorFormSet = inlineformset_factory(
-    Criterio, Indicador,
+    Criterio,
+    Indicador,
+    # aquí van los nombres EXACTOS de los campos que sí existen
     fields=['nombre', 'descripcion', 'max_puntaje'],
-    extra=1, can_delete=True
+    extra=1,
+    #can_delete=False,
+    widgets={
+        'nombre':      forms.TextInput(attrs={'class': 'form-control'}),
+        'descripcion': forms.TextInput(attrs={'class': 'form-control'}),
+        'max_puntaje': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+    }
 )
-
 
 
 
@@ -256,3 +271,4 @@ class FiltroEvaluacionForm(forms.Form):
         choices=[('todas', 'Todas las evaluaciones')] + list(TipoEvaluacion.choices),
         label='Tipo'
     )
+    ##############33

@@ -3,7 +3,8 @@ from django.utils import timezone
 from django.db.models import Sum
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
-
+from django.utils.timezone import localdate
+from datetime import date
 
 ### --- ROLES Y USUARIOS --- ###
 
@@ -141,13 +142,39 @@ class TipoEvaluacion(models.TextChoices):
     EVALUACION_CLIENTE = 'CLIE', 'Evaluación Cliente'
 
 
+# class Criterio(models.Model):
+#     nombre = models.CharField(max_length=100, default='Sin nombre')
+#     descripcion = models.CharField(max_length=200, blank=True, null=True)
+#    # puesto = models.ForeignKey(Puesto, on_delete=models.SET_NULL, null=True, blank=True)
+#     puestos = models.ManyToManyField(Puesto)
+#     rango_min = models.IntegerField()
+#     rango_max = models.IntegerField()
+
+#     def __str__(self):
+#         return f"{self.nombre} ({self.rango_min}-{self.rango_max})"
+
+#     @property
+#     def puntaje(self):
+#         return self.indicadores.aggregate(total=models.Sum('max_puntaje'))['total'] or 0
+############################ CRITERIO #############################################33
 class Criterio(models.Model):
-    nombre = models.CharField(max_length=100, default='Sin nombre')
+    nombre      = models.CharField(max_length=100, default='Sin nombre')
     descripcion = models.CharField(max_length=200, blank=True, null=True)
-   # puesto = models.ForeignKey(Puesto, on_delete=models.SET_NULL, null=True, blank=True)
-    puestos = models.ManyToManyField(Puesto)
-    rango_min = models.IntegerField()
-    rango_max = models.IntegerField()
+    puestos     = models.ManyToManyField(Puesto, related_name='criterios')
+    rango_min   = models.IntegerField()
+    rango_max   = models.IntegerField()
+
+    # Nuevo campo de peso en porcentaje
+    peso        = models.PositiveIntegerField('Peso (%)', default=0,
+                    help_text='Porcentaje que aporta este criterio')
+
+    # Nuevo campo de estado
+    ESTADO_CHOICES = [
+        ('Activo',   'Activo'),
+        ('Inactivo', 'Inactivo'),
+    ]
+    estado      = models.CharField(max_length=10, choices=ESTADO_CHOICES,
+                    default='Activo')
 
     def __str__(self):
         return f"{self.nombre} ({self.rango_min}-{self.rango_max})"
@@ -157,11 +184,14 @@ class Criterio(models.Model):
         return self.indicadores.aggregate(total=models.Sum('max_puntaje'))['total'] or 0
 
 
-
 class Indicador(models.Model):
     nombre = models.CharField(max_length=100)
     descripcion = models.TextField(blank=True, null=True)
-    criterio = models.ForeignKey(Criterio, on_delete=models.CASCADE, related_name='indicadores')
+    criterio = models.ForeignKey(
+    Criterio,
+    on_delete=models.CASCADE,
+    related_name='indicadores'
+)
     max_puntaje = models.IntegerField(default=5)
 
     def __str__(self):
@@ -184,7 +214,7 @@ class AutoevaluacionTrabajador(models.Model):
 
 class RespuestaAutoevaluacionTrabajador(models.Model):
     autoevaluacion = models.ForeignKey(AutoevaluacionTrabajador, related_name='respuestas', on_delete=models.CASCADE)
-    indicador = models.ForeignKey(Indicador, on_delete=models.PROTECT)
+    indicador = models.ForeignKey(Indicador, on_delete=models.CASCADE)
 
     VALORACION_CHOICES = [(i, str(i)) for i in range(1, 6)]
 
@@ -285,7 +315,7 @@ class PeriodoEvaluacion(models.Model):
         unique_together = ('puesto', 'fecha_inicio', 'fecha_fin')
 
     def esta_activo(self):
-        hoy = timezone.now().date()
+        hoy = date.today()     # <-- usa localdate en lugar de timezone.now().date()
         return self.fecha_inicio <= hoy <= self.fecha_fin
 
     def __str__(self):
