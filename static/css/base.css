@@ -1,0 +1,238 @@
+/* static/css/base.css */
+:root {
+    --sidebar-width: 260px;
+    --sidebar-collapsed: 80px;
+    --primary: #36965e;
+    --bg: #f9f9f9;
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Navbar siempre encima */
+nav.navbar {
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    height: 56px;
+    z-index: 1100;
+}
+
+/* Wrapper de layout */
+.d-flex.main {
+    height: calc(100vh - 56px);
+}
+
+/* Sidebar fija */
+aside.sidebar {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background: var(--primary);
+    color: #fff;
+    padding: 1rem;
+    box-shadow: 2px 0 8px var(--shadow);
+    transition: width .3s;
+    z-index: 1050;
+}
+
+aside.sidebar.collapsed {
+    width: var(--sidebar-collapsed);
+}
+
+aside.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: .5rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+aside.sidebar .nav-link i {
+    min-width: 24px;
+    text-align: center;
+}
+
+aside.sidebar .nav-link span {
+    transition: opacity .3s;
+}
+
+aside.sidebar.collapsed .nav-link span {
+    opacity: 0;
+}
+
+aside.sidebar .nav-link.active {
+    background: #fff;
+    color: var(--primary);
+}
+
+/* Main content reserva espacio */
+main.content {
+    margin-top: 56px;
+    /* bajo navbar */
+    margin-left: var(--sidebar-width);
+    padding: 2rem;
+    transition: margin-left .3s;
+    position: relative;
+    overflow: auto;
+}
+
+/* Cuando sidebar colapsa, reduce el margin */
+aside.sidebar.collapsed+main.content {
+    margin-left: var(--sidebar-collapsed);
+}
+
+main.content h2 {
+    color: var(--primary);
+    border-bottom: 3px solid var(--primary);
+    padding-bottom: .3rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Estadísticas/tarjetas */
+.stat-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow);
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform .2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card .icon {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: .5rem;
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    margin: .3rem 0;
+    color: var(--primary);
+}
+
+:root {
+    --sidebar-width: 260px;
+    --sidebar-collapsed: 80px;
+    --primary: #36965e;
+    --bg: #f9f9f9;
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+nav.navbar {
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    height: 56px;
+}
+
+.d-flex.main {
+    height: calc(100vh - 56px);
+}
+
+aside.sidebar {
+    width: var(--sidebar-width);
+    background: var(--primary);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    box-shadow: 2px 0 8px var(--shadow);
+    transition: width .3s;
+}
+
+aside.sidebar.collapsed {
+    width: var(--sidebar-collapsed);
+}
+
+aside.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: .5rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+aside.sidebar .nav-link i {
+    min-width: 24px;
+    text-align: center;
+}
+
+aside.sidebar .nav-link span {
+    transition: opacity .3s;
+}
+
+aside.sidebar.collapsed .nav-link span {
+    opacity: 0;
+}
+
+aside.sidebar .nav-link.active {
+    background: #fff;
+    color: var(--primary);
+}
+
+main.content {
+    flex: 1;
+    overflow: auto;
+    padding: 2rem;
+}
+
+main.content h2 {
+    color: var(--primary);
+    border-bottom: 3px solid var(--primary);
+    padding-bottom: .3rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow);
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform .2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card .icon {
+    font-size: 2rem;
+    color: var(--primary);
+    margin-bottom: .5rem;
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    margin: .3rem 0;
+    color: var(--primary);
+}

@@ -1,26 +1,23 @@
-<!DOCTYPE html>
-<html lang="es">
+{% extends "base/base.html" %}
+{% load static %}
 
-<head>
-  <meta charset="UTF-8">
-  <title>Evaluaciones de Empleados</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Tailwind CDN para estilos rápidos -->
+{% block title %}Gestión de Evaluaciones{% endblock %}
+
+{% block extra_css %}
+  {# Si quieres usar Tailwind en esta página, inclúyelo aquí #}
   <script src="https://cdn.tailwindcss.com"></script>
-</head>
+{% endblock %}
 
-<body class="bg-gray-100">
+{% block content %}
+<div class="max-w-7xl mx-auto p-6">
 
-  <div class="max-w-7xl mx-auto p-6">
-    <h1 class="text-3xl font-bold mb-8">Evaluaciones de Empleados</h1>
-
-    <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-      {% for ev in evaluaciones %}
-        {% with perfil=ev.evaluado.trabajador %}
+  <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    {% for ev in evaluaciones %}
+      {% with perfil=ev.evaluado.trabajador %}
         <a href="{% if periodo_activo %}{% url 'editar_evaluacion_trabajador' ev.id %}{% else %}#{% endif %}"
            class="block bg-white rounded-2xl shadow p-6 flex flex-col hover:shadow-lg transition">
-          
-          <!-- Icono según el puesto -->
+
+          {# Icono según el puesto #}
           <div class="text-4xl mb-4">
             {% with nombre_puest=perfil.puesto.nombre|lower %}
               {% if nombre_puest == "vendedor" %}
@@ -43,20 +40,20 @@
               {% if ev.estado == 'PENDIENTE' %}Evaluar{% else %}Continuar{% endif %}
             </button>
           {% else %}
-            <button disabled 
+            <button disabled
                     class="mt-auto bg-gray-300 text-gray-500 py-2 rounded-xl w-full cursor-not-allowed">
               Fuera de fechas
             </button>
           {% endif %}
 
         </a>
-        {% endwith %}
-      {% empty %}
-        <p class="col-span-3 text-center text-gray-600">No hay empleados para evaluar en este periodo.</p>
-      {% endfor %}
-    </div>
+      {% endwith %}
+    {% empty %}
+      <p class="col-span-3 text-center text-gray-600">
+        No hay empleados para evaluar en este periodo.
+      </p>
+    {% endfor %}
   </div>
 
-</body>
-
-</html>
+</div>
+{% endblock %}

@@ -82,10 +82,60 @@ def registro_cliente(request):
     return render(request, 'registro_cliente.html', {'form': form})
 
 
+# @login_required(login_url='login')
+# @only_trabajador
+# def admin_dashboard(request):
+#     return render(request, 'admin_panel.html')
+
 @login_required(login_url='login')
 @only_trabajador
 def admin_dashboard(request):
-    return render(request, 'admin_panel.html')
+    # 1) Total de empleados
+    total_empleados = Trabajador.objects.count()
+
+    # 2) Evaluaciones pendientes
+    pendientes = EvaluacionVenta.objects.filter(estado='PENDIENTE').count()
+
+    # 3) Promedio general de puntajes
+    promedio_general = ResultadoTotal.objects.aggregate(avg=Avg('puntaje_total'))['avg'] or 0
+
+    # 4) Empleados destacados (por ejemplo, los con puntaje ≥ 80)
+    empleados_destacados = ResultadoTotal.objects.filter(puntaje_total__gte=80).count()
+
+    # (Opcional) diferencias vs mes anterior — ajusta tu lógica real
+    diff_total_empleados = "+2 vs mes anterior"
+    diff_pendientes       = "-3 vs mes anterior"
+    diff_promedio         = "+0.3 vs mes anterior"
+    diff_destacados       = "+1 vs mes anterior"
+
+    # (Opcional) datos para gráficas
+    chart_monthly_data = {
+        'labels': ['Ene','Feb','Mar','Abr','May','Jun'],
+        'datasets': [{
+            'label': 'Evaluaciones',
+            'data': [12,18,22,19,24,20],
+        }]
+    }
+    chart_trend_data = {
+        'labels': ['Ene','Feb','Mar','Abr','May','Jun'],
+        'datasets': [{
+            'label': 'Promedio',
+            'data': [3.8,4.0,4.1,4.2,4.3,4.2],
+        }]
+    }
+
+    return render(request, 'admin_panel.html', {
+        'total_empleados':      total_empleados,
+        'diff_total_empleados': diff_total_empleados,
+        'evaluaciones_pendientes': pendientes,
+        'diff_pendientes':      diff_pendientes,
+        'promedio_general':     promedio_general,
+        'diff_promedio':        diff_promedio,
+        'empleados_destacados': empleados_destacados,
+        'diff_destacados':      diff_destacados,
+        'chart_monthly_data':   chart_monthly_data,
+        'chart_trend_data':     chart_trend_data,
+    })
 
 
 @login_required(login_url='login')
