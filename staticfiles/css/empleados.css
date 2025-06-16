@@ -1,11 +1,13 @@
 body {
     background-color: #f5fff5;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Lato', sans-serif;
 }
 
 .titulo {
     color: #2e7d32;
     font-weight: bold;
+    font-family: 'Lato', sans-serif;
+
 }
 
 .btn-success {

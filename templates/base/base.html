@@ -16,8 +16,10 @@
         :root {
             --sidebar-width: 260px;
             --sidebar-collapsed: 80px;
-            --primary: #36965e;
+            --primary: #F4C716;
             --bg: #f9f9f9;
+            --tre: #17973C;
+            --secundary : #000000 ;
             --shadow: rgba(0, 0, 0, 0.1);
         }
 
@@ -27,7 +29,7 @@
             padding: 0;
             height: 100%;
             background: var(--bg);
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Lato', sans-serif;
         }
 
 
@@ -44,7 +46,7 @@
             left: 0;
             bottom: 0;
             width: var(--sidebar-width);
-            background: var(--primary);
+            background: black;
             color: #fff;
             padding: 1rem;
             box-shadow: 2px 0 8px var(--shadow);
@@ -122,14 +124,14 @@
 
         .stat-card .icon {
             font-size: 2rem;
-            color: var(--primary);
+            color: var(--tre);
             margin-bottom: .5rem;
         }
 
         .stat-card h3 {
             font-size: 2rem;
             margin: .3rem 0;
-            color: var(--primary);
+            color: var(--secundary);
         }
 
 
@@ -205,8 +207,8 @@
         }
 
         main.content h2 {
-            color: var(--primary);
-            border-bottom: 3px solid var(--primary);
+            color: var(--secundary);
+            border-bottom: 3px solid var(--tre);
             padding-bottom: .3rem;
             margin-bottom: 1.5rem;
         }
@@ -227,14 +229,14 @@
 
         .stat-card .icon {
             font-size: 2rem;
-            color: var(--primary);
+            color: var(--tre);
             margin-bottom: .5rem;
         }
 
         .stat-card h3 {
             font-size: 2rem;
             margin: .3rem 0;
-            color: var(--primary);
+            color: var(--secundary);
         }
 
         /* Submenús */
@@ -316,7 +318,7 @@
         </div>
         <div class="d-flex align-items-center">
             <span class="text-success me-4">
-                <i class="bi bi-circle-fill me-1" style="font-size:.6rem;"></i> En línea como:
+                <i class="bi bi-circle-fill me-1" style="font-size:.6rem;"></i> Bienvenida :
                 {{ request.user.get_full_name|default:request.user.username }}
             </span>
             <form id="logoutForm" method="post" action="{% url 'index' %}">
