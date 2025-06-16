@@ -390,8 +390,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'realizar_autoevaluacion' %}"
-                                class="nav-link {% if view_name == 'realizar_autoevaluacion' %}active{% endif %}">
+                            <a href="{% url 'lista_autoevaluaciones' %}"
+                                class="nav-link {% if view_name == 'lista_autoevaluaciones' %}active{% endif %}">
                                 <i class="bi bi-pencil-square"></i><span>Autoevaluación</span>
                             </a>
                         </li>
@@ -404,6 +404,13 @@
                     <a href="{% url 'lista_criterios' %}"
                         class="nav-link {% if view_name == 'lista_criterios' %}active{% endif %}">
                         <i class="bi bi-list-check"></i><span>Criterios</span>
+                    </a>
+                </li>
+
+                                <li class="nav-item">
+                    <a href="{% url 'historial_evaluaciones' %}"
+                        class="nav-link {% if view_name == 'historial_evaluaciones' %}active{% endif %}">
+                        <i class="bi bi-bar-chart-fill"></i><span>Historial</span>
                     </a>
                 </li>
 

@@ -644,86 +644,64 @@ def eliminar_empleado(request, id):
 @login_required
 @only_trabajador
 def calcular_resultado_final(request, trabajador_id):
-    # 1) Perfil de Trabajador
-    perfil = get_object_or_404(Trabajador, id=trabajador_id)
-    usuario_id = perfil.user_id
 
-    # Determinamos si es vendedor
-    puesto_lower = perfil.puesto.nombre.lower() if perfil.puesto else ''
-    es_vendedor  = (puesto_lower == 'vendedor')
+    trab = get_object_or_404(Trabajador, id=trabajador_id)
+    usuario = trab.user                      
 
-    # 2) Pesos según el puesto
-    pesos = {
-        peso.tipo: peso.peso
-        for peso in PesoEvaluacion.objects.filter(puesto_id=perfil.puesto_id)
-    }
-
-    # 3) Autoevaluaciones
-    auto_qs = AutoevaluacionTrabajador.objects.filter(trabajador_id=trabajador_id)
-    auto_puntaje = sum(
-        r.puntaje
-        for a in auto_qs
-        for r in a.respuestas.all()
-    ) if auto_qs.exists() else 0
-
-    # 4) Evaluaciones de cliente — sólo si es vendedor
-    if es_vendedor:
-        cliente_qs = EvaluacionVenta.objects.filter(
-            trabajador_id=trabajador_id,
-            estado="COMPLETADA"
-        )
-        cliente_puntaje = sum(
-            r.puntaje
-            for e in cliente_qs
-            for r in e.respuestas.all()
-        ) if cliente_qs.exists() else 0
-    else:
-        cliente_puntaje = 0
-
-    # 5) Evaluaciones internas
-    interno_qs = EvaluacionTrabajador.objects.filter(
-        evaluado_id=usuario_id,
-        estado="COMPLETADA"
-    )
-    interno_puntaje = sum(
-        r.puntaje
-        for e in interno_qs
-        for r in e.respuestas.all()
-    ) if interno_qs.exists() else 0
-
-    # 6) Cálculo total: si no es vendedor, el peso "CLIE" simplemente no suma nada
-    total = (
-        auto_puntaje    * pesos.get("AUTO", 0) +
-        cliente_puntaje * pesos.get("CLIE", 0) +
-        interno_puntaje * pesos.get("TRAB", 0)
+    auto_puntaje = (
+        AutoevaluacionTrabajador.objects
+        .filter(trabajador=usuario)
+        .aggregate(total=Sum('respuestas__puntaje'))['total'] or 0
     )
 
-    # 7) Guardar/actualizar ResultadoTotal
-    ResultadoTotal.objects.update_or_create(
-        trabajador_id=trabajador_id,
-        defaults={"puntaje_total": total}
+    cliente_puntaje = (
+        EvaluacionVenta.objects
+        .filter(trabajador=trab, estado='COMPLETADA')
+        .aggregate(total=Sum('respuestas__puntaje'))['total'] or 0
     )
 
-    # 8) Leyenda
+    interno_puntaje = (
+        EvaluacionTrabajador.objects
+        .filter(evaluado=usuario, estado='COMPLETADA')
+        .aggregate(total=Sum('respuestas__puntaje'))['total'] or 0
+    )
+
+    peso_auto    = 0.30
+    peso_cliente = 0.40
+    peso_interno = 0.30
+
+    total = round(
+        auto_puntaje    * peso_auto +
+        cliente_puntaje * peso_cliente +
+        interno_puntaje * peso_interno,
+        2
+    )
+
     if total >= 80:
-        leyenda = "Aprobado"
+        leyenda = 'Aprobado'
     elif total >= 50:
-        leyenda = "En proceso"
+        leyenda = 'En proceso'
     else:
-        leyenda = "En riesgo"
+        leyenda = 'En riesgo'
 
-    return render(request, "empleados/resultado_total.html", {
-        "trabajador":       perfil,
-        "es_vendedor":      es_vendedor,
-        "puntaje_autoeval": auto_puntaje,
-        "puntaje_cliente":  cliente_puntaje,
-        "puntaje_interno":  interno_puntaje,
-        "peso_auto":        pesos.get("AUTO", 0),
-        "peso_cliente":     pesos.get("CLIE", 0),
-        "peso_interno":     pesos.get("TRAB", 0),
-        "total":            total,
-        "leyenda":          leyenda,
-    })
+    return render(
+        request,
+        'empleados/resultado_total.html',          # ⬅ ajusta ruta si tu template está en otra carpeta
+        {
+            'trabajador': trab,
+            'puntaje_autoeval': auto_puntaje,
+            'puntaje_cliente': cliente_puntaje,
+            'puntaje_interno': interno_puntaje,
+            'peso_auto': peso_auto * 100,
+            'peso_cliente': peso_cliente * 100,
+            'peso_interno': peso_interno * 100,
+            'total': total,
+            'leyenda': leyenda,
+        }
+    )
+
+    return render(request, 'evaluaciones/resultado_final.html', context)
+
 
 
 @login_required
@@ -802,6 +780,13 @@ def eliminar_criterio(request, pk):
         'criterio': criterio
     })
 
+
+
+TIPO_CHOICES = {
+    'AUTO': 'Autoevaluación',
+    'TRAB': 'Evaluación del Trabajador',
+    'CLIE': 'Evaluación del Cliente',
+}
 
 
 def normalizar_fecha(fecha):
@@ -996,3 +981,71 @@ def ver_evaluacion(request, tipo, id):
 
     except (AutoevaluacionTrabajador.DoesNotExist, EvaluacionTrabajador.DoesNotExist, EvaluacionVenta.DoesNotExist):
         raise Http404(f"Evaluación no encontrada: No {tipo} con ID {id}")
+    
+@login_required
+def lista_autoevaluaciones(request):
+    trabajador = request.user
+
+    autoevaluaciones = AutoevaluacionTrabajador.objects.filter(trabajador=trabajador)
+
+    autoevaluaciones_por_mes = {}
+    for autoeval in autoevaluaciones:
+        mes = autoeval.fecha_creacion.month
+        autoevaluaciones_por_mes[mes] = autoeval
+
+    meses_nombres = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ]
+
+    lista = []
+    ahora = timezone.localtime()
+    mes_actual = ahora.month
+
+    for mes in range(6, 13):  # Junio a diciembre
+        if mes in autoevaluaciones_por_mes:
+            autoeval = autoevaluaciones_por_mes[mes]
+            estado = "Completada"
+            fecha_creacion_local = timezone.localtime(autoeval.fecha_creacion)
+            fecha_limite = fecha_creacion_local.replace(day=28)
+            lista.append({
+                'mes': meses_nombres[mes - 1],
+                'mes_numero': mes,
+                'estado': estado,
+                'autoevaluacion': autoeval,
+                'fecha_completada': fecha_creacion_local,  # ✅ datetime con zona horaria
+                'mes_previo': meses_nombres[mes - 1],
+                'fecha_limite': fecha_limite  # ✅ datetime con zona horaria
+            })
+        else:
+            estado = "Disponible" if mes == mes_actual else "No disponible"
+            try:
+                fecha_limite = ahora.replace(month=mes, day=28)
+            except ValueError:
+                # por si el mes no tiene 28 (aunque todos lo tienen)
+                fecha_limite = ahora.replace(month=mes, day=1)
+            lista.append({
+                'mes': meses_nombres[mes - 1],
+                'mes_numero': mes,
+                'estado': estado,
+                'autoevaluacion': None,
+                'fecha_completada': None,
+                'mes_previo': meses_nombres[mes - 1],
+                'fecha_limite': fecha_limite  # ✅ datetime con zona horaria
+            })
+
+    total = len(lista)
+    disponibles = sum(1 for item in lista if item['estado'] == 'Disponible')
+    completadas = sum(1 for item in lista if item['estado'] == 'Completada')
+
+    return render(request, 'lista_autoevaluaciones.html', {
+        'lista': lista,
+        'total': total,
+        'disponibles': disponibles,
+        'completadas': completadas,
+        'ahora': ahora,
+    })
+
+def ver_autoevaluacion(request, pk):
+    evaluacion = get_object_or_404(AutoevaluacionTrabajador, pk=pk, trabajador=request.user)
+    return render(request, 'ver_autoevaluacion.html', {'evaluacion': evaluacion})

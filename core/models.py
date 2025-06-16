@@ -203,13 +203,15 @@ class Indicador(models.Model):
 class AutoevaluacionTrabajador(models.Model):
     trabajador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='autoevaluaciones')
     fecha = models.DateField(auto_now_add=True)
+    fecha_creacion = models.DateTimeField(default=timezone.now)
 
     @property
     def puntaje_total(self):
         return sum(r.puntaje for r in self.respuestas.all())
 
     def __str__(self):
-        return f"{self.trabajador} - {self.fecha}"
+        return f"Autoevaluación de {self.trabajador.username}"
+
 
 
 class RespuestaAutoevaluacionTrabajador(models.Model):

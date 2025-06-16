@@ -44,14 +44,15 @@ urlpatterns = [
     path('registrar/', views.registro_cliente, name='registro_cliente'),
     path('autoevaluacion/nueva/', views.crear_autoevaluacion, name='crear_autoevaluacion'),
     path('autoevaluacion/lista/', views.lista_autoevaluaciones, name='lista_autoevaluaciones'),
-    path('autoevaluacion/', views.realizar_autoevaluacion, name='realizar_autoevaluacion'),
     path('evaluacion_exitosa/', views.evaluacion_exitosa, name='evaluacion_exitosa'),
     path('historial/', views.historial_evaluaciones, name='historial_evaluaciones'),
     path('exportar/', views.exportar_evaluaciones_excel, name='exportar_evaluaciones_excel'),
     path('evaluacion/<str:tipo>/<int:id>/', views.ver_evaluacion, name='ver_evaluacion'),
-
+    path('autoevaluacion/lista/', views.lista_autoevaluaciones, name='lista_autoevaluaciones'),
+    path('autoevaluacion/realizar/', views.realizar_autoevaluacion, name='realizar_autoevaluacion'),
+    path('autoevaluacion/ver/<int:pk>/', views.ver_autoevaluacion, name='ver_autoevaluacion'),
     path('cliente/dashboard/', views.cliente_dashboard, name='cliente_panel'),
-    
+   
     #path('evaluar_cliente/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta'),
     
     path('evaluar_cliente/<int:evaluacion_id>/', views.evaluar_venta, name='evaluar_venta'),
