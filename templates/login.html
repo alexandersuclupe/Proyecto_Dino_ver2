@@ -1,133 +1,247 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>
     {% if is_colaborador %}Acceso Colaborador{% else %}Dino - Iniciar sesión{% endif %}
   </title>
-  <link rel="stylesheet" href="{% static 'css/login.css' %}">
-  <link rel="stylesheet" href="{% static 'css/index.css' %}">
+
+  <!-- Bootstrap 5 + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
   <link rel="icon" type="image/png" href="{% static 'img/favicon_dino.jpg' %}">
+
   <style>
-    /* Para el “ojito” dentro del input de contraseña */
-    .input-group { position: relative; }
+    body,
+    html {
+      height: 100%;
+      margin: 0;
+      background: #fff;
+      /* azul degradado */
+      /*background: linear-gradient(135deg,  #fff, #29aa25);*/
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #e4da84, #ffeb3bd3);
+    }
+
+    .login-wrapper {
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+
+
+    }
+
+    .login-header {
+      background: #fff;
+      color: #0f0f0f;
+      text-align: center;
+      padding: 1em 1rem 1.5rem;
+      position: relative;
+    }
+
+    .login-header .icon-circle {
+      width: 72px;
+      height: 72px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin-bottom: .5rem;
+    }
+
+    .icon-circle i {
+      font-size: 50px;
+      /* Ajusta el tamaño del ícono */
+      color: rgb(36, 33, 33);
+    }
+
+    .login-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .login-header p {
+      margin: .25rem 0 0;
+      font-size: .9rem;
+      opacity: .8;
+    }
+
+    .login-body {
+      padding: 1.5rem;
+    }
+
+    .form-control {
+      border-radius: .5rem;
+      padding-left: 2.5rem;
+    }
+
+    .form-control:focus {
+      box-shadow: none;
+      border-color: #6366f1;
+    }
+
+    .input-group-text {
+      background: transparent;
+      border: none;
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+    }
+
     .toggle-password {
       position: absolute;
+      right: 1rem;
       top: 50%;
-      right: 12px;
       transform: translateY(-50%);
       cursor: pointer;
-      opacity: 0.6;
+      color: #888;
     }
-    .toggle-password:hover { opacity: 1; }
+
+    .toggle-password:hover {
+      color: #6366f1;
+    }
+
+    .btn-login {
+      width: 100%;
+      border-radius: .5rem;
+      background: linear-gradient(135deg, #48c580, #36965e);
+
+
+
+      border: none;
+      color: #020202;
+      font-weight: 600;
+      padding: .75rem;
+      transition: background .3s;
+    }
+
+    .btn-login:hover {
+      background: linear-gradient(135deg, #75dba3, #7dce9e);
+
+    }
+
+    .back-link {
+      text-align: left;
+      padding: .75rem 1rem;
+    }
+
+    .back-link a {
+      color: #1976ce;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
+
 <body>
-  <div class="encuesta-container">
-    <!-- Botón “Volver al inicio” -->
-    <div style="text-align: left; margin-bottom: 20px;">
-      <a href="{% url 'index' %}">
-        <button style="
-          background-color: #09be18;
-          color: white;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 5px;
-          cursor: pointer;
-        ">
-          ← Volver al inicio
-        </button>
-      </a>
-    </div>
 
-    <!-- Cabecera del formulario -->
-    <div class="card-header" style="text-align: center; margin-bottom: 1.5rem;">
-      {% if is_colaborador %}
-        <img src="{% static 'img/icono-colaborador.svg' %}" alt="Colaborador" width="48">
-        <h2>Acceso Colaborador</h2>
-        <p style="color: #666; margin-top: .25rem;">Sistema de evaluación de desempeño</p>
-      {% else %}
-        <h2>Iniciar sesión</h2>
-      {% endif %}
-    </div>
+  <div class="login-wrapper">
+    <div class="login-card">
 
-    <!-- Mensajes de error -->
-    {% if messages %}
-      {% for message in messages %}
-        <p style="color: red; text-align: center;">{{ message }}</p>
-      {% endfor %}
-    {% endif %}
-
-    <!-- Formulario -->
-    <form method="post">
-      {% csrf_token %}
-
-      <label for="username">Usuario o correo electrónico:</label>
-      <input
-        type="text"
-        id="username"
-        name="username"
-        required
-        placeholder="Ingresa tu usuario o correo electrónico"
-        style="width: 100%; padding: .5rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 4px;"
-      >
-
-      <label for="password">Contraseña:</label>
-      <div class="input-group" style="margin-bottom: 1.5rem;">
-        <input
-          type="password"
-          id="password-field"
-          name="password"
-          required
-          placeholder="Ingresa tu contraseña"
-          style="width: 100%; padding: .5rem; border: 1px solid #ccc; border-radius: 4px;"
-        >
-        <span class="toggle-password" toggle="#password-field">
-          <!-- Icono de ojo -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-               fill="currentColor" viewBox="0 0 16 16">
-            <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8z"/>
-            <path d="M8 5.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/>
-          </svg>
-        </span>
+      <!-- Volver -->
+      <div class="back-link">
+        <a href="{% url 'index' %}">
+          <i class="bi bi-arrow-left-circle-fill"></i> Volver al inicio
+        </a>
       </div>
 
-      <button
-        type="submit"
-        style="
-          width: 100%;
-          background-color: #28a745;
-          color: white;
-          border: none;
-          padding: .75rem;
-          border-radius: 4px;
-          font-size: 1rem;
-          cursor: pointer;
-        ">
-        Iniciar Sesión
-      </button>
-    </form>
+      <!-- Header -->
+      <div class="login-header">
+        <div class="icon-circle">
+           <i class="bi bi-person-circle"></i>
+        </div>
+        {% if is_colaborador %}
+        <h2>Ferretería Dino</h2>
+        <p>Sistema de evaluación de desempeño</p>
+        {% else %}
+        <h2>INICIAR SESIÓN</h2>
+        {% endif %}
+      </div>
 
-    <!-- Enlace a registro, solo si NO es colaborador -->
-    {% if not is_colaborador %}
-      <p style="margin-top: 18px; text-align: center; color: #000;">
-        ¿Aún no tienes cuenta?
-        <a href="{% url 'registro_cliente' %}" style="color: #36965e;">
-          Regístrate aquí
-        </a>
-      </p>
-    {% endif %}
+      <!-- Body/Form -->
+      <div class="login-body">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-danger py-1">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <!-- Usuario -->
+          <div class="mb-4 position-relative">
+            <span class="input-group-text">
+              <i class="bi bi-person-fill"></i>
+            </span>
+            <input type="text" id="username" name="username" class="form-control ps-5" required
+              placeholder="Usuario o correo">
+          </div>
+
+          <!-- Contraseña -->
+          <div class="mb-4 position-relative">
+            <span class="input-group-text">
+              <i class="bi bi-lock-fill"></i>
+            </span>
+            <input type="password" id="password-field" name="password" class="form-control ps-5" required
+              placeholder="Contraseña">
+            <span class="toggle-password">
+              <i class="bi bi-eye-fill" id="toggleEye"></i>
+            </span>
+          </div>
+
+          <button type="submit" class="btn btn-login mb-3">
+            INICIAR SESIÓN
+          </button>
+        </form>
+
+        {% if not is_colaborador %}
+        <p class="text-center small">
+          ¿Aún no tienes cuenta?
+          <a href="{% url 'registro_cliente' %}">Regístrate aquí</a>
+        </p>
+        {% endif %}
+      </div>
+    </div>
   </div>
 
-  <!-- Script para mostrar/ocultar contraseña -->
+  <!-- JS -->
   <script>
-    document.querySelectorAll('.toggle-password').forEach(icon => {
-      icon.addEventListener('click', () => {
-        const input = document.querySelector(icon.getAttribute('toggle'));
-        input.type = input.type === 'password' ? 'text' : 'password';
+    document.getElementById('toggleEye')
+      .addEventListener('click', function () {
+        const pwd = document.getElementById('password-field');
+        if (pwd.type === 'password') {
+          pwd.type = 'text';
+          this.classList.replace('bi-eye-fill', 'bi-eye-slash-fill');
+        } else {
+          pwd.type = 'password';
+          this.classList.replace('bi-eye-slash-fill', 'bi-eye-fill');
+        }
       });
-    });
   </script>
 </body>
+
 </html>

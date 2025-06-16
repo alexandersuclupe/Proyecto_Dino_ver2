@@ -30,14 +30,6 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
-        /* Navbar siempre encima */
-        nav.navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1100;
-        }
 
 
         /* Wrapper de layout */
@@ -88,10 +80,7 @@
             opacity: 0;
         }
 
-        aside.sidebar .nav-link.active {
-            background: #fff;
-            color: var(--primary);
-        }
+
 
         /* Main content reserva espacio */
         main.content {
@@ -143,22 +132,7 @@
             color: var(--primary);
         }
 
-        :root {
-            --sidebar-width: 260px;
-            --sidebar-collapsed: 80px;
-            --primary: #36965e;
-            --bg: #f9f9f9;
-            --shadow: rgba(0, 0, 0, 0.1);
-        }
 
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            background: var(--bg);
-            font-family: 'Segoe UI', sans-serif;
-        }
 
         /* Navbar */
         nav.navbar {
@@ -167,7 +141,12 @@
             height: 56px;
             z-index: 1100;
             padding: 0 1rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
         }
+
 
         /* Fijar tamaño del logo en la navbar */
         nav.navbar .navbar-brand {
@@ -218,16 +197,6 @@
             min-width: 24px;
             text-align: center;
         }
-
-        aside.sidebar .nav-link span {
-            transition: opacity .3s;
-        }
-
-        aside.sidebar.collapsed .nav-link span {
-            opacity: 0;
-        }
-
-
 
         main.content {
             flex: 1;
@@ -280,12 +249,12 @@
 
         .submenu .nav-link {
             padding-left: 2rem;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(173, 37, 37, 0.1);
         }
 
         .submenu .nav-link:hover,
         .submenu .nav-link.active {
-            background: #fff;
+            background: #ffffff;
             color: var(--primary);
         }
 
@@ -302,9 +271,15 @@
             /* al tope del LI */
             left: var(--sidebar-collapsed);
             width: var(--sidebar-width);
-            background: var(--primary);
+
             box-shadow: 2px 0 8px var(--shadow);
             z-index: 2000;
+        }
+
+        /* Cuando se muestre el submenu flotante, pon TODO el texto (y los iconos) en negro */
+        aside.sidebar.collapsed .has-submenu:hover .submenu .nav-link,
+        aside.sidebar.collapsed .has-submenu:hover .submenu .nav-link * {
+            color: #000 !important;
         }
 
         /* 3) Al hacer hover sobre el LI, muéstralo */
@@ -407,7 +382,7 @@
                     </a>
                 </li>
 
-                                <li class="nav-item">
+                <li class="nav-item">
                     <a href="{% url 'historial_evaluaciones' %}"
                         class="nav-link {% if view_name == 'historial_evaluaciones' %}active{% endif %}">
                         <i class="bi bi-bar-chart-fill"></i><span>Historial</span>

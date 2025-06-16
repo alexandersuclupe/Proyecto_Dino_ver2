@@ -64,7 +64,17 @@ def login_view(request, is_colaborador=False):
                         messages.error(
                             request, 'No tienes permisos de cliente.')
         else:
-            messages.error(request, 'Usuario o contraseña incorrectos.')
+            # Mensajes específicos según el fallo
+            try:
+                # Comprobar si el usuario existe en el modelo personalizado
+                user = Usuario.objects.get(username=u)
+                if not user.check_password(p):
+                    messages.error(request, 'Contraseña incorrecta.')
+            except Usuario.DoesNotExist:
+                messages.error(request, 'No hay usuario con perfil trabajador.')
+            except Exception as e:
+                # Si ocurre algún otro error
+                messages.error(request, 'Usuario o contraseña incorrectos.')
 
     return render(request, 'login.html', context)
 
