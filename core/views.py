@@ -282,63 +282,39 @@ def evaluar_venta(request, evaluacion_id):
         'trabajador': trabajador,
         'cliente':    cliente,
     })
+# reporte ######################33
 
-# @login_required
-# def editar_evaluacion_trabajador(request, evaluacion_id):
-#     evaluacion = get_object_or_404(EvaluacionTrabajador, id=evaluacion_id)
-#     usuario_evaluado = evaluacion.evaluado  # Este es un objeto Usuario
+@login_required
+def reporte_evaluacion_venta(request, evaluacion_id):
+    evaluacion = get_object_or_404(EvaluacionVenta, id=evaluacion_id)
+    usuario_evaluado = evaluacion.trabajador  # Este es un objeto Trabajador
 
-#     # Obtener el puesto desde el perfil Trabajador vinculado al Usuario
-#     try:
-#         perfil = usuario_evaluado.trabajador
-#         puesto_evaluado = perfil.puesto
-#     except (Trabajador.DoesNotExist, AttributeError):
-#         puesto_evaluado = None
+    # Filtrar el criterio específico de "Atención"
+    criterios = Criterio.objects.filter(nombre="atencion")
 
-#     # Filtrar criterios asociados a ese puesto
-#     criterios = Criterio.objects.filter(puestos=puesto_evaluado) if puesto_evaluado else Criterio.objects.none()
+    # Obtener los indicadores de esos criterios
+    indicadores = Indicador.objects.filter(criterio__in=criterios)
 
-#     # Obtener los indicadores de esos criterios
-#     indicadores = Indicador.objects.filter(criterio__in=criterios)
+    # Obtener las respuestas de la evaluación de los indicadores
+    respuestas_actuales = RespuestaEvaluacionVenta.objects.filter(
+        evaluacion=evaluacion, indicador__in=indicadores)
 
-#     # Precargar respuestas previas
-#     respuestas_actuales = {
-#         r.indicador_id: r.puntaje
-#         for r in evaluacion.respuestas.all()
-#     }
+    # Crear un diccionario con las respuestas para pasarlo a la plantilla
+    respuestas_dict = {
+        respuesta.indicador.id: respuesta.puntaje for respuesta in respuestas_actuales
+    }
 
-#     # Crear un diccionario con los puntajes actuales para cada indicador
-#     initial_data = {
-#         f'indicador_{ind.id}': respuestas_actuales.get(ind.id, 0)  # Usamos el valor por defecto 0 si no hay respuesta
-#         for ind in indicadores
-#     }
+    # Calcular el puntaje total (sumando las respuestas)
+    puntaje_total = sum(respuestas_dict.values())
 
-#     if request.method == 'POST':
-#         form = EvaluacionTrabajadorForm(request.POST, indicadores=indicadores)
-#         if form.is_valid():
-#             # Guardar las respuestas seleccionadas
-#             for indicador in indicadores:
-#                 puntaje = int(form.cleaned_data.get(f'indicador_{indicador.id}', 0))
-#                 RespuestaEvaluacionTrabajador.objects.update_or_create(
-#                     evaluacion=evaluacion,
-#                     indicador=indicador,
-#                     defaults={'puntaje': puntaje}
-#                 )
-#             evaluacion.estado = 'COMPLETADA'
-#             evaluacion.save()
-#             return redirect('admin_dashboard')  # Ajusta esto a tu URL deseada
-#     else:
-#         form = EvaluacionTrabajadorForm(indicadores=indicadores, initial=initial_data)
-
-#     return render(request, 'evaluacion_trabajador_form.html', {
-#         'form': form,
-#         'evaluacion': evaluacion,
-#         'evaluado': usuario_evaluado,
-#         'criterios': criterios,
-#         'puesto': puesto_evaluado,
-#         'initial_data': initial_data,  # Pasamos el diccionario con los puntajes iniciales
-#     })
-
+    # Retornar el reporte
+    return render(request, 'cliente/cliente_reporte_venta.html', {
+        'evaluacion': evaluacion,
+        'evaluado': usuario_evaluado,
+        'criterios': criterios,
+        'respuestas': respuestas_dict,  # Pasar las respuestas a la plantilla
+        'puntaje_total': puntaje_total,  # Pasar el puntaje total a la plantilla
+    })
 
 @login_required
 def editar_evaluacion_trabajador(request, evaluacion_id):
@@ -420,13 +396,15 @@ def reporte_evaluacion(request, evaluacion_id):
         puesto_evaluado = None
 
     # Filtrar criterios asociados a ese puesto
-    criterios = Criterio.objects.filter(puestos=puesto_evaluado) if puesto_evaluado else Criterio.objects.none()
+    criterios = Criterio.objects.filter(
+        puestos=puesto_evaluado) if puesto_evaluado else Criterio.objects.none()
 
     # Obtener los indicadores de esos criterios
     indicadores = Indicador.objects.filter(criterio__in=criterios)
 
     # Obtener las respuestas de la evaluación de los indicadores
-    respuestas_actuales = RespuestaEvaluacionTrabajador.objects.filter(evaluacion=evaluacion)
+    respuestas_actuales = RespuestaEvaluacionTrabajador.objects.filter(
+        evaluacion=evaluacion)
 
     # Crear un diccionario con las respuestas para pasarlo a la plantilla
     respuestas_dict = {
@@ -957,7 +935,8 @@ def historial_evaluaciones(request):
     nombre_puesto = (puesto_usuario.nombre.lower() if puesto_usuario else '')
 
     es_gerente = nombre_puesto == 'gerente'
-    ver_solo_propias = nombre_puesto in ['supervisor', 'cajero', 'almacen', 'vendedor']
+    ver_solo_propias = nombre_puesto in [
+        'supervisor', 'cajero', 'almacen', 'vendedor']
 
     evaluaciones = []
 
@@ -966,18 +945,18 @@ def historial_evaluaciones(request):
     if ver_solo_propias:
         auto_qs = auto_qs.filter(trabajador=user)
     if tipo_filtro in ['todas', 'AUTO']:
-     for auto in auto_qs:
-        if busqueda in str(auto.trabajador).lower():
-            evaluaciones.append({
-                'id': auto.id,
-                'evaluado': auto.trabajador,
-                'evaluador': auto.trabajador,
-                'fecha': auto.fecha,
-                'tipo': 'AUTO',
-                'get_tipo_display': TIPO_CHOICES['AUTO'],
-                'puntaje': auto.puntaje_total,
-                'estado': 'Completada',  
-            })
+        for auto in auto_qs:
+            if busqueda in str(auto.trabajador).lower():
+                evaluaciones.append({
+                    'id': auto.id,
+                    'evaluado': auto.trabajador,
+                    'evaluador': auto.trabajador,
+                    'fecha': auto.fecha,
+                    'tipo': 'AUTO',
+                    'get_tipo_display': TIPO_CHOICES['AUTO'],
+                    'puntaje': auto.puntaje_total,
+                    'estado': 'Completada',
+                })
 
     # EVALUACIONES TRABAJADOR
     et_qs = EvaluacionTrabajador.objects.select_related('evaluador', 'evaluado') \
@@ -1028,6 +1007,7 @@ def historial_evaluaciones(request):
         'TipoEvaluacion': TipoEvaluacion  # para el <select> del filtro
     }
     return render(request, 'historial.html', context)
+
 
 def exportar_evaluaciones_excel(request):
     user = request.user
@@ -1205,6 +1185,7 @@ def lista_autoevaluaciones(request):
         'completadas': completadas,
         'ahora': ahora,
     })
+
 
 def ver_autoevaluacion(request, pk):
     evaluacion = get_object_or_404(

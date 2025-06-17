@@ -6,16 +6,16 @@
 {% block content %}
 
 
-   <!-- Estadísticas -->
+<!-- Estadísticas -->
 <div class="row g-4 my-4">
   <div class="col-md-6">
     <div class="card  stat-card text-center p-4">
-      
-          <h4 class="fw-bold" style="color: #000000">¡Bienvenido, {{ request.user.get_full_name|default:request.user.username }}!</h4>
-          <p class="text-muted">Nos alegra verte de vuelta. Aquí puedes calificar nuestra calidad de servicio :) .</p>
-        </div>
+
+      <h4 class="fw-bold" style="color: #000000">¡Bienvenido, {{ request.user.get_full_name|default:request.user.username }}!</h4>
+      <p class="text-muted">Nos alegra verte de vuelta. Aquí puedes calificar nuestra calidad de servicio :) .</p>
+    </div>
   </div>
-  
+
   <div class="col-md-3">
     <div class="card stat-card text-center">
       <div class="card-body">
@@ -34,79 +34,85 @@
   </div>
 </div>
 
-    <!-- Evaluaciones -->
-    <div class="row g-4">
-      <!-- Pendientes -->
-      <div class="col-md-6">
-        <div class="card shadow-sm h-100 ">
-          <div class="card-body ">
-            <h5 class="fw-bold mb-2" style="color: #000000">Evaluaciones pendientes</h5>
-            <p class="text-muted mb-3">Son aquellas evaluaciones sin terminar.</p>
-            <ul class="list-unstyled mb-0">
-              {% if ventas_pendientes %}
-                {% for ev in ventas_pendientes %}
-                  <li class="mb-3 d-flex justify-content-between align-items-center">
-                    <div>
-                      <span class="fw-semibold">Atención de {{ ev.venta.usuario.user.get_full_name }}</span><br>
-                      <small class="text-muted">Venta #{{  ev.venta.id }}</small>
-                    </div>
-                    <a href="{% url 'evaluar_venta' ev.venta.id %}" class="btn btn-dark btn-sm" style="padding-left: 15px; padding-right: 15px; border-radius: 30px; color: black; font-weight: bold; background-color: #36965e; border-color: #36965e; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">Evaluar</a>
-                  </li>
-                {% endfor %}
-              {% else %}
-                <li class="text-muted">No tienes evaluaciones pendientes por ahora.</li>
-              {% endif %}
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <!-- Realizadas -->
-      <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <h5 class="fw-bold mb-2" style="color: #000000">Evaluaciones realizadas</h5>
-            <p class="text-muted mb-3">Son aquellas evaluaciones ya completadas.</p>
-            <ul class="list-unstyled mb-0">
-              {% for evaluacion in evaluaciones_realizadas %}
-              <li class="mb-3 border-start ps-3 border-3 border-success">
-                Evaluaste a: <strong style="color:black">{{ evaluacion.trabajador }}</strong><br>
-                Fecha: <span class="text-muted"><strong style="color:black">{{ evaluacion.fecha|date:"d M Y" }}</strong></span>
-              </li>
-              {% endfor %}
-            </ul>
-          </div>
-        </div>
+<!-- Evaluaciones -->
+<div class="row g-4">
+  <!-- Pendientes -->
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100 ">
+      <div class="card-body ">
+        <h5 class="fw-bold mb-2" style="color: #000000">Evaluaciones pendientes</h5>
+        <p class="text-muted mb-3">Son aquellas evaluaciones sin terminar.</p>
+        <ul class="list-unstyled mb-0">
+          {% if ventas_pendientes %}
+          {% for ev in ventas_pendientes %}
+          <li class="mb-3 d-flex justify-content-between align-items-center">
+            <div>
+              <span class="fw-semibold">Atención de {{ ev.venta.usuario.user.get_full_name }}</span><br>
+              <small class="text-muted">Venta #{{ ev.venta.id }}</small>
+            </div>
+            <a href="{% url 'evaluar_venta' ev.venta.id %}" class="btn btn-dark btn-sm"
+              style="padding-left: 15px; padding-right: 15px; border-radius: 30px; color: black; font-weight: bold; background-color: #36965e; border-color: #36965e; transition: transform 0.2s ease, box-shadow 0.2s ease;"
+              onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'"
+              onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">Evaluar</a>
+          </li>
+          {% endfor %}
+          {% else %}
+          <li class="text-muted">No tienes evaluaciones pendientes por ahora.</li>
+          {% endif %}
+        </ul>
       </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Realizadas -->
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h5 class="fw-bold mb-2" style="color: #000000">Evaluaciones realizadas</h5>
+        <p class="text-muted mb-3">Son aquellas evaluaciones ya completadas.</p>
+        <ul class="list-unstyled mb-0">
+          {% for evaluacion in evaluaciones_realizadas %}
+          <li class="mb-3 border-start ps-3 border-3 border-success">
+            Evaluaste a: <strong style="color:black">{{ evaluacion.trabajador }}</strong><br>
+            Fecha: <span class="text-muted"><strong style="color:black">{{ evaluacion.fecha|date:"d M Y"}}</strong></span>
+            <a href="{% url 'reporte_evaluacion_venta' evaluacion.id %}" class="btn btn-success">
+              <i class="bi bi-bar-chart-line"></i> Resultados
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
 
-  <!-- Agregar el script de SweetAlert2 -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.17/dist/sweetalert2.min.js"></script>
-  
-  <script>
-    document.getElementById("logoutButton").onclick = function(event) {
-      event.preventDefault(); // Evita que el formulario cierre sesión inmediatamente
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-      // Muestra el popup de confirmación de SweetAlert2
-      Swal.fire({
-        title: '¿Estás seguro de que deseas cerrar sesión?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, cerrar sesión',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // Si el usuario confirma, envía el formulario
-          document.getElementById("logoutForm").submit();
-        }
-      });
-    };
-  </script>
+<!-- Agregar el script de SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.17/dist/sweetalert2.min.js"></script>
+
+<script>
+  document.getElementById("logoutButton").onclick = function (event) {
+    event.preventDefault(); // Evita que el formulario cierre sesión inmediatamente
+
+    // Muestra el popup de confirmación de SweetAlert2
+    Swal.fire({
+      title: '¿Estás seguro de que deseas cerrar sesión?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, cerrar sesión',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Si el usuario confirma, envía el formulario
+        document.getElementById("logoutForm").submit();
+      }
+    });
+  };
+</script>
 
 
 {% endblock %}

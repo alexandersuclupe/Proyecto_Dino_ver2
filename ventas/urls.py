@@ -52,6 +52,10 @@ urlpatterns = [
     path('autoevaluacion/realizar/', views.realizar_autoevaluacion, name='realizar_autoevaluacion'),
     path('autoevaluacion/ver/<int:pk>/', views.ver_autoevaluacion, name='ver_autoevaluacion'),
     path('cliente/dashboard/', views.cliente_dashboard, name='cliente_panel'),
+
+    path('cliente/reporte_venta/<int:evaluacion_id>/', 
+         views.reporte_evaluacion_venta, 
+         name='reporte_evaluacion_venta'),
    
     #path('evaluar_cliente/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta'),
     

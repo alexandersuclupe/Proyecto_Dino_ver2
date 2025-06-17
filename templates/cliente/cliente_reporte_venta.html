@@ -1,0 +1,59 @@
+{% extends "base/base_cliente.html" %}
+{% load static %}
+
+{% block title %}Reporte de Venta{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Resultados de Satisfacción para : {{ evaluacion.trabajador.user.get_full_name }}</h2>
+    <p>Fecha de Venta: {{ evaluacion.fecha }}</p>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Indicador</th>
+                <th>Puntaje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for criterio in criterios %}
+                <tr>
+                    <td colspan="2" class="font-semibold bg-gray-200">Criterio: {{ criterio.nombre }}</td>
+                </tr>
+                {% for indicador in criterio.indicadores.all %}
+                    <tr>
+                        <td class="border-b px-6 py-3">{{ indicador.nombre }}</td>
+                        <td class="border-b px-6 py-3">
+                            {# Buscar el puntaje del indicador en las respuestas_dict #}
+                            {% for id, puntaje in respuestas.items %}
+                                {% if id == indicador.id %}
+                                    {{ puntaje }}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="mt-4">
+        <strong>Puntaje Total: </strong>{{ puntaje_total }}
+    </div>
+
+    {# Mostrar mensaje según el puntaje total #}
+    <div class="mt-4">
+        {% if puntaje_total < 10 %}
+            <p class="text-danger">
+                Lo sentimos por la mala experiencia, prometemos trabajar más en ello.
+            </p>
+        {% else %}
+            <p class="text-success">
+                ¡Excelente! Agradecemos que te sientas cómodo con nuestra atención.
+            </p>
+        {% endif %}
+    </div>
+
+    <a href="{% url 'cliente_panel' %}" class="btn btn-primary">Volver a Dashboard</a>
+</div>
+{% endblock %}
