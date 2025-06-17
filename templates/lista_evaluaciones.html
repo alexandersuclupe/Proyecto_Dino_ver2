@@ -4,49 +4,90 @@
 {% block title %}Gestión de Evaluaciones{% endblock %}
 
 {% block extra_css %}
-  {# Si quieres usar Tailwind en esta página, inclúyelo aquí #}
+  <!-- Si quieres usar Tailwind en esta página, inclúyelo aquí -->
   <script src="https://cdn.tailwindcss.com"></script>
 {% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto p-6">
 
-  <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+  <!-- Filtros -->
+  <div class="mb-4">
+    <form method="get">
+      <div class="flex space-x-4">
+        <!-- Filtro por estado -->
+        <div>
+          <label for="estado" class="mr-2">Estado:</label>
+          <select name="estado" id="estado" class="p-2 border rounded">
+            <option value="">Todos</option>
+            <option value="PENDIENTE" {% if estado == "PENDIENTE" %}selected{% endif %}>Pendiente</option>
+            <option value="COMPLETADA" {% if estado == "COMPLETADA" %}selected{% endif %}>Completada</option>
+          </select>
+        </div>
+
+        <!-- Filtro por trabajador -->
+        <div>
+          <label for="trabajador" class="mr-2">Buscar por trabajador:</label>
+          <input type="text" name="trabajador" id="trabajador" value="{{ trabajador }}" class="p-2 border rounded" placeholder="Nombre del trabajador">
+        </div>
+
+        <button type="submit" class="bg-blue-600 text-white p-2 rounded">Filtrar</button>
+      </div>
+    </form>
+  </div>
+
+<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
     {% for ev in evaluaciones %}
       {% with perfil=ev.evaluado.trabajador %}
-        <a href="{% if periodo_activo %}{% url 'editar_evaluacion_trabajador' ev.id %}{% else %}#{% endif %}"
-           class="block bg-white rounded-2xl shadow p-6 flex flex-col hover:shadow-lg transition">
 
-          {# Icono según el puesto #}
-          <div class="text-4xl mb-4">
-            {% with nombre_puest=perfil.puesto.nombre|lower %}
-              {% if nombre_puest == "vendedor" %}
-                🛍️
-              {% elif nombre_puest == "cajero" %}
-                💰
-              {% elif nombre_puest == "almacén" or nombre_puest == "almacen" %}
-                📦
-              {% else %}
-                👤
-              {% endif %}
-            {% endwith %}
-          </div>
+        {# —————— 1) Pendiente —————— #}
+        {% if ev.estado == 'PENDIENTE' %}
+          <a href="{% url 'editar_evaluacion_trabajador' ev.id %}"
+             class="block bg-white rounded-2xl shadow p-6 flex flex-col hover:shadow-lg transition">
 
-          <h2 class="text-xl font-semibold mb-1">{{ ev.evaluado.get_full_name }}</h2>
-          <p class="text-gray-500 mb-6">{{ perfil.puesto.nombre|capfirst }}</p>
+            <div class="text-4xl mb-4">
+              {% with nombre_puest=perfil.puesto.nombre|lower %}
+                {% if nombre_puest == "vendedor" %}🛍️
+                {% elif nombre_puest == "cajero" %}💰
+                {% elif nombre_puest == "almacén" or nombre_puest == "almacen" %}📦
+                {% else %}👤
+                {% endif %}
+              {% endwith %}
+            </div>
 
-          {% if periodo_activo %}
-            <button class="mt-auto bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl w-full">
-              {% if ev.estado == 'PENDIENTE' %}Evaluar{% else %}Continuar{% endif %}
+            <h2 class="text-xl font-semibold mb-1">{{ ev.evaluado.get_full_name }}</h2>
+            <p class="text-gray-500 mb-6">{{ perfil.puesto.nombre|capfirst }}</p>
+
+            <button class="mt-auto bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl w-full">
+              Evaluar
             </button>
-          {% else %}
-            <button disabled
-                    class="mt-auto bg-gray-300 text-gray-500 py-2 rounded-xl w-full cursor-not-allowed">
-              Fuera de fechas
-            </button>
-          {% endif %}
+          </a>
 
-        </a>
+
+        {# —————— 2) Completada —————— #}
+        {% else %}
+          <a href="{% url 'reporte_evaluacion' ev.id %}"
+             class="block bg-white rounded-2xl shadow p-6 flex flex-col hover:shadow-lg transition">
+
+            <div class="text-4xl mb-4 opacity-50">
+              {% with nombre_puest=perfil.puesto.nombre|lower %}
+                {% if nombre_puest == "vendedor" %}🛍️
+                {% elif nombre_puest == "cajero" %}💰
+                {% elif nombre_puest == "almacén" or nombre_puest == "almacen" %}📦
+                {% else %}👤
+                {% endif %}
+              {% endwith %}
+            </div>
+
+            <h2 class="text-xl font-semibold mb-1">{{ ev.evaluado.get_full_name }}</h2>
+            <p class="text-gray-500 mb-6">{{ perfil.puesto.nombre|capfirst }}</p>
+
+            <button class="mt-auto bg-gray-400 text-white py-2 rounded-xl w-full cursor-pointer">
+              Ver Reporte
+            </button>
+          </a>
+        {% endif %}
+
       {% endwith %}
     {% empty %}
       <p class="col-span-3 text-center text-gray-600">
@@ -54,6 +95,7 @@
       </p>
     {% endfor %}
   </div>
+
 
 </div>
 {% endblock %}

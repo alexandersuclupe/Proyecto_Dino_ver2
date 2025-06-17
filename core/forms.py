@@ -108,16 +108,31 @@ IndicadorFormSet = inlineformset_factory(
 
 
 
+# class EvaluacionTrabajadorForm(forms.Form):
+#     def __init__(self, *args, indicadores=None, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         if indicadores:
+#             for indicador in indicadores:
+#                 self.fields[f'indicador_{indicador.id}'] = forms.IntegerField(
+#                     label=indicador.nombre,
+#                     min_value=0,
+#                     max_value=getattr(indicador, 'puntaje_maximo', 10),  # ejemplo, que tengas ese atributo
+#                     required=True,
+#                 )
+
 class EvaluacionTrabajadorForm(forms.Form):
     def __init__(self, *args, indicadores=None, **kwargs):
         super().__init__(*args, **kwargs)
+        
         if indicadores:
             for indicador in indicadores:
-                self.fields[f'indicador_{indicador.id}'] = forms.IntegerField(
+                # Definimos un campo ChoiceField para cada indicador
+                self.fields[f'indicador_{indicador.id}'] = forms.ChoiceField(
                     label=indicador.nombre,
-                    min_value=0,
-                    max_value=getattr(indicador, 'puntaje_maximo', 10),  # ejemplo, que tengas ese atributo
+                    choices=[(str(i), str(i)) for i in range(1, 6)],  # Cambia 1-5 según el rango necesario
+                    widget=forms.RadioSelect,  # Usamos el widget de botones de radio
                     required=True,
+                    initial=str(getattr(indicador, 'puntaje_maximo', 3))  # Usa el puntaje máximo por defecto si está disponible
                 )
 
 class AutoevaluacionTrabajadorForm(forms.ModelForm):

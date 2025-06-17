@@ -91,5 +91,6 @@ urlpatterns = [
     path('empleados/editar/<int:id>/', views.editar_empleado, name='editar_empleado'),
     path('empleados/eliminar/<int:id>/', views.eliminar_empleado, name='eliminar_empleado'),
     path('empleado/<int:trabajador_id>/resultado/', views.calcular_resultado_final, name='resultado_total'),
+    path('reporte_evaluacion/<int:evaluacion_id>/', views.reporte_evaluacion, name='reporte_evaluacion'),
 
 ]
