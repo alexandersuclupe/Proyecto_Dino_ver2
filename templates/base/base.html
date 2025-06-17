@@ -19,7 +19,7 @@
             --primary: #F4C716;
             --bg: #f9f9f9;
             --tre: #17973C;
-            --secundary : #000000 ;
+            --secundary: #000000;
             --shadow: rgba(0, 0, 0, 0.1);
         }
 
@@ -323,8 +323,8 @@
             </span>
             <form id="logoutForm" method="post" action="{% url 'index' %}">
                 {% csrf_token %}
-                <button type="button" id="logoutButton" class="btn btn-outline-danger btn-sm">
-                    <i class="bi bi-box-arrow-right me-1"></i>Cerrar sesión
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
                 </button>
             </form>
         </div>

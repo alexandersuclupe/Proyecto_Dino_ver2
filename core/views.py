@@ -947,40 +947,42 @@ def normalizar_fecha(fecha):
 
 @login_required
 def historial_evaluaciones(request):
-
     form = FiltroEvaluacionForm(request.GET or None)
     tipo_filtro = request.GET.get('tipo', 'todas')
     busqueda = request.GET.get('buscar', '').lower().strip()
 
     user = request.user
-    puesto_usuario = getattr(getattr(user, 'trabajador', None), 'puesto', None)
+    trabajador = getattr(user, 'trabajador', None)
+    puesto_usuario = getattr(trabajador, 'puesto', None)
     nombre_puesto = (puesto_usuario.nombre.lower() if puesto_usuario else '')
-    es_supervisor = user.is_superuser or nombre_puesto == 'supervisor'
+
+    es_gerente = nombre_puesto == 'gerente'
+    ver_solo_propias = nombre_puesto in ['supervisor', 'cajero', 'almacen', 'vendedor']
 
     evaluaciones = []
 
     # AUTOEVALUACIONES
     auto_qs = AutoevaluacionTrabajador.objects.select_related('trabajador')
-    if not es_supervisor:
+    if ver_solo_propias:
         auto_qs = auto_qs.filter(trabajador=user)
     if tipo_filtro in ['todas', 'AUTO']:
-        for auto in auto_qs:
-            if busqueda in str(auto.trabajador).lower():
-                evaluaciones.append({
-                    'id': auto.id,
-                    'evaluado': auto.trabajador,
-                    'evaluador': auto.trabajador,
-                    'fecha': auto.fecha,
-                    'tipo': 'AUTO',
-                    'get_tipo_display': TIPO_CHOICES['AUTO'],
-                    'puntaje': auto.puntaje_total,
-                    'estado': 'Completada',
-                })
+     for auto in auto_qs:
+        if busqueda in str(auto.trabajador).lower():
+            evaluaciones.append({
+                'id': auto.id,
+                'evaluado': auto.trabajador,
+                'evaluador': auto.trabajador,
+                'fecha': auto.fecha,
+                'tipo': 'AUTO',
+                'get_tipo_display': TIPO_CHOICES['AUTO'],
+                'puntaje': auto.puntaje_total,
+                'estado': 'Completada',  
+            })
 
     # EVALUACIONES TRABAJADOR
     et_qs = EvaluacionTrabajador.objects.select_related('evaluador', 'evaluado') \
                                         .filter(estado__iexact='Completada')
-    if not es_supervisor:
+    if ver_solo_propias:
         et_qs = et_qs.filter(evaluado=user)
     if tipo_filtro in ['todas', 'TRAB']:
         for e in et_qs:
@@ -999,9 +1001,8 @@ def historial_evaluaciones(request):
     # EVALUACIONES CLIENTE
     ev_qs = EvaluacionVenta.objects.select_related('trabajador', 'cliente') \
                                    .filter(estado__iexact='Completada')
-    if not es_supervisor:
-        trabajador_inst = getattr(user, 'trabajador', None)
-        ev_qs = ev_qs.filter(trabajador=trabajador_inst)
+    if ver_solo_propias:
+        ev_qs = ev_qs.filter(trabajador=trabajador)
     if tipo_filtro in ['todas', 'CLIE']:
         for ev in ev_qs:
             if busqueda in str(ev.trabajador).lower() or busqueda in str(ev.cliente).lower():
@@ -1027,7 +1028,6 @@ def historial_evaluaciones(request):
         'TipoEvaluacion': TipoEvaluacion  # para el <select> del filtro
     }
     return render(request, 'historial.html', context)
-
 
 def exportar_evaluaciones_excel(request):
     user = request.user
@@ -1125,10 +1125,19 @@ def ver_evaluacion(request, tipo, id):
 
 @login_required
 def lista_autoevaluaciones(request):
-    trabajador = request.user
+    user = request.user
+    ahora = timezone.localtime()
+    anio_actual = ahora.year
+    mes_actual = ahora.month
 
-    autoevaluaciones = AutoevaluacionTrabajador.objects.filter(
-        trabajador=trabajador)
+    # Obtener el trabajador vinculado al usuario
+    try:
+        trabajador = user.trabajador
+    except Trabajador.DoesNotExist:
+        trabajador = None
+
+    # Obtener autoevaluaciones del usuario
+    autoevaluaciones = AutoevaluacionTrabajador.objects.filter(trabajador=user)
 
     autoevaluaciones_por_mes = {}
     for autoeval in autoevaluaciones:
@@ -1141,10 +1150,7 @@ def lista_autoevaluaciones(request):
     ]
 
     lista = []
-    ahora = timezone.localtime()
-    mes_actual = ahora.month
-
-    for mes in range(6, 13):  # Junio a diciembre
+    for mes in range(6, 13):  # Junio a Diciembre
         if mes in autoevaluaciones_por_mes:
             autoeval = autoevaluaciones_por_mes[mes]
             estado = "Completada"
@@ -1155,17 +1161,29 @@ def lista_autoevaluaciones(request):
                 'mes_numero': mes,
                 'estado': estado,
                 'autoevaluacion': autoeval,
-                'fecha_completada': fecha_creacion_local,  # ✅ datetime con zona horaria
+                'fecha_completada': fecha_creacion_local,
                 'mes_previo': meses_nombres[mes - 1],
-                'fecha_limite': fecha_limite  # ✅ datetime con zona horaria
+                'fecha_limite': fecha_limite
             })
         else:
-            estado = "Disponible" if mes == mes_actual else "No disponible"
-            try:
-                fecha_limite = ahora.replace(month=mes, day=28)
-            except ValueError:
-                # por si el mes no tiene 28 (aunque todos lo tienen)
-                fecha_limite = ahora.replace(month=mes, day=1)
+            estado = "No disponible"
+            fecha_limite = ahora.replace(month=mes, day=28)
+
+            # Verificar si hay un periodo de evaluación activo
+            if trabajador and trabajador.puesto:
+                try:
+                    periodo = PeriodoEvaluacion.objects.get(
+                        puesto=trabajador.puesto,
+                        fecha_inicio__year=anio_actual,
+                        fecha_inicio__month=mes
+                    )
+                    hoy = date.today()
+                    if periodo.fecha_inicio <= hoy <= periodo.fecha_fin:
+                        estado = "Disponible"
+                        fecha_limite = periodo.fecha_fin
+                except PeriodoEvaluacion.DoesNotExist:
+                    pass
+
             lista.append({
                 'mes': meses_nombres[mes - 1],
                 'mes_numero': mes,
@@ -1173,7 +1191,7 @@ def lista_autoevaluaciones(request):
                 'autoevaluacion': None,
                 'fecha_completada': None,
                 'mes_previo': meses_nombres[mes - 1],
-                'fecha_limite': fecha_limite  # ✅ datetime con zona horaria
+                'fecha_limite': fecha_limite
             })
 
     total = len(lista)
@@ -1187,7 +1205,6 @@ def lista_autoevaluaciones(request):
         'completadas': completadas,
         'ahora': ahora,
     })
-
 
 def ver_autoevaluacion(request, pk):
     evaluacion = get_object_or_404(

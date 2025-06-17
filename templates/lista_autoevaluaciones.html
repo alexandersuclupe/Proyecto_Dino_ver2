@@ -126,7 +126,7 @@
 </head>
 <body class="container mt-4">
 
-<!-- Botón regresar arriba -->
+<!-- Botón regresar -->
 <div class="mb-3">
     <a href="{% url 'admin_dashboard' %}" class="btn btn-back">← Regresar</a>
 </div>
@@ -181,21 +181,21 @@
                         <a href="{% url 'ver_autoevaluacion' item.autoevaluacion.id %}" class="btn btn-outline-success btn-block">
                             <i class="fas fa-check"></i> Ver Resultados
                         </a>
+
                     {% elif item.estado == 'Disponible' %}
-                        <a href="{% url 'realizar_autoevaluacion' %}" class="btn btn-primary btn-block">
-                            <i class="fas fa-edit"></i> Completar
-                        </a>
-                    {% else %}
                         {% language 'es' %}
-                        <p class="text-muted mb-2">
-                            <i class="far fa-clock"></i> Hasta: {{ item.fecha_limite|date:"j \\d\\e F \\d\\e Y" }}
+                        <p class="text-primary font-weight-bold mb-2">
+                            <i class="far fa-clock"></i> Disponible hasta: {{ item.fecha_limite|date:"j \\d\\e F \\d\\e Y" }}
                         </p>
                         {% endlanguage %}
+                        <a href="{% url 'realizar_autoevaluacion' %}?mes={{ item.mes_numero }}" class="btn btn-primary btn-block">
+                            <i class="fas fa-edit"></i> Completar
+                        </a>
 
+                    {% else %}
                         <div class="alert alert-warning text-center font-weight-bold mb-3">
-                            ⚠️ Esta autoevaluación no está disponible para este mes
+                            ⚠️ Esta autoevaluación no está disponible en este periodo
                         </div>
-
                         <button class="btn btn-outline-secondary btn-block" disabled>
                             🔒 No Disponible
                         </button>
