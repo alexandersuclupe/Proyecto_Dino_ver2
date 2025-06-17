@@ -59,7 +59,7 @@ urlpatterns = [
    
     #path('evaluar_cliente/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta'),
     
-    path('evaluar_cliente/<int:evaluacion_id>/', views.evaluar_venta, name='evaluar_venta'),
+    path('evaluar_cliente/<int:venta_id>/', views.evaluar_venta, name='evaluar_venta'),
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
     #path('clientes/', views.cliente_panel, name='cliente_panel'),
 

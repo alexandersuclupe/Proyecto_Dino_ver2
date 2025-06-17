@@ -177,111 +177,118 @@ def cliente_dashboard(request):
     return render(request, 'cliente_panel.html', context)
 
 
-#############################################################
-# @login_required
-# def evaluar_venta(request, venta_id):
-#     # # Validar rol cliente
-#     # if not hasattr(request.user, 'rol') or request.user.rol != 'cliente':
-#     #     return render(request, 'error.html', {
-#     #         'mensaje': 'No tienes permisos para acceder a esta página. Debes ser un cliente registrado.'
-#     #     })
-
-#     # Obtener cliente asociado
-#     try:
-#         cliente = Cliente.objects.get(user=request.user)
-#     except Cliente.DoesNotExist:
-#         return render(request, 'error.html', {
-#             'mensaje': 'No tienes un perfil de cliente asociado. Por favor contacta al administrador.'
-#         })
-
-#     # Obtener venta que pertenece a ese cliente
-#     try:
-#         venta = Venta.objects.get(id=venta_id, cliente=cliente)
-#     except Venta.DoesNotExist:
-#         return render(request, 'error.html', {
-#             'mensaje': 'No se encontró la venta solicitada o no te pertenece.'
-#         })
-
-#     trabajador = venta.usuario
-#     indicadores = Indicador.objects.filter(criterio__nombre="atencion")
-
-#     if request.method == 'POST':
-#         form = EvaluacionVentaForm(request.POST, indicadores=indicadores)
-#         if form.is_valid():
-#             evaluacion, creada = EvaluacionVenta.objects.update_or_create(
-#             venta=venta,
-#             cliente=cliente,
-#             trabajador=trabajador,
-#             defaults={'estado': 'COMPLETADA'}
-#         )
-#         # (Opcional) refrescar sus respuestas…
-#         for indicador in indicadores:
-#             puntaje = int(form.cleaned_data[f'indicador_{indicador.id}'])
-#             RespuestaEvaluacionVenta.objects.update_or_create(
-#                 evaluacion=evaluacion,
-#                 indicador=indicador,
-#                 defaults={'puntaje': puntaje}
-#             )
-#         return render(request, 'evaluacion_venta_ex.html')
-#     else:
-#         form = EvaluacionVentaForm(indicadores=indicadores)
-
-#     return render(request, 'evaluacion_venta_form.html', {
-#         'form': form,
-#         'venta': venta,
-#         'trabajador': trabajador,
-#         'cliente': cliente
-#     })
+############################################################
 @login_required
-def evaluar_venta(request, evaluacion_id):
-    # 1) Recupero la evaluación (y compruebo que el cliente sea el suyo)
-    evaluacion = get_object_or_404(
-        EvaluacionVenta,
-        id=evaluacion_id,
-        cliente__user=request.user
-    )
+def evaluar_venta(request, venta_id):
+    # # Validar rol cliente
+    # if not hasattr(request.user, 'rol') or request.user.rol != 'cliente':
+    #     return render(request, 'error.html', {
+    #         'mensaje': 'No tienes permisos para acceder a esta página. Debes ser un cliente registrado.'
+    #     })
 
-    # 2) Datos relacionados
-    venta = evaluacion.venta
-    cliente = evaluacion.cliente
-    trabajador = evaluacion.trabajador
+    # Obtener cliente asociado
+    try:
+        cliente = Cliente.objects.get(user=request.user)
+    except Cliente.DoesNotExist:
+        return render(request, 'error.html', {
+            'mensaje': 'No tienes un perfil de cliente asociado. Por favor contacta al administrador.'
+        })
 
-    # 3) Indicadores del criterio “atencion”
+    # Obtener venta que pertenece a ese cliente
+    try:
+        venta = Venta.objects.get(id=venta_id, cliente=cliente)
+    except Venta.DoesNotExist:
+        return render(request, 'error.html', {
+            'mensaje': 'No se encontró la venta solicitada o no te pertenece.'
+        })
+
+    trabajador = venta.usuario
     indicadores = Indicador.objects.filter(criterio__nombre="atencion")
 
     if request.method == 'POST':
         form = EvaluacionVentaForm(request.POST, indicadores=indicadores)
         if form.is_valid():
-            # 4) Marcar COMPLETADA y borrar viejas respuestas
-            evaluacion.estado = 'COMPLETADA'
-            evaluacion.save()
-            RespuestaEvaluacionVenta.objects.filter(
-                evaluacion=evaluacion
-            ).delete()
-
-            # 5) Crear exactamente las nuevas
-            for indicador in indicadores:
-                puntaje = int(form.cleaned_data[f'indicador_{indicador.id}'])
-                RespuestaEvaluacionVenta.objects.create(
-                    evaluacion=evaluacion,
-                    indicador=indicador,
-                    puntaje=puntaje
-                )
-
-            return render(request, 'evaluacion_venta_ex.html', {
-                'evaluacion': evaluacion
-            })
-
+            evaluacion, creada = EvaluacionVenta.objects.update_or_create(
+            venta=venta,
+            cliente=cliente,
+            trabajador=trabajador,
+            defaults={'estado': 'COMPLETADA'}
+        )
+        # (Opcional) refrescar sus respuestas…
+        for indicador in indicadores:
+            puntaje = int(form.cleaned_data[f'indicador_{indicador.id}'])
+            RespuestaEvaluacionVenta.objects.update_or_create(
+                evaluacion=evaluacion,
+                indicador=indicador,
+                defaults={'puntaje': puntaje}
+            )
+        return render(request, 'evaluacion_venta_ex.html')
     else:
         form = EvaluacionVentaForm(indicadores=indicadores)
 
     return render(request, 'evaluacion_venta_form.html', {
-        'form':       form,
-        'evaluacion': evaluacion,
-        'venta':      venta,
+        'form': form,
+        'venta': venta,
         'trabajador': trabajador,
-        'cliente':    cliente,
+        'cliente': cliente
     })
+
+# @login_required
+# def evaluar_venta(request, evaluacion_id):
+#     # 1) Recupero la evaluación (y compruebo que el cliente sea el suyo)
+#     evaluacion = get_object_or_404(
+#         EvaluacionVenta,
+#         id=evaluacion_id,
+#         cliente__user=request.user  # Verifica que el cliente está asociado con el usuario logueado
+#     )
+
+#     # 2) Datos relacionados
+#     venta = evaluacion.venta
+#     cliente = evaluacion.cliente
+#     trabajador = evaluacion.trabajador
+
+#     # 3) Indicadores del criterio "atencion"
+#     indicadores = Indicador.objects.filter(criterio__nombre="atencion")
+
+#     if request.method == 'POST':
+#         form = EvaluacionVentaForm(request.POST, indicadores=indicadores)
+#         if form.is_valid():
+#             # 4) Marcar la evaluación como COMPLETADA y eliminar las respuestas anteriores
+#             evaluacion.estado = 'COMPLETADA'
+#             evaluacion.save()
+
+#             # Borrar las respuestas anteriores de la evaluación
+#             RespuestaEvaluacionVenta.objects.filter(
+#                 evaluacion=evaluacion
+#             ).delete()
+
+#             # 5) Crear nuevas respuestas para cada indicador evaluado
+#             for indicador in indicadores:
+#                 puntaje = int(form.cleaned_data[f'indicador_{indicador.id}'])
+#                 RespuestaEvaluacionVenta.objects.create(
+#                     evaluacion=evaluacion,
+#                     indicador=indicador,
+#                     puntaje=puntaje
+#                 )
+
+#             # Redirige al reporte de evaluación
+#             return render(request, 'evaluacion_venta_ex.html', {
+#                 'evaluacion': evaluacion,
+#                 'venta': venta,
+#                 'cliente': cliente,
+#                 'trabajador': trabajador,
+#             })
+
+#     else:
+#         form = EvaluacionVentaForm(indicadores=indicadores)
+
+#     return render(request, 'evaluacion_venta_form.html', {
+#         'form': form,
+#         'evaluacion': evaluacion,
+#         'venta': venta,
+#         'trabajador': trabajador,
+#         'cliente': cliente,
+#     })
 # reporte ######################33
 
 @login_required
