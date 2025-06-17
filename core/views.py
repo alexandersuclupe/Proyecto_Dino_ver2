@@ -607,6 +607,70 @@ def autoevaluacion_view(request):
 
 #####################################
 
+# @login_required
+# def lista_evaluaciones(request):
+#     user = request.user
+
+#     # 1) Intentar conseguir el perfil de Trabajador
+#     try:
+#         perfil = user.trabajador
+#     except (Trabajador.DoesNotExist, AttributeError):
+#         # Si el usuario no tiene perfil de Trabajador, no puede ver evaluaciones
+#         return render(request, 'sin_permiso.html', status=403)
+
+#     puesto = perfil.puesto
+#     puesto_nombre = puesto.nombre.lower() if puesto else ''
+
+#     # 2) Cargar el periodo activo para ese puesto
+#     periodo = PeriodoEvaluacion.objects.filter(puesto=puesto).first()
+#     periodo_activo = periodo.esta_activo() if periodo else False
+
+#     # 3) Filtrar empleados según rol (puesto) del evaluador
+#     if puesto_nombre == 'supervisor':
+#         candidatos = ['vendedor', 'cajero', 'almacen']
+#         empleados = Trabajador.objects.filter(
+#             puesto__nombre__in=candidatos
+#         ).exclude(user=user)
+
+#     elif puesto_nombre == 'gerente':
+#         empleados = Trabajador.objects.filter(
+#             puesto__nombre__iexact='supervisor')
+#     else:
+#         empleados = Trabajador.objects.none()
+
+#     # 4) Pre-crear evaluaciones pendientes
+#     for emp in empleados:
+#         EvaluacionTrabajador.objects.get_or_create(
+#             evaluador=user,
+#             evaluado=emp.user,
+#             defaults={
+#                 'fecha_activacion': periodo.fecha_inicio if periodo else timezone.now(),
+#                 'estado': 'PENDIENTE'
+#             }
+#         )
+
+#     # 5) Recuperar los filtros desde la URL
+#     estado = request.GET.get('estado', '')
+#     trabajador = request.GET.get('trabajador', '')
+
+#     # 6) Filtrar evaluaciones por estado y trabajador
+#     evaluaciones = EvaluacionTrabajador.objects.filter(evaluador=user)
+
+#     if estado:
+#         evaluaciones = evaluaciones.filter(estado=estado)
+
+#     if trabajador:
+#         evaluaciones = evaluaciones.filter(
+#             evaluado__username__icontains=trabajador)
+
+#     # 7) Renderizar la plantilla
+#     return render(request, 'lista_evaluaciones.html', {
+#         'evaluaciones':   evaluaciones,
+#         'periodo':        periodo,
+#         'periodo_activo': periodo_activo,
+#         'estado': estado,
+#         'trabajador': trabajador,
+#     })
 
 @login_required
 def lista_evaluaciones(request):
@@ -625,6 +689,10 @@ def lista_evaluaciones(request):
     # 2) Cargar el periodo activo para ese puesto
     periodo = PeriodoEvaluacion.objects.filter(puesto=puesto).first()
     periodo_activo = periodo.esta_activo() if periodo else False
+
+    if not periodo_activo:
+        # Si el periodo no está activo, redirigir o mostrar un mensaje
+        return render(request, 'sin_periodo_activo.html')  # Asegúrate de crear esta plantilla
 
     # 3) Filtrar empleados según rol (puesto) del evaluador
     if puesto_nombre == 'supervisor':
@@ -666,13 +734,12 @@ def lista_evaluaciones(request):
 
     # 7) Renderizar la plantilla
     return render(request, 'lista_evaluaciones.html', {
-        'evaluaciones':   evaluaciones,
-        'periodo':        periodo,
+        'evaluaciones': evaluaciones,
+        'periodo': periodo,
         'periodo_activo': periodo_activo,
         'estado': estado,
         'trabajador': trabajador,
     })
-
 
 @login_required
 def gestion_empleados(request):
@@ -765,32 +832,35 @@ def eliminar_empleado(request, id):
 @login_required
 @only_trabajador
 def calcular_resultado_final(request, trabajador_id):
-
+    # Obtener el trabajador y su puesto
     trab = get_object_or_404(Trabajador, id=trabajador_id)
     usuario = trab.user
 
-    auto_puntaje = (
-        AutoevaluacionTrabajador.objects
-        .filter(trabajador=usuario)
-        .aggregate(total=Sum('respuestas__puntaje'))['total'] or 0
-    )
+    # Obtener el puesto del trabajador
+    puesto_trabajador = trab.puesto
 
-    cliente_puntaje = (
-        EvaluacionVenta.objects
-        .filter(trabajador=trab, estado='COMPLETADA')
-        .aggregate(total=Sum('respuestas__puntaje'))['total'] or 0
-    )
+    # Consultar los pesos de las evaluaciones según el puesto del trabajador
+    try:
+        peso_auto = PesoEvaluacion.objects.get(puesto=puesto_trabajador, tipo='AUTO').peso
+        peso_cliente = PesoEvaluacion.objects.get(puesto=puesto_trabajador, tipo='CLIE').peso
+        peso_interno = PesoEvaluacion.objects.get(puesto=puesto_trabajador, tipo='TRAB').peso
+    except PesoEvaluacion.DoesNotExist:
+        # Si no existe el peso para el tipo de evaluación, asignar valores predeterminados
+        peso_auto = 0.30
+        peso_cliente = 0.40
+        peso_interno = 0.30
 
-    interno_puntaje = (
-        EvaluacionTrabajador.objects
-        .filter(evaluado=usuario, estado='COMPLETADA')
-        .aggregate(total=Sum('respuestas__puntaje'))['total'] or 0
-    )
+    # Obtener los puntajes de las evaluaciones
+    auto_puntaje = AutoevaluacionTrabajador.objects.filter(trabajador=usuario).aggregate(
+        total=Sum('respuestas__puntaje'))['total'] or 0
 
-    peso_auto = 0.30
-    peso_cliente = 0.40
-    peso_interno = 0.30
+    cliente_puntaje = EvaluacionVenta.objects.filter(trabajador=trab, estado='COMPLETADA').aggregate(
+        total=Sum('respuestas__puntaje'))['total'] or 0
 
+    interno_puntaje = EvaluacionTrabajador.objects.filter(evaluado=usuario, estado='COMPLETADA').aggregate(
+        total=Sum('respuestas__puntaje'))['total'] or 0
+
+    # Calcular el total ponderado
     total = round(
         auto_puntaje * peso_auto +
         cliente_puntaje * peso_cliente +
@@ -798,6 +868,7 @@ def calcular_resultado_final(request, trabajador_id):
         2
     )
 
+    # Asignar la leyenda según el puntaje total
     if total >= 80:
         leyenda = 'Aprobado'
     elif total >= 50:
@@ -805,9 +876,9 @@ def calcular_resultado_final(request, trabajador_id):
     else:
         leyenda = 'En riesgo'
 
+    # Retornar la plantilla con los datos
     return render(
         request,
-        # ⬅ ajusta ruta si tu template está en otra carpeta
         'empleados/resultado_total.html',
         {
             'trabajador': trab,
@@ -821,8 +892,6 @@ def calcular_resultado_final(request, trabajador_id):
             'leyenda': leyenda,
         }
     )
-
-    return render(request, 'evaluaciones/resultado_final.html', context)
 
 
 @login_required
