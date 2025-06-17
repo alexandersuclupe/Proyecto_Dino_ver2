@@ -1,0 +1,396 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{% block title %}Dino — Cliente{% endblock %}</title>
+
+    <!-- Bootstrap y iconos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="{% static 'img/favicon_dino.jpg' %}" />
+
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-collapsed: 80px;
+            --primary: #F4C716;
+            --bg: #f9f9f9;
+            --tre: #17973C;
+            --secundary: #000000;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: var(--bg);
+            font-family: 'Lato', sans-serif;
+        }
+
+
+
+        /* Wrapper de layout */
+        .d-flex.main {
+            height: calc(100vh - 56px);
+        }
+
+        /* Sidebar fija */
+        aside.sidebar {
+            position: fixed;
+            top: 56px;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: black;
+            color: #fff;
+            padding: 1rem;
+            box-shadow: 2px 0 8px var(--shadow);
+            transition: width .3s;
+            z-index: 1050;
+        }
+
+        aside.sidebar.collapsed {
+            width: var(--sidebar-collapsed);
+        }
+
+        aside.sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: .5rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        aside.sidebar .nav-link i {
+            min-width: 24px;
+            text-align: center;
+        }
+
+        aside.sidebar .nav-link span {
+            transition: opacity .3s;
+        }
+
+        aside.sidebar.collapsed .nav-link span {
+            opacity: 0;
+        }
+
+
+
+        /* Main content reserva espacio */
+        main.content {
+            margin-top:45px;
+            /* bajo navbar */
+            margin-left: var(--sidebar-width);
+            padding: 1rem;
+            transition: margin-left .3s;
+            position: relative;
+            overflow: auto;
+        }
+
+        /* Cuando sidebar colapsa, reduce el margin */
+        aside.sidebar.collapsed+main.content {
+            margin-left: var(--sidebar-collapsed);
+        }
+
+        main.content h2 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: .3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Estadísticas/tarjetas */
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow);
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform .2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card .icon {
+            font-size: 2rem;
+            color: var(--tre);
+            margin-bottom: .5rem;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin: .3rem 0;
+            color: var(--secundary);
+        }
+
+
+
+        /* Navbar */
+        nav.navbar {
+            background: #fff;
+            border-bottom: 1px solid #ddd;
+            height: 56px;
+            z-index: 1100;
+            padding: 0 1rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+
+        /* Fijar tamaño del logo en la navbar */
+        nav.navbar .navbar-brand {
+            flex: none;
+            /* que no se encoja */
+            display: flex;
+            align-items: center;
+        }
+
+        nav.navbar .navbar-brand img {
+            width: 150px;
+            /* anchura fija que tú prefieras */
+            height: auto;
+            flex-shrink: 0;
+        }
+
+        .d-flex.main {
+            height: calc(100vh - 56px);
+        }
+
+        aside.sidebar {
+            width: var(--sidebar-width);
+            background: var(--primary);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            box-shadow: 2px 0 8px var(--shadow);
+            transition: width .3s;
+        }
+
+        aside.sidebar.collapsed {
+            width: var(--sidebar-collapsed);
+        }
+
+        aside.sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: .5rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        aside.sidebar .nav-link i {
+            min-width: 24px;
+            text-align: center;
+        }
+
+        main.content {
+            flex: 1;
+            overflow: auto;
+            padding: 2rem;
+        }
+
+        main.content h2 {
+            color: var(--secundary);
+            border-bottom: 3px solid var(--tre);
+            padding-bottom: .3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow);
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform .2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card .icon {
+            font-size: 2rem;
+            color: var(--tre);
+            margin-bottom: .5rem;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin: .3rem 0;
+            color: var(--secundary);
+        }
+
+        /* Submenús */
+        .has-submenu>.submenu {
+            display: none;
+            padding-left: 1rem;
+        }
+
+        .has-submenu.submenu-open>.submenu {
+            display: block;
+        }
+
+        .submenu .nav-link {
+            padding-left: 2rem;
+            background: rgba(173, 37, 37, 0.1);
+        }
+
+        .submenu .nav-link:hover,
+        .submenu .nav-link.active {
+            background: #ffffff;
+            color: var(--primary);
+        }
+
+        /* 1) Cada LI con submenu actúa como referencia */
+        .has-submenu {
+            position: relative;
+        }
+
+        /* 2) Submenu flotante sólo cuando sidebar está colapsada */
+        aside.sidebar.collapsed .has-submenu .submenu {
+            display: none;
+            position: absolute;
+            top: 0;
+            /* al tope del LI */
+            left: var(--sidebar-collapsed);
+            width: var(--sidebar-width);
+
+            box-shadow: 2px 0 8px var(--shadow);
+            z-index: 2000;
+        }
+
+        /* Cuando se muestre el submenu flotante, pon TODO el texto (y los iconos) en negro */
+        aside.sidebar.collapsed .has-submenu:hover .submenu .nav-link,
+        aside.sidebar.collapsed .has-submenu:hover .submenu .nav-link * {
+            color: #000 !important;
+        }
+
+        /* 3) Al hacer hover sobre el LI, muéstralo */
+        aside.sidebar.collapsed .has-submenu:hover .submenu {
+            display: block;
+        }
+
+        /* 4) Y si está marcado servidor-side, también */
+        .has-submenu.submenu-open>.submenu {
+            display: block;
+        }
+
+        /* (Opcional) Controla el fondo activo dentro del submenu */
+        .submenu .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--primary);
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <button id="sidebarToggle" class="btn btn-outline-secondary btn-sm me-3">
+                <i class="bi bi-list"></i>
+            </button>
+            <a class="navbar-brand">
+                <img src="{% static 'img/logo_dino.png' %}" alt="Logo Dino">
+            </a>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="text-success me-4">
+                <i class="bi bi-circle-fill me-1" style="font-size:.6rem;"></i> Bienvenida :
+                {{ request.user.get_full_name|default:request.user.username }}
+            </span>
+            <form id="logoutForm" method="post" action="{% url 'index' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    {# Capturamos el nombre de la vista activa #}
+    {% with request.resolver_match.url_name as view_name %}
+
+      <div class="d-flex main">
+        <!-- Sidebar colapsable -->
+        <aside id="sidebar" class="sidebar">
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <a href="{% url 'cliente_panel' %}" class="nav-link">
+                        <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a href="{% url 'cliente_panel' %}" class="nav-link">
+                        <i class="bi bi-check2-circle"></i><span>Evaluar Servicio</span>
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a href="{% url 'cliente_panel' %}" class="nav-link">
+                        <i class="bi bi-list-stars"></i><span>Mis Evaluaciones</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% endwith %}
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+    <script>
+        // Toggle sidebar (abierto / colapsado)
+        document.getElementById('sidebarToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        });
+
+        // Toggle submenus al hacer click
+        document.querySelectorAll('.submenu-toggle').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.preventDefault();
+                btn.closest('.has-submenu').classList.toggle('submenu-open');
+            });
+        });
+
+        // Confirmar logout
+        document.getElementById('logoutButton').onclick = e => {
+            e.preventDefault();
+            Swal.fire({
+                title: '¿Cerrar sesión?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí'
+            }).then(r => r.isConfirmed && document.getElementById('logoutForm').submit());
+        };
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

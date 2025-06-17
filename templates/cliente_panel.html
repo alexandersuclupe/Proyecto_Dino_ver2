@@ -1,47 +1,18 @@
+{% extends "base/base_cliente.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dino — Panel de cliente</title>
-  <link rel="stylesheet" href="{% static 'css/cliente_panel.css' %}">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="icon" type="image/png" href="{% static 'img/favicon_dino.jpg' %}">
+{% block title %}Dashboard Administrativo{% endblock %}
 
-  <!-- SweetAlert2 -->
-  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.17/dist/sweetalert2.min.css" rel="stylesheet">
-</head>
+{% block content %}
 
-<body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-light bg-white border-bottom shadow-sm px-4 py-3">
-    <a class="navbar-brand d-flex align-items-center fw-bold fs-5">
-      <img src="{% static 'img/logo_dino.png' %}" alt="Logo" width="150" class="me-2">
-      | Panel de cliente
-    </a>
-    <div class="d-flex align-items-center gap-4">
-      <span class="text-success fw-medium d-flex align-items-center">
-        <i class="bi bi-circle-fill me-1" style="font-size: 0.6rem;"></i> En línea como cliente: {{ request.user.get_full_name|default:request.user.username }}
-      </span>
-      <!-- Formulario de cerrar sesión -->
-      <form id="logoutForm" action="{% url 'index' %}" method="post" style="display: inline;">
-        {% csrf_token %}
-        <button type="button" id="logoutButton" class="btn btn-outline-danger btn-sm" style="border-radius: 8px; padding: 8px 16px; font-weight: bold;">
-          <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
-        </button>
-      </form>
-    </div>
-  </nav>
 
    <!-- Estadísticas -->
 <div class="row g-4 my-4">
   <div class="col-md-6">
-    <div class="card text-center p-4">
+    <div class="card  stat-card text-center p-4">
+      
           <h4 class="fw-bold" style="color: #000000">¡Bienvenido, {{ request.user.get_full_name|default:request.user.username }}!</h4>
-          <p class="text-muted">Nos alegra verte de vuelta. Aquí puedes ver tus evaluaciones pendientes y realizadas.</p>
+          <p class="text-muted">Nos alegra verte de vuelta. Aquí puedes calificar nuestra calidad de servicio :) .</p>
         </div>
   </div>
   
@@ -67,19 +38,19 @@
     <div class="row g-4">
       <!-- Pendientes -->
       <div class="col-md-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
+        <div class="card shadow-sm h-100 ">
+          <div class="card-body ">
             <h5 class="fw-bold mb-2" style="color: #000000">Evaluaciones pendientes</h5>
             <p class="text-muted mb-3">Son aquellas evaluaciones sin terminar.</p>
             <ul class="list-unstyled mb-0">
               {% if ventas_pendientes %}
-                {% for venta in ventas_pendientes %}
+                {% for ev in ventas_pendientes %}
                   <li class="mb-3 d-flex justify-content-between align-items-center">
                     <div>
-                      <span class="fw-semibold">Atención de {{ venta.username }}</span><br>
-                      <small class="text-muted">Venta #{{ venta.id }}</small>
+                      <span class="fw-semibold">Atención de {{ ev.venta.usuario.user.get_full_name }}</span><br>
+                      <small class="text-muted">Venta #{{  ev.venta.id }}</small>
                     </div>
-                    <a href="{% url 'evaluar_venta' venta.id %}" class="btn btn-dark btn-sm" style="padding-left: 15px; padding-right: 15px; border-radius: 30px; color: black; font-weight: bold; background-color: #36965e; border-color: #36965e; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">Evaluar</a>
+                    <a href="{% url 'evaluar_venta' ev.venta.id %}" class="btn btn-dark btn-sm" style="padding-left: 15px; padding-right: 15px; border-radius: 30px; color: black; font-weight: bold; background-color: #36965e; border-color: #36965e; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">Evaluar</a>
                   </li>
                 {% endfor %}
               {% else %}
@@ -137,6 +108,5 @@
     };
   </script>
 
-</body>
 
-</html>
+{% endblock %}
