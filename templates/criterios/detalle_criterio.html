@@ -1,72 +1,172 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block title %}Gestión de Criterios{% endblock %}
-
+{% block title %}Detalle de Criterio{% endblock %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Detalle de Criterio</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-  <div class="container py-4">
-    <a href="{% url 'lista_criterios' %}" class="btn btn-link mb-3">
-      <i class="bi bi-arrow-left"></i> Volver al listado
-    </a>
+<style>
+  body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
 
-    <div class="card mb-4">
-      <div class="card-body">
-        <h2 class="card-title">{{ criterio.nombre }}</h2>
-        <p class="card-text text-muted">{{ criterio.descripcion }}</p>
-        <p><strong>Puestos:</strong>
-          {% for p in criterio.puestos.all %}{{ p.nombre }}{% if not forloop.last %}, {% endif %}{% endfor %}
-        </p>
-        <p><strong>Peso:</strong> {{ criterio.peso }}%</p>
-        <p><strong>Estado:</strong>
-          {% if criterio.estado == 'Activo' %}
-            <span class="badge bg-success">Activo</span>
-          {% else %}
-            <span class="badge bg-secondary">Inactivo</span>
-          {% endif %}
-        </p>
-        <a href="{% url 'editar_criterio' criterio.pk %}" class="btn btn-primary">
-          <i class="bi bi-pencil"></i> Editar criterio e indicadores
+  .card-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #28a745;
+  }
+
+  .card-text {
+    color: #6c757d;
+  }
+
+  .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 15px;
+    border: 1px solid #dee2e6;
+    text-align: left;
+  }
+
+  .table th {
+    background-color: #F0B318;
+    color: white;
+  }
+
+  .table td {
+    background-color: white;
+  }
+
+  .btn {
+    padding: 10px 15px;
+    border-radius: 25px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary {
+    background-color: #28a745;
+    border: none;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background-color: #218838;
+    transform: scale(1.05);
+  }
+
+  .btn-link {
+    text-decoration: none;
+    color: #007bff;
+    font-size: 1rem;
+  }
+
+  .btn-link:hover {
+    text-decoration: underline;
+  }
+
+  .container {
+    margin-top: 40px;
+  }
+
+  .card {
+    border-radius: 10px;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    background-color: white;
+  }
+
+  .card-body {
+    padding: 20px;
+  }
+
+  .row {
+    margin-bottom: 20px;
+  }
+
+  .table-light {
+    background-color: #f8f9fa;
+  }
+
+  .table-light th {
+    background-color: #e9ecef;
+  }
+    .back-link a {
+      color: #3f2afc;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+
+</style>
+
+<div class="container py-1">
+
+
+  <div class="card">
+          <div class="back-link">
+        <a href="{% url 'lista_criterios' %}">
+          <i class="bi bi-arrow-left-circle-fill"></i> Volver al inicio
         </a>
       </div>
-    </div>
+    <div class="card-body">
+      <!-- Volver -->
 
-    <h4>Indicadores</h4>
-    <table class="table table-bordered">
-      <thead class="table-light">
-        <tr>
-          <th>Nombre</th>
-          <th>Descripción</th>
-          <th>Puntaje Máximo</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for ind in indicadores %}
-        <tr>
-          <td>{{ ind.nombre }}</td>
-          <td>{{ ind.descripcion }}</td>
-          <td>{{ ind.max_puntaje }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="3" class="text-center text-muted">
-            No hay indicadores asociados.
-          </td>
-        </tr>
+      <h2 class="card-title">{{ criterio.nombre }}</h2>
+      <p class="card-text">{{ criterio.descripcion }}</p>
+      <p><strong>Puestos:</strong>
+        {% for p in criterio.puestos.all %}
+        {{ p.nombre }}{% if not forloop.last %}, {% endif %}
         {% endfor %}
-      </tbody>
-    </table>
+      </p>
+      <p><strong>Peso:</strong> {{ criterio.peso }}%</p>
+      <p><strong>Estado:</strong>
+        {% if criterio.estado == 'Activo' %}
+        <span class="badge bg-success">Activo</span>
+        {% else %}
+        <span class="badge bg-secondary">Inactivo</span>
+        {% endif %}
+      </p>
+      <a href="{% url 'editar_criterio' criterio.pk %}" class="btn btn-primary">
+        <i class="bi bi-pencil"></i> Editar criterio e indicadores
+      </a>
+    </div>
   </div>
-</body>
-</html>
+
+  <h4 class="mt-5">Indicadores</h4>
+  <table class="table ">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Puntaje Máximo</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ind in indicadores %}
+      <tr>
+        <td>{{ ind.nombre }}</td>
+        <td>{{ ind.descripcion }}</td>
+        <td>{{ ind.max_puntaje }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="3" class="text-center text-muted">
+          No hay indicadores asociados.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}

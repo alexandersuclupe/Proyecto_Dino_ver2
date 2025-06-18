@@ -7,26 +7,28 @@
 <style>
   body {
     background-color: #f4f5f7;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Lato', sans-serif;
   }
 
   .titulo-seccion {
-    color: #36965e;
+    color: #191b1a;
     font-weight: 700;
   }
 
-  .btn-nuevo {
-    background: #36965e;
-    color: #212529;
-    border: none;
-    transition: background 0.3s ease, transform 0.2s ease;
-    font-weight: bold;
-  }
 
-  .btn-nuevo:hover {
-    background: #36965e;
-    transform: scale(1.05);
-  }
+
+/* Para el botón de "Nuevo criterio" */
+.btn-nuevo:hover {
+  background-color: #F0B318;  /* Fondo blanco */
+  border: 1px solid #030303;  /* Borde negro */
+  color: #030303;             /* Color de texto negro */
+}
+/* Para el botón de "Nuevo criterio" */
+.btn-buscar:hover {
+  background-color: #B5B6B2;  /* Fondo blanco */
+  border: 1px solid #030303;  /* Borde negro */
+  color: #030303;             /* Color de texto negro */
+}
 
   .table thead {
     background-color: #e0f7e9;
@@ -53,71 +55,149 @@
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
+
+  /* Estilo para los filtros y el botón de búsqueda */
+  .filtros {
+    display: flex;
+    
+    align-items: center;
+    margin-bottom: 1rem;
+    width: 100%;
+    /* Asegura que ocupe todo el espacio */
+  }
+
+  .filtros form {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
+    margin-right: 8px;
+    /* Los elementos dentro del formulario ocupan todo el espacio */
+  }
+
+  .filtros input {
+    flex-grow: 1;
+    /* Hace que los inputs crezcan y ocupen el máximo espacio */
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+  }
+
+  .filtros button {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: 2rem;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Estilo para el botón "Nuevo criterio" */
+  .btn-nuevo {
+    background: #F0B318;
+    color: #030303;
+    border: none;
+    transition: background 0.3s ease, transform 0.2s ease;
+    padding: 0.5rem 1.25rem;
+    font-size: 1rem;
+    border-radius: 2rem;
+  }
+  .btn-buscar{
+    background: #B5B6B2;
+    color: #030303;
+    border: none;
+    transition: background 0.3s ease, transform 0.2s ease;
+    padding: 0.5rem 1.25rem;
+    font-size: 1rem;
+    border-radius: 2rem;
+  }
+
+
 </style>
 
-<div class="container py-5 fade-in">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="titulo-seccion">Gestión de criterios e indicadores</h1>
-    <a href="{% url 'nuevo_criterio' %}" class="btn btn-nuevo">
-      <i class="bi bi-plus-lg"></i> Nuevo criterio
-    </a>
-  </div>
+<div class="container py-2 fade-in">
+  <div class="container py-2 fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <!-- Filtros de búsqueda -->
+      <div class="filtros">
+        <form method="get" class="d-flex">
+          <input type="text" name="nombre" class="form-control me-2" placeholder="Buscar por criterio"
+            value="{{ nombre_criterio }}">
+          <input type="text" name="puesto" class="form-control me-2" placeholder="Buscar por puesto"
+            value="{{ puesto_criterio }}">
+          <button type="submit" class="btn btn-buscar">
+            <i class="bi bi-search"></i> Buscar
+          </button>
+          <!-- Botón Nuevo criterio -->
+          <a href="{% url 'nuevo_criterio' %}" class="btn btn-nuevo">
+            <i class="bi bi-plus-lg"></i>Nuevo
+          </a>
+        </form>
+      </div>
 
-  <div class="table-responsive">
-    <table class="table table-striped align-middle shadow-sm rounded bg-white">
-      <thead>
-        <tr>
-          <th>Criterio</th>
-          <th>Descripción</th>
-          <th>Puestos</th>
-          <th>Peso (%)</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for c in criterios %}
-        <tr>
-          <td>
-            <a href="{% url 'detalle_criterio' c.pk %}" class="font-weight-bold text-decoration-none text-dark">
-              {{ c.nombre }}
-            </a>
-          </td>
-          <td>{{ c.descripcion }}</td>
-          <td>
-            {% for p in c.puestos.all %}
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-striped align-middle shadow-sm rounded bg-white">
+        <thead>
+          <tr>
+            <th>Criterio</th>
+            <th>Descripción</th>
+            <th>Puestos</th>
+            <th>Peso (%)</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in criterios %}
+          <tr>
+            <td>
+              <a href="{% url 'detalle_criterio' c.pk %}" class="font-weight-bold text-decoration-none text-dark">
+                {{ c.nombre }}
+              </a>
+            </td>
+            <td>{{ c.descripcion }}</td>
+            <td>
+              {% for p in c.puestos.all %}
               {{ p.nombre }}{% if not forloop.last %}, {% endif %}
-            {% endfor %}
-          </td>
-          <td>{{ c.peso }}%</td>
-          <td>
-            {% if c.estado == 'Activo' %}
+              {% endfor %}
+            </td>
+            <td>{{ c.peso }}%</td>
+            <td>
+              {% if c.estado == 'Activo' %}
               <span class="badge bg-success">Activo</span>
-            {% else %}
+              {% else %}
               <span class="badge bg-secondary">Inactivo</span>
-            {% endif %}
-          </td>
-          <td>
-            <a href="{% url 'editar_criterio' c.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="Editar">
-              <i class="bi bi-pencil"></i>
-            </a>
-            <a href="{% url 'eliminar_criterio' c.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
-              <i class="bi bi-trash"></i>
-            </a>
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="6" class="text-center text-muted">
-            No hay criterios registrados.
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'editar_criterio' c.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <a href="{% url 'eliminar_criterio' c.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">
+              No hay criterios registrados.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-</div>
-{% endblock %}
+  {% endblock %}

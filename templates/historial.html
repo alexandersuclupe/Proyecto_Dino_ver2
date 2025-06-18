@@ -1,4 +1,15 @@
+{% extends "base/base.html" %}
 {% load static %}
+
+{% block title %}Dino — Gestión de evaluaciones{% endblock %}
+
+{% block extra_css %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Agregar FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,7 +21,7 @@
   <style>
     body {
       background-color: #f6fbf6;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Lato', sans-serif;
     }
 
     .btn-verde {
@@ -86,7 +97,7 @@
 
   <!-- Encabezado -->
   <div class="d-flex justify-content-between align-items-center mb-4 shadow-panel">
-    <h2 class="mb-0 text-success fw-bold">📋 Historial de evaluaciones</h2>
+    <h2 class="mb-0 text-success fw-bold">📋 Historial de mis evaluaciones</h2>
     <div class="d-flex gap-2">
       <a href="{% url 'exportar_evaluaciones_excel' %}" class="btn btn-verde shadow-sm">
         <i class="bi bi-download"></i> Exportar
@@ -162,3 +173,4 @@
 
 </body>
 </html>
+{% endblock %}

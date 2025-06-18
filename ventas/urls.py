@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path
 from core import views
 from core.views import index  # ← Aquí va la importación
-from core.views import login_view , evaluar_venta ,editar_evaluacion_trabajador
+from core.views import login_view , evaluar_venta ,editar_evaluacion_trabajador,seguimiento_trabajador
 from django.contrib.auth.views import LogoutView
 
 
@@ -96,5 +96,7 @@ urlpatterns = [
     path('empleados/eliminar/<int:id>/', views.eliminar_empleado, name='eliminar_empleado'),
     path('empleado/<int:trabajador_id>/resultado/', views.calcular_resultado_final, name='resultado_total'),
     path('reporte_evaluacion/<int:evaluacion_id>/', views.reporte_evaluacion, name='reporte_evaluacion'),
+
+    path('seguimiento/', views.seguimiento_trabajador, name='seguimiento_trabajador'),
 
 ]

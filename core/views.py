@@ -323,6 +323,71 @@ def reporte_evaluacion_venta(request, evaluacion_id):
         'puntaje_total': puntaje_total,  # Pasar el puntaje total a la plantilla
     })
 
+# @login_required
+# def editar_evaluacion_trabajador(request, evaluacion_id):
+#     evaluacion = get_object_or_404(EvaluacionTrabajador, id=evaluacion_id)
+#     usuario_evaluado = evaluacion.evaluado  # Este es un objeto Usuario
+
+#     # Obtener el puesto desde el perfil Trabajador vinculado al Usuario
+#     try:
+#         perfil = usuario_evaluado.trabajador
+#         puesto_evaluado = perfil.puesto
+#     except (Trabajador.DoesNotExist, AttributeError):
+#         puesto_evaluado = None
+
+#     # Filtrar criterios asociados a ese puesto
+#     criterios = Criterio.objects.filter(
+#         puestos=puesto_evaluado) if puesto_evaluado else Criterio.objects.none()
+
+#     # Obtener los indicadores de esos criterios
+#     indicadores = Indicador.objects.filter(criterio__in=criterios)
+
+#     # Precargar respuestas previas
+#     respuestas_actuales = {
+#         r.indicador_id: r.puntaje
+#         for r in evaluacion.respuestas.all()
+#     }
+
+#     # Crear un diccionario con los puntajes actuales para cada indicador
+#     initial_data = {
+#         # Usamos el valor por defecto 0 si no hay respuesta
+#         f'indicador_{ind.id}': respuestas_actuales.get(ind.id, 0)
+#         for ind in indicadores
+#     }
+
+#     # Si la evaluación ya está completada, redirigir a la vista de reporte
+#     if evaluacion.estado == 'COMPLETADA':
+#         return redirect('reporte_evaluacion', evaluacion_id=evaluacion.id)
+
+#     if request.method == 'POST':
+#         form = EvaluacionTrabajadorForm(request.POST, indicadores=indicadores)
+#         if form.is_valid():
+#             # Guardar las respuestas seleccionadas
+#             for indicador in indicadores:
+#                 puntaje = int(form.cleaned_data.get(
+#                     f'indicador_{indicador.id}', 0))
+#                 RespuestaEvaluacionTrabajador.objects.update_or_create(
+#                     evaluacion=evaluacion,
+#                     indicador=indicador,
+#                     defaults={'puntaje': puntaje}
+#                 )
+#             evaluacion.estado = 'COMPLETADA'
+#             evaluacion.save()
+#             # Redirige al reporte
+#             return redirect('reporte_evaluacion', evaluacion_id=evaluacion.id)
+
+#     else:
+#         form = EvaluacionTrabajadorForm(
+#             indicadores=indicadores, initial=initial_data)
+
+#     return render(request, 'evaluacion_trabajador_form.html', {
+#         'form': form,
+#         'evaluacion': evaluacion,
+#         'evaluado': usuario_evaluado,
+#         'criterios': criterios,
+#         'puesto': puesto_evaluado,
+#         'initial_data': initial_data,  # Pasamos el diccionario con los puntajes iniciales
+#     })
 @login_required
 def editar_evaluacion_trabajador(request, evaluacion_id):
     evaluacion = get_object_or_404(EvaluacionTrabajador, id=evaluacion_id)
@@ -335,9 +400,13 @@ def editar_evaluacion_trabajador(request, evaluacion_id):
     except (Trabajador.DoesNotExist, AttributeError):
         puesto_evaluado = None
 
-    # Filtrar criterios asociados a ese puesto
+    # Filtrar criterios asociados a ese puesto, excluyendo aquellos que comienzan con "auto" o "autoevaluacion"
     criterios = Criterio.objects.filter(
-        puestos=puesto_evaluado) if puesto_evaluado else Criterio.objects.none()
+        puestos=puesto_evaluado).exclude(
+        nombre__istartswith='auto'
+    ).exclude(
+        nombre__istartswith='autoevaluacion'
+    ) if puesto_evaluado else Criterio.objects.none()
 
     # Obtener los indicadores de esos criterios
     indicadores = Indicador.objects.filter(criterio__in=criterios)
@@ -390,6 +459,44 @@ def editar_evaluacion_trabajador(request, evaluacion_id):
     })
 
 
+# @login_required
+# def reporte_evaluacion(request, evaluacion_id):
+#     evaluacion = get_object_or_404(EvaluacionTrabajador, id=evaluacion_id)
+#     usuario_evaluado = evaluacion.evaluado  # Este es un objeto Usuario
+
+#     # Obtener el puesto desde el perfil Trabajador vinculado al Usuario
+#     try:
+#         perfil = usuario_evaluado.trabajador
+#         puesto_evaluado = perfil.puesto
+#     except (Trabajador.DoesNotExist, AttributeError):
+#         puesto_evaluado = None
+
+#     # Filtrar criterios asociados a ese puesto
+#     criterios = Criterio.objects.filter(
+#         puestos=puesto_evaluado) if puesto_evaluado else Criterio.objects.none()
+
+#     # Obtener los indicadores de esos criterios
+#     indicadores = Indicador.objects.filter(criterio__in=criterios)
+
+#     # Obtener las respuestas de la evaluación de los indicadores
+#     respuestas_actuales = RespuestaEvaluacionTrabajador.objects.filter(
+#         evaluacion=evaluacion)
+
+#     # Crear un diccionario con las respuestas para pasarlo a la plantilla
+#     respuestas_dict = {
+#         respuesta.indicador_id: respuesta.puntaje for respuesta in respuestas_actuales
+#     }
+
+#     # Calcular el puntaje total
+#     puntaje_total = sum(respuestas_dict.values())
+
+#     return render(request, 'reporte_evaluacion.html', {
+#         'evaluacion': evaluacion,
+#         'evaluado': usuario_evaluado,
+#         'criterios': criterios,
+#         'respuestas': respuestas_dict,  # Pasar las respuestas a la plantilla
+#         'puntaje_total': puntaje_total,  # Pasar el puntaje total a la plantilla
+#     })
 @login_required
 def reporte_evaluacion(request, evaluacion_id):
     evaluacion = get_object_or_404(EvaluacionTrabajador, id=evaluacion_id)
@@ -402,16 +509,17 @@ def reporte_evaluacion(request, evaluacion_id):
     except (Trabajador.DoesNotExist, AttributeError):
         puesto_evaluado = None
 
-    # Filtrar criterios asociados a ese puesto
+    # Filtrar criterios asociados a esa evaluación, basándonos en los indicadores
     criterios = Criterio.objects.filter(
-        puestos=puesto_evaluado) if puesto_evaluado else Criterio.objects.none()
+        indicadores__respuestaevaluaciontrabajador__evaluacion=evaluacion
+    ).distinct()
 
     # Obtener los indicadores de esos criterios
     indicadores = Indicador.objects.filter(criterio__in=criterios)
 
     # Obtener las respuestas de la evaluación de los indicadores
     respuestas_actuales = RespuestaEvaluacionTrabajador.objects.filter(
-        evaluacion=evaluacion)
+        evaluacion=evaluacion, indicador__in=indicadores)
 
     # Crear un diccionario con las respuestas para pasarlo a la plantilla
     respuestas_dict = {
@@ -424,10 +532,11 @@ def reporte_evaluacion(request, evaluacion_id):
     return render(request, 'reporte_evaluacion.html', {
         'evaluacion': evaluacion,
         'evaluado': usuario_evaluado,
-        'criterios': criterios,
+        'criterios': criterios,  # Solo los criterios asociados a la evaluación
         'respuestas': respuestas_dict,  # Pasar las respuestas a la plantilla
         'puntaje_total': puntaje_total,  # Pasar el puntaje total a la plantilla
     })
+
 
 
 # 333
@@ -955,13 +1064,31 @@ def calcular_resultado_final(request, trabajador_id):
     )
 
 
+# @login_required
+# def lista_criterios(request):
+#     criterios = Criterio.objects.all()
+#     return render(request, 'criterios/lista_criterios.html', {
+#         'criterios': criterios
+#     })
 @login_required
 def lista_criterios(request):
     criterios = Criterio.objects.all()
-    return render(request, 'criterios/lista_criterios.html', {
-        'criterios': criterios
-    })
 
+    # Filtrar por nombre del criterio
+    nombre_criterio = request.GET.get('nombre', '')
+    if nombre_criterio:
+        criterios = criterios.filter(nombre__icontains=nombre_criterio)
+
+    # Filtrar por puesto
+    puesto_criterio = request.GET.get('puesto', '')
+    if puesto_criterio:
+        criterios = criterios.filter(puestos__nombre__icontains=puesto_criterio)
+
+    return render(request, 'criterios/lista_criterios.html', {
+        'criterios': criterios,
+        'nombre_criterio': nombre_criterio,
+        'puesto_criterio': puesto_criterio
+    })
 
 @login_required
 def nuevo_criterio(request):
@@ -1321,3 +1448,124 @@ def ver_autoevaluacion(request, pk):
     evaluacion = get_object_or_404(
         AutoevaluacionTrabajador, pk=pk, trabajador=request.user)
     return render(request, 'ver_autoevaluacion.html', {'evaluacion': evaluacion})
+
+
+########################################################################################33
+@login_required
+def seguimiento_trabajador(request):
+    form = FiltroEvaluacionForm(request.GET or None)
+    tipo_filtro = request.GET.get('tipo', 'todas')
+    busqueda = request.GET.get('buscar', '').lower().strip()
+
+    # Asignar el mes de junio como valor por defecto si no se proporciona
+    mes_filtro = request.GET.get('mes', datetime.today().strftime('%Y-06'))  # Por defecto, junio de este año
+    trabajador_filtro = request.GET.get('trabajador')  # Obtenemos el trabajador filtrado
+
+    # Si el trabajador_filtro está presente, lo filtramos
+    if trabajador_filtro:
+        trabajador = Trabajador.objects.get(id=trabajador_filtro)
+    else:
+        trabajador = None
+
+    evaluaciones = []
+
+    # Filtrar las evaluaciones por mes si se proporciona
+    mes_year_month = None  # Inicializamos como None
+    try:
+        mes_year_month = datetime.strptime(mes_filtro, "%Y-%m")  # Convertir el mes a datetime
+    except ValueError:
+        mes_year_month = None  # Si el formato no es válido, se asegura que sea None
+
+    # Filtrar las autoevaluaciones
+    auto_qs = AutoevaluacionTrabajador.objects.select_related('trabajador')
+    if trabajador:
+        auto_qs = auto_qs.filter(trabajador=trabajador)
+    if tipo_filtro in ['todas', 'AUTO']:
+        for auto in auto_qs:
+            if busqueda in str(auto.trabajador).lower():
+                if mes_year_month:
+                    puntaje_total = ResultadoTotal.objects.filter(
+                        trabajador=auto.trabajador,
+                        fecha_ejecucion__year=mes_year_month.year,
+                        fecha_ejecucion__month=mes_year_month.month
+                    ).aggregate(Sum('puntaje_total'))['puntaje_total__sum'] or 0
+                else:
+                    puntaje_total = 0  # Si no hay mes, se coloca 0 como puntaje
+                evaluaciones.append({
+                    'id': auto.id,
+                    'evaluado': auto.trabajador,
+                    'evaluador': auto.trabajador,
+                    'fecha': auto.fecha,
+                    'tipo': 'AUTO',
+                    'get_tipo_display': 'AUTO',
+                    'puntaje': puntaje_total,
+                    'estado': 'Completada',
+                })
+
+    # Filtrar las evaluaciones de trabajadores
+    et_qs = EvaluacionTrabajador.objects.select_related('evaluador', 'evaluado').filter(estado__iexact='Completada')
+    if trabajador:
+        et_qs = et_qs.filter(evaluado=trabajador)
+    if tipo_filtro in ['todas', 'TRAB']:
+        for e in et_qs:
+            if busqueda in str(e.evaluado).lower() or busqueda in str(e.evaluador).lower():
+                if mes_year_month:
+                    puntaje_total = ResultadoTotal.objects.filter(
+                        trabajador=e.evaluado,
+                        fecha_ejecucion__year=mes_year_month.year,
+                        fecha_ejecucion__month=mes_year_month.month
+                    ).aggregate(Sum('puntaje_total'))['puntaje_total__sum'] or 0
+                else:
+                    puntaje_total = 0  # Si no hay mes, se coloca 0 como puntaje
+                evaluaciones.append({
+                    'id': e.id,
+                    'evaluado': e.evaluado,
+                    'evaluador': e.evaluador,
+                    'fecha': e.fecha_creacion,
+                    'tipo': 'TRAB',
+                    'get_tipo_display': 'TRAB',
+                    'puntaje': puntaje_total,
+                    'estado': 'Completada',
+                })
+
+    # Filtrar las evaluaciones de clientes
+    ev_qs = EvaluacionVenta.objects.select_related('trabajador', 'cliente').filter(estado__iexact='Completada')
+    if trabajador:
+        ev_qs = ev_qs.filter(trabajador=trabajador)
+    if tipo_filtro in ['todas', 'CLIE']:
+        for ev in ev_qs:
+            if busqueda in str(ev.trabajador).lower() or busqueda in str(ev.cliente).lower():
+                if mes_year_month:
+                    puntaje_total = ResultadoTotal.objects.filter(
+                        trabajador=ev.trabajador,
+                        fecha_ejecucion__year=mes_year_month.year,
+                        fecha_ejecucion__month=mes_year_month.month
+                    ).aggregate(Sum('puntaje_total'))['puntaje_total__sum'] or 0
+                else:
+                    puntaje_total = 0  # Si no hay mes, se coloca 0 como puntaje
+                evaluaciones.append({
+                    'id': ev.id,
+                    'evaluado': ev.trabajador,
+                    'evaluador': ev.cliente,
+                    'fecha': ev.fecha,
+                    'tipo': 'CLIE',
+                    'get_tipo_display': 'CLIE',
+                    'puntaje': puntaje_total,
+                    'estado': 'Completada',
+                })
+
+    # Ordenar por fecha descendente
+    evaluaciones.sort(key=lambda x: x['fecha'], reverse=True)
+
+    # Para pasar los trabajadores al formulario
+    trabajadores = Trabajador.objects.all()
+
+    context = {
+        'evaluaciones': evaluaciones,
+        'form': form,
+        'trabajadores': trabajadores,  # Para mostrar en el filtro
+        'tipo_filtro': tipo_filtro,
+        'busqueda': request.GET.get('buscar', ''),
+        'mes_filtro': mes_filtro,
+    }
+    return render(request, 'seguimiento_trabajador.html', context)

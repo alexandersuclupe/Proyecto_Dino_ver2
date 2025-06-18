@@ -1,26 +1,31 @@
+{% extends "base/base.html" %}
 {% load static %}
+
+{% block title %}Dino — Gestión de evaluaciones{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Agregar FontAwesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Detalle de evaluación</title>
 
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<head>
 
     <style>
         body {
             background: linear-gradient(120deg, #d6ffd7, #ffffd6);
+            background-size: cover;
             min-height: 100vh;
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
+            font-family: 'Lato', sans-serif;
+            
             align-items: center;
             justify-content: center;
-            padding: 30px;
+            
+            overflow-x: hidden;
         }
 
         .card-evaluacion {
@@ -30,6 +35,10 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             animation: fadeIn 0.5s ease-in-out;
+            margin: 0 auto;
+            /* Esto centrará la tarjeta */
+            padding: 30px;
+            /* Ajusta el relleno para evitar el scroll */
         }
 
         .card-header {
@@ -101,82 +110,92 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
+
 <body>
 
-<div class="card card-evaluacion">
-    <div class="card-header">
-        <i class="bi bi-clipboard-check-fill"></i>
-        {% if tipo == 'AUTO' %}
+    <div class="card card-evaluacion">
+        <div class="card-header">
+            <i class="bi bi-clipboard-check-fill"></i>
+            {% if tipo == 'AUTO' %}
             Detalles de la Autoevaluación
-        {% elif tipo == 'TRAB' %}
+            {% elif tipo == 'TRAB' %}
             Detalles de la Evaluación del Trabajador
-        {% elif tipo == 'CLIE' %}
+            {% elif tipo == 'CLIE' %}
             Detalles de la Evaluación del Cliente
-        {% else %}
+            {% else %}
             Evaluación
-        {% endif %}
-    </div>
+            {% endif %}
+        </div>
 
-    <div class="card-body">
-        {% if tipo == 'AUTO' %}
+        <div class="card-body">
+            {% if tipo == 'AUTO' %}
             <p><strong>Trabajador:</strong> {{ evaluacion.trabajador }}</p>
             <p><strong>Fecha:</strong> {{ evaluacion.fecha }}</p>
             <p><strong>Puntaje Total:</strong> {{ evaluacion.puntaje_total }}</p>
 
-        {% elif tipo == 'TRAB' %}
+            {% elif tipo == 'TRAB' %}
             <p><strong>Evaluado:</strong> {{ evaluacion.evaluado }}</p>
             <p><strong>Evaluador:</strong> {{ evaluacion.evaluador }}</p>
             <p><strong>Fecha:</strong> {{ evaluacion.fecha_creacion }}</p>
             <p><strong>Puntaje Total:</strong> {{ evaluacion.puntaje_total }}</p>
 
-        {% elif tipo == 'CLIE' %}
+            {% elif tipo == 'CLIE' %}
             <p><strong>Trabajador Evaluado:</strong> {{ evaluacion.trabajador }}</p>
             <p><strong>Cliente:</strong> {{ evaluacion.cliente }}</p>
             <p><strong>Fecha:</strong> {{ evaluacion.fecha }}</p>
             <p><strong>Puntaje Total:</strong> {{ evaluacion.puntaje_total }}</p>
-        {% endif %}
+            {% endif %}
 
-        <h5 class="respuestas-titulo"><i class="fas fa-clipboard-list"></i> Respuestas por Criterio:</h5>
+            <h5 class="respuestas-titulo"><i class="fas fa-clipboard-list"></i> Respuestas por Criterio:</h5>
 
-        {% regroup evaluacion.respuestas.all by indicador.criterio as criterios_evaluados %}
-        {% for criterio in criterios_evaluados %}
+            {% regroup evaluacion.respuestas.all by indicador.criterio as criterios_evaluados %}
+            {% for criterio in criterios_evaluados %}
             <div class="mt-4">
                 <h6 class="text-success font-weight-bold">
                     <i class="fas fa-layer-group mr-2"></i> {{ criterio.grouper.nombre }}
                 </h6>
                 <ul class="list-group">
                     {% for r in criterio.list %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span class="item-label">
-                                <i class="fas fa-check-circle"></i> {{ r.indicador.nombre }}
-                            </span>
-                            <span class="badge badge-eval">
-                                {% if tipo == 'AUTO' %}
-                                    {{ r.valoracion }}
-                                {% else %}
-                                    {{ r.puntaje }}
-                                {% endif %}
-                            </span>
-                        </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="item-label">
+                            <i class="fas fa-check-circle"></i> {{ r.indicador.nombre }}
+                        </span>
+                        <span class="badge badge-eval">
+                            {% if tipo == 'AUTO' %}
+                            {{ r.valoracion }}
+                            {% else %}
+                            {{ r.puntaje }}
+                            {% endif %}
+                        </span>
+                    </li>
                     {% endfor %}
                 </ul>
             </div>
-        {% empty %}
+            {% empty %}
             <p class="text-muted mt-3">No hay respuestas registradas.</p>
-        {% endfor %}
+            {% endfor %}
 
-        <div class="text-center mt-4">
-            <a href="{% url 'historial_evaluaciones' %}" class="btn btn-volver">
-                <i class="bi bi-arrow-left-circle mr-2"></i> Volver al Historial
-            </a>
+            <div class="text-center mt-4">
+                <a href="{% url 'historial_evaluaciones' %}" class="btn btn-volver">
+                    <i class="bi bi-arrow-left-circle mr-2"></i> Volver al Historial
+                </a>
+            </div>
         </div>
     </div>
-</div>
 
 </body>
+
 </html>
+{% endblock %}

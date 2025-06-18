@@ -1,0 +1,60 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Seguimiento de Evaluaciones{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2>Seguimiento de Evaluaciones</h2>
+
+    <!-- Filtros -->
+    <form method="GET" class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <select name="trabajador" class="form-control">
+                    <option value="">Seleccionar Trabajador</option>
+                    {% for trabajador in trabajadores %}
+                        <option value="{{ trabajador.id }}" {% if trabajador.id == trabajador_filtro %} selected {% endif %}>
+                            {{ trabajador.user.get_full_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="month" name="mes" class="form-control" value="{{ mes_filtro }}">
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Resultados de Evaluaciones -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Trabajador</th>
+                <th>Fecha de Evaluación</th>
+                <th>Tipo de Evaluación</th>
+                <th>Puntaje Total</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evaluacion in evaluaciones %}
+                <tr>
+                    <td>{{ evaluacion.evaluado.user.get_full_name }}</td>
+                    <td>{{ evaluacion.fecha }}</td>
+                    <td>{{ evaluacion.get_tipo_display }}</td>
+                    <td>{{ evaluacion.puntaje }}</td>
+                    <td>{{ evaluacion.estado }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No hay evaluaciones para mostrar</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

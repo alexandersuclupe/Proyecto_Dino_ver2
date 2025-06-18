@@ -1,31 +1,43 @@
+{% extends "base/base.html" %}
 {% load static %}
+
+{% block title %}Dino — Gestión de evaluaciones{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Agregar FontAwesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Detalle de Autoevaluación</title>
-
-    <!-- Bootstrap, Font Awesome, Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
     <style>
         body {
-            background: linear-gradient(120deg, #e7ffe7, #ffffe6);
-            font-family: 'Segoe UI', sans-serif;
-            padding: 30px;
-            display: flex;
+            background: linear-gradient(120deg, #d6ffd7, #ffffd6);
+            background-size: cover;
+            min-height: 100vh;
+            font-family: 'Lato', sans-serif;
+            
+            align-items: center;
             justify-content: center;
+            
+            overflow-x: hidden;
         }
 
         .card-evaluacion {
             width: 100%;
-            max-width: 800px;
+            max-width: 750px;
             border-radius: 15px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             animation: fadeIn 0.5s ease-in-out;
+            margin: 0 auto;
+            /* Esto centrará la tarjeta */
+            padding: 30px;
+            /* Ajusta el relleno para evitar el scroll */
         }
 
         .card-header {
@@ -148,3 +160,4 @@
 
 </body>
 </html>
+{% endblock %}

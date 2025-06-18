@@ -337,6 +337,7 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <ul class="nav flex-column">
+                {% if request.user.trabajador.puesto.nombre == 'gerente' %}
 
                 <li class="nav-item">
                     <a href="{% url 'admin_dashboard' %}"
@@ -375,8 +376,6 @@
                     </ul>
                 </li>
 
-
-
                 <li class="nav-item">
                     <a href="{% url 'lista_criterios' %}"
                         class="nav-link {% if view_name == 'lista_criterios' %}active{% endif %}">
@@ -384,8 +383,64 @@
                     </a>
                 </li>
 
+                <li
+                    class="nav-item has-submenu {% if view_name == 'lista_evaluaciones' or view_name == 'realizar_autoevaluacion' %}submenu-open{% endif %}">
+                    <a href="#" class="nav-link submenu-toggle">
+                        <i class="bi bi-card-list"></i><span>Analisis</span>
+                        <i class="bi bi-chevron-down ms-auto"></i>
+                    </a>
+                    <ul class="nav flex-column submenu">
+                        <li class="nav-item">
+                            <a href="{% url 'resultado_total' trabajador_id=request.user.trabajador.id %}"
+                                class="nav-link {% if view_name == 'lista_evaluaciones' %}active{% endif %}">
+                                <i class="bi bi-person-check"></i><span>Desempeño</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'historial_evaluaciones' %}"
+                                class="nav-link {% if view_name == 'historial_evaluaciones' %}active{% endif %}">
+                                <i class="bi bi-bar-chart-fill"></i><span>Historial</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
 
 
+                <li class="nav-item">
+                    <a href="{% url 'admin_dashboard' %}"
+                        class="nav-link {% if view_name == 'configuracion' %}active{% endif %}">
+                        <i class="bi bi-gear-fill"></i><span>Configuración</span>
+                    </a>
+                </li>
+                {% else %}
+
+                <li class="nav-item">
+                    <a href="{% url 'admin_dashboard' %}"
+                        class="nav-link {% if view_name == 'admin_dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+                    </a>
+                </li>
+                <li
+                    class="nav-item has-submenu {% if view_name == 'lista_evaluaciones' or view_name == 'realizar_autoevaluacion' %}submenu-open{% endif %}">
+                    <a href="#" class="nav-link submenu-toggle">
+                        <i class="bi bi-card-list"></i><span>Evaluaciones</span>
+                        <i class="bi bi-chevron-down ms-auto"></i>
+                    </a>
+                    <ul class="nav flex-column submenu">
+                        <li class="nav-item">
+                            <a href="{% url 'lista_evaluaciones' %}"
+                                class="nav-link {% if view_name == 'lista_evaluaciones' %}active{% endif %}">
+                                <i class="bi bi-person-check"></i><span>Trabajador</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'lista_autoevaluaciones' %}"
+                                class="nav-link {% if view_name == 'lista_autoevaluaciones' %}active{% endif %}">
+                                <i class="bi bi-pencil-square"></i><span>Autoevaluación</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 <li
                     class="nav-item has-submenu {% if view_name == 'lista_evaluaciones' or view_name == 'realizar_autoevaluacion' %}submenu-open{% endif %}">
                     <a href="#" class="nav-link submenu-toggle">
@@ -411,14 +466,7 @@
 
 
 
-
-                <li class="nav-item">
-                    <a href="{% url 'admin_dashboard' %}"
-                        class="nav-link {% if view_name == 'configuracion' %}active{% endif %}">
-                        <i class="bi bi-gear-fill"></i><span>Configuración</span>
-                    </a>
-                </li>
-
+                {% endif %}
             </ul>
         </aside>
 
