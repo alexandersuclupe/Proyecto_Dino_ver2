@@ -1,29 +1,74 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block title %}Gestión de Criterios{% endblock %}
-
+{% block title %}Dino — Gestión de criterios{% endblock %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gestión de Criterios e Indicadores</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-  <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1>Gestión de Criterios e Indicadores</h1>
-      <a href="{% url 'nuevo_criterio' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> Nuevo Criterio
-      </a>
-    </div>
-    <table class="table table-striped align-middle">
-      <thead class="table-light">
+<style>
+  body {
+    background-color: #f4f5f7;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .titulo-seccion {
+    color: #36965e;
+    font-weight: 700;
+  }
+
+  .btn-nuevo {
+    background: #36965e;
+    color: #212529;
+    border: none;
+    transition: background 0.3s ease, transform 0.2s ease;
+    font-weight: bold;
+  }
+
+  .btn-nuevo:hover {
+    background: #36965e;
+    transform: scale(1.05);
+  }
+
+  .table thead {
+    background-color: #e0f7e9;
+  }
+
+  .badge.bg-success {
+    background-color: #28a745 !important;
+  }
+
+  .badge.bg-secondary {
+    background-color: #6c757d !important;
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: #f0f0f0;
+  }
+
+  .btn-outline-danger:hover {
+    background-color: #ffe5e5;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<div class="container py-5 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="titulo-seccion">Gestión de criterios e indicadores</h1>
+    <a href="{% url 'nuevo_criterio' %}" class="btn btn-nuevo">
+      <i class="bi bi-plus-lg"></i> Nuevo criterio
+    </a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-striped align-middle shadow-sm rounded bg-white">
+      <thead>
         <tr>
           <th>Criterio</th>
           <th>Descripción</th>
@@ -34,10 +79,10 @@
         </tr>
       </thead>
       <tbody>
-      {% for c in criterios %}
+        {% for c in criterios %}
         <tr>
           <td>
-            <a href="{% url 'detalle_criterio' c.pk %}">
+            <a href="{% url 'detalle_criterio' c.pk %}" class="font-weight-bold text-decoration-none text-dark">
               {{ c.nombre }}
             </a>
           </td>
@@ -56,24 +101,23 @@
             {% endif %}
           </td>
           <td>
-            <a href="{% url 'editar_criterio' c.pk %}" class="btn btn-sm btn-outline-secondary me-1">
+            <a href="{% url 'editar_criterio' c.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="Editar">
               <i class="bi bi-pencil"></i>
             </a>
-            <a href="{% url 'eliminar_criterio' c.pk %}" class="btn btn-sm btn-outline-danger">
+            <a href="{% url 'eliminar_criterio' c.pk %}" class="btn btn-sm btn-outline-danger" title="Eliminar">
               <i class="bi bi-trash"></i>
             </a>
           </td>
         </tr>
-      {% empty %}
+        {% empty %}
         <tr>
           <td colspan="6" class="text-center text-muted">
             No hay criterios registrados.
           </td>
         </tr>
-      {% endfor %}
+        {% endfor %}
       </tbody>
     </table>
   </div>
-</body>
-</html>
+</div>
 {% endblock %}

@@ -2,192 +2,209 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Detalle de evaluación</title>
+  <meta charset="UTF-8">
+  <title>Dino — Detalle de evaluación</title>
 
-    <!-- Bootstrap 4 -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <!-- Bootstrap, FontAwesome, Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-    <style>
-        body {
-            background: linear-gradient(120deg, #d6ffd7, #ffffd6);
-            min-height: 100vh;
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 30px;
-        }
+  <style>
+    body {
+      background: linear-gradient(120deg, #1e1e1e, #2b2b2b);
+      font-family: 'Segoe UI', sans-serif;
+      padding: 30px;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      align-items: center;
+      color: #f1f1f1;
+    }
 
-        .card-evaluacion {
-            width: 100%;
-            max-width: 750px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            animation: fadeIn 0.5s ease-in-out;
-        }
+    .card-evaluacion {
+      width: 100%;
+      max-width: 850px;
+      border-radius: 16px;
+      background-color: #2c2c2c;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      animation: fadeIn 0.6s ease;
+    }
 
-        .card-header {
-            background-color: #28a745;
-            color: white;
-            padding: 25px 30px;
-            font-size: 1.3rem;
-            font-weight: bold;
-        }
+    .card-header {
+      background-color: #36965e;
+      color: white;
+      padding: 25px 30px;
+      font-size: 1.4rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+    }
 
-        .card-body {
-            padding: 30px;
-            background-color: white;
-        }
+    .card-header i {
+      margin-right: 12px;
+    }
 
-        .respuestas-titulo {
-            color: #28a745;
-            font-weight: 600;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
+    .card-body {
+      padding: 30px;
+    }
 
-        .list-group-item {
-            background-color: #f8f9fa;
-            border: none;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            padding: 15px 20px;
-            transition: all 0.2s ease-in-out;
-        }
+    .info-line {
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
 
-        .list-group-item:hover {
-            background-color: #e2fbe0;
-        }
+    .respuestas-titulo {
+      color: #4cd964;
+      font-weight: 600;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+    }
 
-        .badge-eval {
-            background: #ffc107;
-            color: #212529;
-            font-size: 1rem;
-            padding: 8px 14px;
-            border-radius: 12px;
-        }
+    .respuestas-titulo i {
+      margin-right: 10px;
+    }
 
-        .item-label {
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-        }
+    .list-group-item {
+      background-color: #3a3a3a;
+      border: none;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      padding: 15px 20px;
+      color: #ffffff;
+      transition: background-color 0.2s ease;
+    }
 
-        .item-label i {
-            margin-right: 8px;
-            color: #28a745;
-        }
+    .list-group-item:hover {
+      background-color: #444;
+    }
 
-        .btn-volver {
-            background: linear-gradient(to right, #28a745, #218838);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 1rem;
-            border-radius: 8px;
-            transition: background 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-        }
+    .badge-eval {
+      background: #ffc107;
+      color: #212529;
+      font-size: 1rem;
+      padding: 8px 14px;
+      border-radius: 12px;
+    }
 
-        .btn-volver:hover {
-            background: linear-gradient(to right, #218838, #1e7e34);
-            transform: scale(1.03);
-        }
+    .item-label {
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+    }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    .item-label i {
+      margin-right: 8px;
+      color: #4cd964;
+    }
+
+    .btn-volver {
+      background: #36965e;
+      color: #212529;
+      border: none;
+      padding: 12px 25px;
+      font-size: 1rem;
+      border-radius: 8px;
+      transition: background 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      font-weight: bold;
+    }
+
+    .btn-volver:hover {
+      background: #277949;
+      transform: scale(1.03);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
 
 <div class="card card-evaluacion">
-    <div class="card-header">
-        <i class="bi bi-clipboard-check-fill"></i>
-        {% if tipo == 'AUTO' %}
-            Detalles de la Autoevaluación
-        {% elif tipo == 'TRAB' %}
-            Detalles de la Evaluación del Trabajador
-        {% elif tipo == 'CLIE' %}
-            Detalles de la Evaluación del Cliente
-        {% else %}
-            Evaluación
-        {% endif %}
+  <div class="card-header">
+    <i class="bi bi-clipboard-check-fill"></i>
+    {% if tipo == 'AUTO' %}
+      Detalles de la autoevaluación
+    {% elif tipo == 'TRAB' %}
+      Detalles de la evaluación del trabajador
+    {% elif tipo == 'CLIE' %}
+      Detalles de la evaluación del cliente
+    {% else %}
+      Detalles de la evaluación
+    {% endif %}
+  </div>
+
+  <div class="card-body">
+    {% if tipo == 'AUTO' %}
+      <p class="info-line"><strong>Usuario:</strong> {{ evaluacion.trabajador }}</p>
+      <p class="info-line"><strong>Fecha:</strong> {{ evaluacion.fecha }}</p>
+      <p class="info-line"><strong>Puntaje total:</strong> {{ evaluacion.puntaje_total }}</p>
+
+      <h5 class="respuestas-titulo"><i class="fas fa-clipboard-list"></i> Respuestas:</h5>
+      <ul class="list-group">
+        {% for r in evaluacion.respuestas.all %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="item-label"><i class="fas fa-check-circle"></i> {{ r.indicador.nombre }}</span>
+            <span class="badge badge-eval">{{ r.valoracion }}</span>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">No hay respuestas registradas.</li>
+        {% endfor %}
+      </ul>
+
+    {% elif tipo == 'TRAB' %}
+      <p class="info-line"><strong>Evaluado:</strong> {{ evaluacion.evaluado }}</p>
+      <p class="info-line"><strong>Evaluador:</strong> {{ evaluacion.evaluador }}</p>
+      <p class="info-line"><strong>Fecha:</strong> {{ evaluacion.fecha_creacion }}</p>
+      <p class="info-line"><strong>Puntaje Total:</strong> {{ evaluacion.puntaje_total }}</p>
+
+      <h5 class="respuestas-titulo"><i class="fas fa-clipboard-list"></i> Detalles:</h5>
+      <ul class="list-group">
+        {% for r in evaluacion.respuestas.all %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="item-label"><i class="fas fa-check-circle"></i> {{ r.indicador.nombre }}</span>
+            <span class="badge badge-eval">{{ r.puntaje }}</span>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">No hay respuestas registradas.</li>
+        {% endfor %}
+      </ul>
+
+    {% elif tipo == 'CLIE' %}
+      <p class="info-line"><strong>Trabajador Evaluado:</strong> {{ evaluacion.trabajador }}</p>
+      <p class="info-line"><strong>Cliente:</strong> {{ evaluacion.cliente }}</p>
+      <p class="info-line"><strong>Fecha:</strong> {{ evaluacion.fecha }}</p>
+      <p class="info-line"><strong>Puntaje Total:</strong> {{ evaluacion.puntaje_total }}</p>
+
+      <h5 class="respuestas-titulo"><i class="fas fa-clipboard-list"></i> Respuestas:</h5>
+      <ul class="list-group">
+        {% for r in evaluacion.respuestas.all %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span class="item-label"><i class="fas fa-check-circle"></i> {{ r.indicador.nombre }}</span>
+            <span class="badge badge-eval">{{ r.puntaje }}</span>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">No hay respuestas registradas.</li>
+        {% endfor %}
+      </ul>
+
+    {% else %}
+      <p class="text-danger">No se reconoce el tipo de evaluación.</p>
+    {% endif %}
+
+    <div class="text-center mt-4">
+      <a href="{% url 'historial_evaluaciones' %}" class="btn btn-volver">
+        <i class="bi bi-arrow-left-circle mr-2"></i> Volver
+      </a>
     </div>
-
-    <div class="card-body">
-
-        {% if tipo == 'AUTO' %}
-            <p><strong>Trabajador:</strong> {{ evaluacion.trabajador }}</p>
-            <p><strong>Fecha:</strong> {{ evaluacion.fecha }}</p>
-            <p><strong>Puntaje Total:</strong> {{ evaluacion.puntaje_total }}</p>
-
-            <h5 class="respuestas-titulo"><i class="fas fa-clipboard-list"></i> Respuestas:</h5>
-            <ul class="list-group">
-                {% for r in evaluacion.respuestas.all %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span class="item-label"><i class="fas fa-check-circle"></i> {{ r.indicador.nombre }}</span>
-                        <span class="badge badge-eval">{{ r.valoracion }}</span>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item text-muted">No hay respuestas registradas.</li>
-                {% endfor %}
-            </ul>
-
-        {% elif tipo == 'TRAB' %}
-            <p><strong>Evaluado:</strong> {{ evaluacion.evaluado }}</p>
-            <p><strong>Evaluador:</strong> {{ evaluacion.evaluador }}</p>
-            <p><strong>Fecha:</strong> {{ evaluacion.fecha_creacion }}</p>
-            <p><strong>Puntaje Total:</strong> {{ evaluacion.puntaje_total }}</p>
-
-            <h5 class="respuestas-titulo"><i class="fas fa-clipboard-list"></i> Detalles:</h5>
-            <ul class="list-group">
-                {% for r in evaluacion.respuestas.all %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span class="item-label"><i class="fas fa-check-circle"></i> {{ r.indicador.nombre }}</span>
-                        <span class="badge badge-eval">{{ r.puntaje }}</span>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item text-muted">No hay respuestas registradas.</li>
-                {% endfor %}
-            </ul>
-
-        {% elif tipo == 'CLIE' %}
-            <p><strong>Trabajador Evaluado:</strong> {{ evaluacion.trabajador }}</p>
-            <p><strong>Cliente:</strong> {{ evaluacion.cliente }}</p>
-            <p><strong>Fecha:</strong> {{ evaluacion.fecha }}</p>
-            <p><strong>Puntaje Total:</strong> {{ evaluacion.puntaje_total }}</p>
-
-            <h5 class="respuestas-titulo"><i class="fas fa-clipboard-list"></i> Respuestas:</h5>
-            <ul class="list-group">
-                {% for r in evaluacion.respuestas.all %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span class="item-label"><i class="fas fa-check-circle"></i> {{ r.indicador.nombre }}</span>
-                        <span class="badge badge-eval">{{ r.puntaje }}</span>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item text-muted">No hay respuestas registradas.</li>
-                {% endfor %}
-            </ul>
-
-        {% else %}
-            <p class="text-danger">No se reconoce el tipo de evaluación.</p>
-        {% endif %}
-
-        <div class="text-center mt-4">
-            <a href="{% url 'historial_evaluaciones' %}" class="btn btn-volver">
-                <i class="bi bi-arrow-left-circle mr-2"></i> Volver al Historial
-            </a>
-        </div>
-    </div>
+  </div>
 </div>
 
 </body>

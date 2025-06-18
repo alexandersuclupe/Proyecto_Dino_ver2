@@ -1,49 +1,52 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block title %}Gestión de Evaluaciones{% endblock %}
+{% block title %}Dino — Gestión de evaluaciones{% endblock %}
 
 {% block extra_css %}
-  <!-- Si quieres usar Tailwind en esta página, inclúyelo aquí -->
   <script src="https://cdn.tailwindcss.com"></script>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto p-6">
+<div class="max-w-7xl mx-auto px-6 py-8">
+
+  <!-- Título -->
+  <h2 class="text-3xl font-bold text-[#36965e] mb-6 text-center">Gestión de evaluaciones</h2>
 
   <!-- Filtros -->
-  <div class="mb-4">
-    <form method="get">
-      <div class="flex space-x-4">
-        <!-- Filtro por estado -->
-        <div>
-          <label for="estado" class="mr-2">Estado:</label>
-          <select name="estado" id="estado" class="p-2 border rounded">
-            <option value="">Todos</option>
-            <option value="PENDIENTE" {% if estado == "PENDIENTE" %}selected{% endif %}>Pendiente</option>
-            <option value="COMPLETADA" {% if estado == "COMPLETADA" %}selected{% endif %}>Completada</option>
-          </select>
-        </div>
-
-        <!-- Filtro por trabajador -->
-        <div>
-          <label for="trabajador" class="mr-2">Buscar por trabajador:</label>
-          <input type="text" name="trabajador" id="trabajador" value="{{ trabajador }}" class="p-2 border rounded" placeholder="Nombre del trabajador">
-        </div>
-
-        <button type="submit" class="bg-blue-600 text-white p-2 rounded">Filtrar</button>
+  <form method="get" class="bg-white p-5 rounded-xl shadow mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <div>
+        <label for="estado" class="block text-sm font-semibold text-gray-700 mb-1">Estado</label>
+        <select name="estado" id="estado" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-[#36965e]">
+          <option value="">Todos</option>
+          <option value="PENDIENTE" {% if estado == "PENDIENTE" %}selected{% endif %}>Pendiente</option>
+          <option value="COMPLETADA" {% if estado == "COMPLETADA" %}selected{% endif %}>Completada</option>
+        </select>
       </div>
-    </form>
-  </div>
 
-<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div>
+        <label for="trabajador" class="block text-sm font-semibold text-gray-700 mb-1">Buscar por nombre</label>
+        <input type="text" name="trabajador" id="trabajador" value="{{ trabajador }}" class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-[#36965e]" placeholder="Nombre del trabajador">
+      </div>
+
+      <div class="flex items-end">
+        <button type="submit" class="w-full bg-[#36965e] text-white font-semibold py-2 rounded-lg hover:bg-[#2d7e4d] transition">
+          Filtrar
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Evaluaciones -->
+  <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
     {% for ev in evaluaciones %}
       {% with perfil=ev.evaluado.trabajador %}
 
-        {# —————— 1) Pendiente —————— #}
         {% if ev.estado == 'PENDIENTE' %}
           <a href="{% url 'editar_evaluacion_trabajador' ev.id %}"
-             class="block bg-white rounded-2xl shadow p-6 flex flex-col hover:shadow-lg transition">
+             class="block bg-white rounded-2xl shadow-lg p-6 flex flex-col transition hover:shadow-xl hover:-translate-y-1 duration-200">
 
             <div class="text-4xl mb-4">
               {% with nombre_puest=perfil.puesto.nombre|lower %}
@@ -55,19 +58,17 @@
               {% endwith %}
             </div>
 
-            <h2 class="text-xl font-semibold mb-1">{{ ev.evaluado.get_full_name }}</h2>
-            <p class="text-gray-500 mb-6">{{ perfil.puesto.nombre|capfirst }}</p>
+            <h2 class="text-xl font-semibold text-gray-800 mb-1">{{ ev.evaluado.get_full_name }}</h2>
+            <p class="text-sm text-gray-500 mb-6">{{ perfil.puesto.nombre|capfirst }}</p>
 
-            <button class="mt-auto bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl w-full">
+            <button class="mt-auto bg-[#36965e] hover:bg-[#2d7e4d] text-white py-2 rounded-xl font-semibold transition">
               Evaluar
             </button>
           </a>
 
-
-        {# —————— 2) Completada —————— #}
         {% else %}
           <a href="{% url 'reporte_evaluacion' ev.id %}"
-             class="block bg-white rounded-2xl shadow p-6 flex flex-col hover:shadow-lg transition">
+             class="block bg-gray-50 border border-gray-200 rounded-2xl shadow p-6 flex flex-col hover:shadow-md transition">
 
             <div class="text-4xl mb-4 opacity-50">
               {% with nombre_puest=perfil.puesto.nombre|lower %}
@@ -79,23 +80,21 @@
               {% endwith %}
             </div>
 
-            <h2 class="text-xl font-semibold mb-1">{{ ev.evaluado.get_full_name }}</h2>
-            <p class="text-gray-500 mb-6">{{ perfil.puesto.nombre|capfirst }}</p>
+            <h2 class="text-xl font-semibold text-gray-700 mb-1">{{ ev.evaluado.get_full_name }}</h2>
+            <p class="text-sm text-gray-500 mb-6">{{ perfil.puesto.nombre|capfirst }}</p>
 
-            <button class="mt-auto bg-gray-400 text-white py-2 rounded-xl w-full cursor-pointer">
+            <button class="mt-auto bg-gray-400 text-white py-2 rounded-xl font-semibold cursor-pointer">
               Ver Reporte
             </button>
           </a>
         {% endif %}
-
       {% endwith %}
     {% empty %}
-      <p class="col-span-3 text-center text-gray-600">
+      <p class="col-span-3 text-center text-gray-600 mt-6">
         No hay empleados para evaluar en este periodo.
       </p>
     {% endfor %}
   </div>
-
 
 </div>
 {% endblock %}

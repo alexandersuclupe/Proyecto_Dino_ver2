@@ -1,15 +1,94 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block title %}Reporte de Evaluación{% endblock %}
+{% block title %}Dino — Reporte de evaluación{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2>Reporte de Evaluación para {{ evaluacion.evaluado.get_full_name }}</h2>
-    <p>Puesto: {{ evaluacion.evaluado.trabajador.puesto.nombre }}</p>
-    <p>Fecha de Evaluación: {{ evaluacion.fecha_activacion }}</p>
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
 
-    <table class="table table-bordered">
+    .reporte-container {
+        max-width: 900px;
+        margin: 3rem auto;
+        background-color: #ffffff;
+        padding: 2rem 2.5rem;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .reporte-container h2 {
+        color: #36965e;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .reporte-container p {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    table.table {
+        margin-top: 1.5rem;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+
+    table.table thead th {
+        background-color: #36965e;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    table.table tbody td,
+    table.table tbody th {
+        background-color: #fafafa;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .criterio-row td {
+        background-color: #f1f1f1;
+        font-weight: bold;
+        color: #36965e;
+    }
+
+    .puntaje-total {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #ff9800;
+        margin-top: 2rem;
+    }
+
+    .btn-regresar {
+        background-color: #36965e;
+        color: white;
+        font-weight: bold;
+        padding: 0.6rem 1.5rem;
+        border-radius: 8px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        margin-top: 1.5rem;
+    }
+
+    .btn-regresar:hover {
+        background-color: #2e7d4f;
+        transform: scale(1.03);
+        color: white;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="reporte-container">
+    <h2>Reporte de evaluación para {{ evaluacion.evaluado.get_full_name }}</h2>
+    <p><strong>Puesto:</strong> {{ evaluacion.evaluado.trabajador.puesto.nombre }}</p>
+    <p><strong>Fecha de evaluación:</strong> {{ evaluacion.fecha_activacion }}</p>
+
+    <table class="table table-bordered mt-4">
         <thead>
             <tr>
                 <th>Indicador</th>
@@ -18,14 +97,13 @@
         </thead>
         <tbody>
             {% for criterio in criterios %}
-                <tr>
-                    <td colspan="2" class="font-semibold bg-gray-200">Criterio: {{ criterio.nombre }}</td>
+                <tr class="criterio-row">
+                    <td colspan="2">Criterio: {{ criterio.nombre }}</td>
                 </tr>
                 {% for indicador in criterio.indicadores.all %}
                     <tr>
-                        <td class="border-b px-6 py-3">{{ indicador.nombre }}</td>
-                        <td class="border-b px-6 py-3">
-                            {# Buscar el puntaje del indicador en el diccionario de respuestas #}
+                        <td>{{ indicador.nombre }}</td>
+                        <td>
                             {% for id, puntaje in respuestas.items %}
                                 {% if id == indicador.id %}
                                     {{ puntaje }}
@@ -38,10 +116,12 @@
         </tbody>
     </table>
 
-    <div class="mt-4">
-        <strong>Puntaje Total: </strong>{{ puntaje_total }}
+    <div class="puntaje-total">
+        ⭐ Puntaje Total: {{ puntaje_total }}
     </div>
 
-    <a href="{% url 'lista_evaluaciones' %}" class="btn btn-primary">Volver a Evaluaciones</a>
+    <a href="{% url 'lista_evaluaciones' %}" class="btn btn-regresar">
+        <i class="bi bi-arrow-left-circle mr-2"></i> Volver
+    </a>
 </div>
 {% endblock %}

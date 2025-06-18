@@ -5,71 +5,79 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="card shadow-sm rounded-lg p-4 mb-4 border-0" style="background-color: #ffffff;">
-        <h2 class="mb-3 text-success font-weight-bold">
-            Resultados de satisfacción
-        </h2>
-        <p class="text-muted mb-4">
-            Nombre completo: <strong>{{ evaluacion.trabajador.user.get_full_name }}</strong><br>
-            Fecha de venta: {{ evaluacion.fecha }}
-        </p>
+  <div class="card shadow-sm rounded-4 p-4 border-0" style="background-color: #ffffff;">
+    
+    <!-- Encabezado -->
+    <h2 class="mb-3 fw-bold text-success">
+      📝 Resultados de Satisfacción del Cliente
+    </h2>
+    <p class="text-secondary mb-4">
+      <strong>Nombre del trabajador:</strong> {{ evaluacion.trabajador.user.get_full_name }}<br>
+      <strong>Fecha de venta:</strong> {{ evaluacion.fecha }}
+    </p>
 
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover bg-white rounded">
-                <thead class="thead-light">
-                    <tr>
-                        <th style="width: 70%;">Indicador</th>
-                        <th style="width: 30%;">Puntaje</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for criterio in criterios %}
-                        <tr class="table-secondary">
-                            <td colspan="2" class="font-weight-bold">
-                                🧩 Criterio: {{ criterio.nombre }}
-                            </td>
-                        </tr>
-                        {% for indicador in criterio.indicadores.all %}
-                            <tr>
-                                <td>{{ indicador.nombre }}</td>
-                                <td>
-                                    {% for id, puntaje in respuestas.items %}
-                                        {% if id == indicador.id %}
-                                            {{ puntaje }}
-                                        {% endif %}
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="mt-4">
-            <h5 class="font-weight-bold text-dark">
-                Puntaje total:
-                <span style="background-color: black; color: white; padding: 0.4rem 0.8rem; border-radius: 0.5rem; font-size: 1.2rem;">
-                    {{ puntaje_total }}
-                </span>
-            </h5>
-        </div>
-
-        <div class="mt-3">
-            {% if puntaje_total < 10 %}
-                <div class="alert alert-danger mt-3 font-weight-bold">
-                    😔 Lo sentimos por la mala experiencia. ¡Trabajaremos para mejorar!
-                </div>
-            {% else %}
-                <div class="alert alert-success mt-3 font-weight-bold">
-                    🎉 ¡Excelente! Nos alegra que estés satisfecho con nuestra atención.
-                </div>
-            {% endif %}
-        </div>
-
-        <a href="{% url 'cliente_panel' %}" class="btn btn-outline-success mt-4">
-            <i class="fas fa-arrow-left"></i> Volver al dashboard
-        </a>
+    <!-- Tabla de resultados -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover align-middle mb-0">
+        <thead class="table-success text-center">
+          <tr>
+            <th style="width: 70%;">Indicador</th>
+            <th style="width: 30%;">Puntaje</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for criterio in criterios %}
+            <tr class="bg-light">
+              <td colspan="2" class="fw-bold text-success">
+                🧩 Criterio: {{ criterio.nombre }}
+              </td>
+            </tr>
+            {% for indicador in criterio.indicadores.all %}
+              <tr>
+                <td>{{ indicador.nombre }}</td>
+                <td class="text-center">
+                  {% for id, puntaje in respuestas.items %}
+                    {% if id == indicador.id %}
+                      <span class="badge bg-dark text-white px-3 py-2">{{ puntaje }}</span>
+                    {% endif %}
+                  {% endfor %}
+                </td>
+              </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
+
+    <!-- Puntaje total -->
+    <div class="mt-4">
+      <h5 class="fw-bold text-dark">
+        Puntaje total:
+        <span class="bg-dark text-white px-3 py-1 rounded-3 fs-5">
+          {{ puntaje_total }}
+        </span>
+      </h5>
+    </div>
+
+    <!-- Mensaje según puntaje -->
+    <div class="mt-3">
+      {% if puntaje_total < 10 %}
+        <div class="alert alert-danger fw-semibold d-flex align-items-center" role="alert">
+          <i class="fas fa-face-frown me-2"></i>
+          Lo sentimos por la mala experiencia. ¡Trabajaremos para mejorar!
+        </div>
+      {% else %}
+        <div class="alert alert-success fw-semibold d-flex align-items-center" role="alert">
+          <i class="fas fa-face-smile-beam me-2"></i>
+          ¡Excelente! Nos alegra que estés satisfecho con nuestra atención.
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Botón volver -->
+    <a href="{% url 'cliente_panel' %}" class="btn btn-outline-success mt-4">
+      <i class="fas fa-arrow-left"></i> Volver al dashboard
+    </a>
+  </div>
 </div>
 {% endblock %}

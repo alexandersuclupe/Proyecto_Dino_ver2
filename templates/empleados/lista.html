@@ -1,37 +1,82 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block title %}Gestión de trabajadores{% endblock %}
+{% block title %}Dino — Gestión de trabajadores{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/empleados.css' %}">
+<style>
+  body {
+    background-color: #f5f6fa;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .titulo {
+    color: #36965e;
+    font-weight: 700;
+  }
+
+  .btn-success {
+    background-color: #36965e;
+    border-color: #36965e;
+  }
+
+  .btn-success:hover {
+    background-color: #2d7c4f;
+    border-color: #2d7c4f;
+  }
+
+  .badge-puesto {
+    background-color: #e0f3e8;
+    color: #36965e;
+    font-size: 0.85rem;
+    padding: 0.3em 0.6em;
+    border-radius: 0.5rem;
+  }
+
+  .card {
+    border-radius: 1rem;
+    border: none;
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+  }
+
+  .card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+  }
+
+  .pagination .page-link {
+    color: black;
+    font-weight: bold;
+  }
+
+  .pagination .page-item.active .page-link {
+    background-color: #36965e;
+    border-color: #36965e;
+  }
+
+  .icono-verde {
+    color: #36965e;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-2">
-
-  <!-- 🔙 Volver 
-  <div class="mb-3">
-    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-success">
-      <i class="bi bi-arrow-left-circle-fill"></i> Volver al panel principal
-    </a>
-  </div> -->
+<div class="container py-4 fade-in">
 
   <!-- Título + agregar -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="titulo">
       <i class="bi bi-people-fill icono-verde"></i> Gestión de trabajadores
     </h2>
-    <a href="{% url 'agregar_empleado' %}" class="btn btn-success">
+    <a href="{% url 'agregar_empleado' %}" class="btn btn-success shadow-sm">
       <i class="bi bi-person-plus-fill"></i> Agregar trabajador
     </a>
   </div>
 
   <!-- 🔍 Buscador -->
   <form method="get" class="mb-4">
-    <div class="input-group">
-      <input type="text" name="q" class="form-control"
-             placeholder="Buscar por nombre o usuario..." value="{{ query }}">
+    <div class="input-group shadow-sm">
+      <input type="text" name="q" class="form-control" placeholder="Buscar por nombre o usuario..." value="{{ query }}">
       <button class="btn btn-success" type="submit">
         <i class="bi bi-search"></i> Buscar
       </button>
@@ -44,28 +89,19 @@
     <div class="col-md-4">
       <div class="card p-3 mb-4 shadow-sm">
         <div class="card-body">
-          <h5 class="card-title">
+          <h5 class="card-title mb-2">
             <i class="bi bi-person-circle icono-verde"></i>
             {{ t.user.first_name }} {{ t.user.last_name }}
           </h5>
-          <p class="card-text mb-1">
-            <strong>Usuario:</strong> {{ t.user.username }}
-          </p>
-          <p class="card-text mb-1">
-            <strong>Correo:</strong> {{ t.user.email }}
-          </p>
-          <p class="card-text mb-1">
-            <strong>Puesto:</strong>
-            <span class="badge-puesto">
-              {{ t.puesto.nombre|default:"No asignado" }}
-            </span>
-          </p>
+          <p class="mb-1"><strong>Usuario:</strong> {{ t.user.username }}</p>
+          <p class="mb-1"><strong>Correo:</strong> {{ t.user.email }}</p>
+          <p class="mb-1"><strong>Puesto:</strong> <span class="badge-puesto">{{ t.puesto.nombre|default:"No asignado" }}</span></p>
 
           <div class="d-flex justify-content-between mt-3">
-            <a href="{% url 'editar_empleado' t.id %}" class="btn btn-sm btn-primary">
+            <a href="{% url 'editar_empleado' t.id %}" class="btn btn-sm btn-outline-primary">
               <i class="bi bi-pencil-fill"></i> Editar
             </a>
-            <a href="{% url 'eliminar_empleado' t.id %}" class="btn btn-sm btn-danger"
+            <a href="{% url 'eliminar_empleado' t.id %}" class="btn btn-sm btn-outline-danger"
                onclick="return confirm('¿Eliminar a {{ t.user.username }}?')">
               <i class="bi bi-trash3-fill"></i> Eliminar
             </a>
@@ -75,7 +111,7 @@
     </div>
     {% empty %}
     <div class="col-12">
-      <p class="text-muted">No hay trabajadores registrados.</p>
+      <p class="text-muted text-center">No hay trabajadores registrados.</p>
     </div>
     {% endfor %}
   </div>
