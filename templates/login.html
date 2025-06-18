@@ -5,13 +5,12 @@
 <head>
   <meta charset="UTF-8">
   <title>
-    {% if is_colaborador %}Acceso Colaborador{% else %}Dino - Iniciar sesión{% endif %}
+    {% if is_colaborador %}Dino — Colaborador{% else %}Dino — Iniciar sesión{% endif %}
   </title>
 
   <!-- Bootstrap 5 + Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
-
   <link rel="icon" type="image/png" href="{% static 'img/favicon_dino.jpg' %}">
 
   <style>
@@ -19,92 +18,94 @@
     html {
       height: 100%;
       margin: 0;
-      background: #fff;
-      /* azul degradado */
-      /*background: linear-gradient(135deg,  #fff, #29aa25);*/
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #e4da84, #ffeb3bd3);
+      background: #fff;
     }
 
     .login-wrapper {
-      min-height: 100%;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
+      padding: 2rem;
+      background: #36965e;
     }
 
     .login-card {
       width: 100%;
-      max-width: 400px;
-      background: #fff;
+      max-width: 420px;
+      background: #000;
       border-radius: 1rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
       overflow: hidden;
-
-
+      color: #FFEB3B;
     }
 
     .login-header {
-      background: #fff;
-      color: #0f0f0f;
       text-align: center;
-      padding: 1em 1rem 1.5rem;
-      position: relative;
+      padding: 1rem 1.5rem 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .login-header .icon-circle {
-      width: 72px;
-      height: 72px;
-      background: rgba(255, 255, 255, 0.2);
+    .icon-circle {
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
-      display: inline-flex;
+      background: rgba(255, 235, 59, 0.15);
+      display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
-      margin-bottom: .5rem;
+      margin: 0 auto 0.5rem;
     }
 
     .icon-circle i {
-      font-size: 50px;
-      /* Ajusta el tamaño del ícono */
-      color: rgb(36, 33, 33);
+      font-size: 34px;
+      color: #FFEB3B;
     }
 
     .login-header h2 {
-      margin: 0;
-      font-size: 1.5rem;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 1.4rem;
+      margin-bottom: 0.25rem;
     }
 
     .login-header p {
-      margin: .25rem 0 0;
-      font-size: .9rem;
-      opacity: .8;
+      font-size: .85rem;
+      color: #e0e0e0;
+      margin: 0;
     }
 
     .login-body {
       padding: 1.5rem;
     }
 
+    .form-floating>.bi {
+      position: absolute;
+      top: 50%;
+      left: 1rem;
+      transform: translateY(-50%);
+      z-index: 2;
+      color: #999;
+    }
+
     .form-control {
-      border-radius: .5rem;
       padding-left: 2.5rem;
+      border-radius: .5rem;
     }
 
     .form-control:focus {
-      box-shadow: none;
-      border-color: #6366f1;
+      border-color: #FFEB3B;
+      box-shadow: 0 0 0 .2rem rgba(255, 235, 59, 0.25);
     }
 
-    .input-group-text {
-      background: transparent;
-      border: none;
-      position: absolute;
-      left: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #888;
+    .form-control,
+    .form-control:focus {
+      background-color: #fff;
+      color: #000;
+    }
+
+    .form-floating label {
+      color: #666;
     }
 
     .toggle-password {
@@ -113,45 +114,67 @@
       top: 50%;
       transform: translateY(-50%);
       cursor: pointer;
-      color: #888;
+      color: #666;
     }
 
     .toggle-password:hover {
-      color: #6366f1;
+      color: #FFEB3B;
     }
 
     .btn-login {
       width: 100%;
-      border-radius: .5rem;
-      background: linear-gradient(135deg, #48c580, #36965e);
-
-
-
+      background-color: #FFEB3B;
+      color: #000;
+      font-weight: 700;
       border: none;
-      color: #020202;
-      font-weight: 600;
-      padding: .75rem;
-      transition: background .3s;
+      padding: 0.75rem;
+      border-radius: .5rem;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
     .btn-login:hover {
-      background: linear-gradient(135deg, #75dba3, #7dce9e);
-
+      background-color: #fdd835;
+      transform: scale(1.02);
+      color: #000
     }
 
     .back-link {
       text-align: left;
-      padding: .75rem 1rem;
+      padding: 1rem;
+      font-size: 0.9rem;
+      background-color: #111;
     }
 
     .back-link a {
-      color: #1976ce;
+      color: #FFEB3B;
       text-decoration: none;
       font-weight: 500;
     }
 
     .back-link a:hover {
       text-decoration: underline;
+    }
+
+    .form-floating {
+      position: relative;
+    }
+
+    .form-floating .form-control {
+      height: 3.2rem;
+    }
+
+    .text-center a {
+      color: #FFEB3B;
+      text-decoration: none;
+    }
+
+    .text-center a:hover {
+      text-decoration: underline;
+    }
+
+    .login-body p.text-center.small {
+      margin-bottom: 0.1rem; /* Puedes reducirlo más si lo deseas */
     }
   </style>
 </head>
@@ -171,13 +194,13 @@
       <!-- Header -->
       <div class="login-header">
         <div class="icon-circle">
-           <i class="bi bi-person-circle"></i>
+          <i class="bi bi-person-circle"></i>
         </div>
-        {% if is_colaborador %}
-        <h2>Ferretería Dino</h2>
-        <p>Sistema de evaluación de desempeño</p>
-        {% else %}
         <h2>INICIAR SESIÓN</h2>
+        {% if is_colaborador %}
+        <p>Ingresarás como colaborador al sistema</p>
+        {% else %}
+        <p>Ingresarás como cliente al sistema</p>
         {% endif %}
       </div>
 
@@ -193,27 +216,21 @@
           {% csrf_token %}
 
           <!-- Usuario -->
-          <div class="mb-4 position-relative">
-            <span class="input-group-text">
-              <i class="bi bi-person-fill"></i>
-            </span>
-            <input type="text" id="username" name="username" class="form-control ps-5" required
-              placeholder="Usuario o correo">
+          <div class="form-floating mb-4 position-relative">
+            <input type="text" id="username" name="username" class="form-control" required placeholder="Usuario o correo">
+            <label for="username">Usuario o correo</label>
           </div>
 
           <!-- Contraseña -->
-          <div class="mb-4 position-relative">
-            <span class="input-group-text">
-              <i class="bi bi-lock-fill"></i>
-            </span>
-            <input type="password" id="password-field" name="password" class="form-control ps-5" required
-              placeholder="Contraseña">
+          <div class="form-floating mb-4 position-relative">
+            <input type="password" id="password-field" name="password" class="form-control" required placeholder="Contraseña">
+            <label for="password-field">Contraseña</label>
             <span class="toggle-password">
               <i class="bi bi-eye-fill" id="toggleEye"></i>
             </span>
           </div>
 
-          <button type="submit" class="btn btn-login mb-3">
+          <button type="submit" class="btn btn-login mb-2">
             INICIAR SESIÓN
           </button>
         </form>
@@ -221,7 +238,7 @@
         {% if not is_colaborador %}
         <p class="text-center small">
           ¿Aún no tienes cuenta?
-          <a href="{% url 'registro_cliente' %}">Regístrate aquí</a>
+          <a href="{% url 'registro_cliente' %}">Registrate aquí</a>
         </p>
         {% endif %}
       </div>

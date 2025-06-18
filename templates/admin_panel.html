@@ -1,7 +1,7 @@
 {% extends "base/base.html" %}
 {% load static %}
 
-{% block title %}Dashboard Administrativo{% endblock %}
+{% block title %}Dino — Panel administrativo{% endblock %}
 
 {% block content %}
 
@@ -12,7 +12,7 @@
     <div class="stat-card">
       <div class="icon"><i class="bi bi-people-fill"></i></div>
       <h3>{{ total_empleados }}</h3>
-      <p>Total Empleados</p>
+      <p>Total empleados</p>
       <small class="text-success">{{ diff_total_empleados }}</small>
     </div>
   </div>
@@ -20,7 +20,7 @@
     <div class="stat-card">
       <div class="icon"><i class="bi bi-journal-check"></i></div>
       <h3>{{ evaluaciones_pendientes }}</h3>
-      <p>Evaluaciones Pendientes</p>
+      <p>Evaluaciones pendientes</p>
       <small class="text-danger">{{ diff_pendientes }}</small>
     </div>
   </div>
@@ -28,7 +28,7 @@
     <div class="stat-card">
       <div class="icon"><i class="bi bi-graph-up"></i></div>
       <h3>{{ promedio_general }}</h3>
-      <p>Promedio General</p>
+      <p>Promedio general</p>
       <small class="text-success">{{ diff_promedio }}</small>
     </div>
   </div>
@@ -36,7 +36,7 @@
     <div class="stat-card">
       <div class="icon"><i class="bi bi-award-fill"></i></div>
       <h3>{{ empleados_destacados }}</h3>
-      <p>Empleados Destacados</p>
+      <p>Empleados destacados</p>
       <small class="text-success">{{ diff_destacados }}</small>
     </div>
   </div>
@@ -46,13 +46,13 @@
 <div class="row gy-4">
   <div class="col-md-6">
     <div class="card p-3" style="box-shadow:0 4px 12px var(--shadow);">
-      <h5>Evaluaciones Mensuales</h5>
+      <h5>Evaluaciones mensuales</h5>
       <canvas id="chartMonthly"></canvas>
     </div>
   </div>
   <div class="col-md-6">
     <div class="card p-3" style="box-shadow:0 4px 12px var(--shadow);">
-      <h5>Tendencia de Promedios</h5>
+      <h5>Tendencia de promedios</h5>
       <canvas id="chartTrend"></canvas>
     </div>
   </div>

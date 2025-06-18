@@ -2,229 +2,231 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Autoevaluaciones</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>Dino — Autoevaluaciones</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap 4 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome -->
-    <script src="https://kit.fontawesome.com/a2d04d3ede.js" crossorigin="anonymous"></script>
+  <!-- Bootstrap 4 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome -->
+  <script src="https://kit.fontawesome.com/a2d04d3ede.js" crossorigin="anonymous"></script>
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
+  <style>
+    body {
+      background-color: #f1f4f6;
+      font-family: 'Segoe UI', sans-serif;
+    }
 
-        h2.title-main {
-            color: #28a745;
-            font-weight: bold;
-        }
+    h2.title-main {
+      color: #36965e;
+      font-weight: bold;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.1);
+    }
 
-        .card-custom {
-            border-radius: 1rem;
-            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
-            opacity: 0;
-            transform: translateY(40px);
-            animation: slideFadeIn 0.6s forwards;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+    .card-custom {
+      border-radius: 1rem;
+      border: none;
+      background: #ffffff;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
 
-        .card-custom:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        }
+    .card-custom:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    }
 
-        @keyframes slideFadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    .estado-completada {
+      border-left: 6px solid #28a745;
+    }
 
-        .estado-completada {
-            border-left: 6px solid #28a745;
-        }
+    .estado-disponible {
+      border-left: 6px solid #007bff;
+    }
 
-        .estado-disponible {
-            border-left: 6px solid #007bff;
-        }
+    .estado-no-disponible {
+      border-left: 6px solid #6c757d;
+    }
 
-        .estado-no-disponible {
-            border-left: 6px solid #6c757d;
-        }
+    .estado-label {
+      font-weight: bold;
+      font-size: 0.9rem;
+      color: #666;
+    }
 
-        .completada-text,
-        .estado-label {
-            color: #28a745;
-            font-weight: bold;
-        }
+    .tag {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 1rem;
+      color: white;
+      font-weight: 500;
+      display: inline-block;
+      margin-right: 0.4rem;
+    }
 
-        .tag {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.5rem;
-            color: white;
-        }
+    .tag-purple {
+      background-color: #6f42c1;
+    }
 
-        .tag-purple { background-color: #6f42c1; }
-        .tag-blue { background-color: #007bff; }
+    .tag-blue {
+      background-color: #007bff;
+    }
 
-        .btn-filtro.active {
-            font-weight: bold;
-        }
+    .btn-filtro {
+      border-radius: 2rem;
+      margin-right: 0.5rem;
+      transition: all 0.2s ease;
+    }
 
-        .btn-back {
-            background-color: #28a745;
-            border-color: #28a745;
-            color: white;
-            margin-bottom: 1.5rem;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
+    .btn-filtro.active {
+      font-weight: bold;
+      border-color: #36965e;
+      background-color: #36965e;
+      color: #fff;
+    }
 
-        .btn-back:hover {
-            background-color: #218838;
-            transform: scale(1.05);
-        }
+    .btn-back {
+      background-color: #28a745;
+      border-color: #28a745;
+      color: white;
+      transition: all 0.3s ease;
+      border-radius: 2rem;
+      padding: 0.5rem 1.25rem;
+    }
 
-        .btn-primary:hover {
-            background-color: #0056b3;
-            transform: scale(1.02);
-        }
+    .btn-back:hover {
+      background-color: #218838;
+      transform: scale(1.04);
+    }
 
-        .btn-outline-success:hover {
-            background-color: #28a745;
-            color: white;
-            transform: scale(1.02);
-        }
+    .bloqueado {
+      color: #6c757d;
+      font-style: italic;
+      font-size: 0.9rem;
+    }
 
-        .btn-outline-secondary:hover {
-            background-color: #6c757d;
-            color: white;
-            transform: scale(1.02);
-        }
+    .alert-warning {
+      background-color: #fff3cd;
+      border-color: #ffeeba;
+      color: #856404;
+    }
 
-        .bloqueado {
-            color: #6c757d;
-            font-style: italic;
-            font-size: 0.9rem;
-        }
+    .btn-block {
+      border-radius: 0.5rem;
+    }
 
-        .alert-warning {
-            background-color: #fff3cd;
-            border-color: #ffeeba;
-            color: #856404;
-        }
+    .btn-outline-success:hover,
+    .btn-outline-secondary:hover {
+      transform: scale(1.03);
+    }
 
-        @media (min-width: 768px) {
-            .col-md-6-custom {
-                flex: 0 0 50%;
-                max-width: 50%;
-            }
-        }
-    </style>
+    @media (min-width: 768px) {
+      .col-md-6-custom {
+        flex: 0 0 50%;
+        max-width: 50%;
+      }
+    }
+  </style>
 </head>
+
 <body class="container mt-4">
 
-<!-- Botón regresar -->
-<div class="mb-3">
+  <!-- Botón regresar -->
+  <div class="mb-3">
     <a href="{% url 'admin_dashboard' %}" class="btn btn-back">← Regresar</a>
-</div>
+  </div>
 
-<!-- Título -->
-<h2 class="mb-4 text-center title-main">Autoevaluaciones Mensuales</h2>
+  <!-- Título -->
+  <h2 class="mb-4 text-center title-main">Autoevaluaciones mensuales</h2>
 
-<!-- Filtros -->
-<div class="filtros d-flex justify-content-between align-items-center mb-4 flex-wrap">
+  <!-- Filtros -->
+  <div class="filtros d-flex justify-content-between align-items-center mb-4 flex-wrap">
     <div class="mb-2">
-        <button class="btn btn-outline-dark btn-filtro active" data-filtro="todos">Todas ({{ total }})</button>
-        <button class="btn btn-outline-primary btn-filtro" data-filtro="Disponible">Disponibles ({{ disponibles }})</button>
-        <button class="btn btn-outline-success btn-filtro" data-filtro="Completada">Completadas ({{ completadas }})</button>
+      <button class="btn btn-outline-dark btn-filtro active" data-filtro="todos">Todas ({{ total }})</button>
+      <button class="btn btn-outline-primary btn-filtro" data-filtro="Disponible">Disponibles ({{ disponibles }})</button>
+      <button class="btn btn-outline-success btn-filtro" data-filtro="Completada">Completadas ({{ completadas }})</button>
     </div>
     <div class="font-weight-bold">
-        Mes actual: {% language 'es' %}{{ ahora|date:"F \\d\\e Y" }}{% endlanguage %}
+      Mes actual: {% language 'es' %}{{ ahora|date:"F \\d\\e Y" }}{% endlanguage %}
     </div>
-</div>
+  </div>
 
-<!-- Tarjetas -->
-<div class="row" id="grid-autoevals">
+  <!-- Tarjetas -->
+  <div class="row" id="grid-autoevals">
     {% for item in lista %}
-        <div class="col-12 col-md-6-custom mb-4 autoeval-item" data-estado="{{ item.estado }}">
-            <div class="card card-custom
-                {% if item.estado == 'Completada' %} estado-completada
-                {% elif item.estado == 'Disponible' %} estado-disponible
-                {% else %} estado-no-disponible
-                {% endif %}">
+      <div class="col-12 col-md-6-custom mb-4 autoeval-item" data-estado="{{ item.estado }}">
+        <div class="card card-custom
+          {% if item.estado == 'Completada' %} estado-completada
+          {% elif item.estado == 'Disponible' %} estado-disponible
+          {% else %} estado-no-disponible
+          {% endif %}">
 
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="mb-0 text-success font-weight-bold">
-                            Autoevaluación Mensual - {{ item.mes }}
-                        </h5>
-                        <small class="estado-label">● {{ item.estado|upper }}</small>
-                    </div>
-
-                    <p>Evaluación mensual de competencias técnicas y desempeño comercial</p>
-
-                    <div class="mb-3">
-                        <span class="tag tag-purple">{{ item.mes_previo }}</span>
-                        <span class="tag tag-blue">Mensual</span>
-                    </div>
-
-                    {% if item.estado == 'Completada' %}
-                        {% language 'es' %}
-                        <p class="completada-text mb-2">
-                            <i class="fas fa-check-circle"></i>
-                            Completada: {{ item.fecha_completada|date:"j \\d\\e F \\d\\e Y" }}
-                        </p>
-                        {% endlanguage %}
-                        <a href="{% url 'ver_autoevaluacion' item.autoevaluacion.id %}" class="btn btn-outline-success btn-block">
-                            <i class="fas fa-check"></i> Ver Resultados
-                        </a>
-
-                    {% elif item.estado == 'Disponible' %}
-                        {% language 'es' %}
-                        <p class="text-primary font-weight-bold mb-2">
-                            <i class="far fa-clock"></i> Disponible hasta: {{ item.fecha_limite|date:"j \\d\\e F \\d\\e Y" }}
-                        </p>
-                        {% endlanguage %}
-                        <a href="{% url 'realizar_autoevaluacion' %}?mes={{ item.mes_numero }}" class="btn btn-primary btn-block">
-                            <i class="fas fa-edit"></i> Completar
-                        </a>
-
-                    {% else %}
-                        <div class="alert alert-warning text-center font-weight-bold mb-3">
-                            ⚠️ Esta autoevaluación no está disponible en este periodo
-                        </div>
-                        <button class="btn btn-outline-secondary btn-block" disabled>
-                            🔒 No Disponible
-                        </button>
-                    {% endif %}
-                </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="mb-0 text-success font-weight-bold">
+                Autoevaluación mensual — {{ item.mes }}
+              </h5>
+              <small class="estado-label">● {{ item.estado|upper }}</small>
             </div>
+
+            <p class="mb-2">Evaluación mensual de competencias técnicas y desempeño comercial.</p>
+
+            <div class="mb-3">
+              <span class="tag tag-purple">{{ item.mes_previo }}</span>
+              <span class="tag tag-blue">Mensual</span>
+            </div>
+
+            {% if item.estado == 'Completada' %}
+              {% language 'es' %}
+              <p class="completada-text mb-2 text-success font-weight-bold">
+                <i class="fas fa-check-circle"></i>
+                Completada: {{ item.fecha_completada|date:"j \\d\\e F \\d\\e Y" }}
+              </p>
+              {% endlanguage %}
+              <a href="{% url 'ver_autoevaluacion' item.autoevaluacion.id %}" class="btn btn-outline-success btn-block">
+                <i class="fas fa-check"></i> Ver resultados
+              </a>
+
+            {% elif item.estado == 'Disponible' %}
+              {% language 'es' %}
+              <p class="text-primary font-weight-bold mb-2">
+                <i class="far fa-clock"></i> Disponible hasta: {{ item.fecha_limite|date:"j \\d\\e F \\d\\e Y" }}
+              </p>
+              {% endlanguage %}
+              <a href="{% url 'realizar_autoevaluacion' %}?mes={{ item.mes_numero }}" class="btn btn-primary btn-block">
+                <i class="fas fa-edit"></i> Completar
+              </a>
+
+            {% else %}
+              <div class="alert alert-warning text-center font-weight-bold mb-3">
+                ⚠️ Esta autoevaluación no está disponible en este periodo
+              </div>
+              <button class="btn btn-outline-secondary btn-block" disabled>
+                🔒 No disponible
+              </button>
+            {% endif %}
+          </div>
         </div>
+      </div>
     {% endfor %}
-</div>
+  </div>
 
-<!-- Filtro JS -->
-<script>
+  <!-- Filtro JS -->
+  <script>
     document.querySelectorAll('.btn-filtro').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
 
-            const filtro = btn.dataset.filtro;
-            document.querySelectorAll('.autoeval-item').forEach(card => {
-                const estado = card.dataset.estado;
-                if (filtro === 'todos' || estado === filtro) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+        const filtro = btn.dataset.filtro;
+        document.querySelectorAll('.autoeval-item').forEach(card => {
+          const estado = card.dataset.estado;
+          card.style.display = (filtro === 'todos' || estado === filtro) ? '' : 'none';
         });
+      });
     });
-</script>
+  </script>
 
 </body>
 </html>

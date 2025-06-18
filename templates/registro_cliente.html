@@ -1,88 +1,240 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  {% load static %}
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dino — Registrarse</title>
-  <link rel="stylesheet" href="{% static 'css/registro_cliente.css' %}">
+
+  <!-- Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
   <link rel="icon" type="image/png" href="{% static 'img/favicon_dino.jpg' %}">
+
   <style>
-    /* Solo estilos muy puntuales que quieras inline (error messages y borde rojo) */
+    body,
+    html {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #36965e;
+    }
+
+    .register-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .register-card {
+      width: 100%;
+      max-width: 480px;
+      background: #000;
+      border-radius: 1rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      overflow: hidden;
+      color: #FFEB3B;
+      padding-bottom: 1rem;
+    }
+
+    .back-link {
+      text-align: left;
+      padding: 1rem;
+      font-size: 0.9rem;
+      background-color: #111;
+    }
+
+    .back-link a {
+      color: #FFEB3B;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+
+    .register-header {
+      text-align: center;
+      padding: 1rem 1.5rem 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .icon-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(255, 235, 59, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 0.5rem;
+    }
+
+    .icon-circle i {
+      font-size: 34px;
+      color: #FFEB3B;
+    }
+
+    .register-header h2 {
+      font-weight: 700;
+      font-size: 1.4rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .register-description {
+      font-size: 0.9rem;
+      color: #e0e0e0;
+      text-align: center;
+      padding: 0 1rem 0.5rem;
+      margin-bottom: 0;
+    }
+
+    .register-body {
+      padding: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      color: #FFEB3B;
+      margin-bottom: 0.3rem;
+      font-weight: 500;
+    }
+
+    .form-group input {
+      border-radius: 0.5rem;
+      padding: 0.6rem;
+    }
+
+    .form-control:focus {
+      border-color: #FFEB3B;
+      box-shadow: 0 0 0 .2rem rgba(255, 235, 59, 0.25);
+    }
+
     .error-message {
       color: red;
-      font-size: 0.9em;
-      margin-top: 5px;
+      font-size: 0.8rem;
+      margin-top: 3px;
     }
+
     input.error {
       border: 1px solid red;
     }
-    .login-description {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-      font-size: 15px !important;
-      color: #444 !important;
-      text-align: center !important;
-      max-width: 360px !important;
-      margin: 12px auto 15px auto !important;
-      line-height: 1.4 !important;
+
+    button[type="submit"] {
+      width: 100%;
+      background-color: #FFEB3B;
+      color: #000;
+      font-weight: 700;
+      border: none;
+      padding: 0.75rem;
+      border-radius: .5rem;
+      margin-top: 1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #fdd835;
+    }
+
+    .register-link {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+      margin-bottom: 0;
+    }
+
+    .register-link a {
+      color: #FFEB3B;
+      text-decoration: none;
+    }
+
+    .register-link a:hover {
+      text-decoration: underline;
+    }
+
+    .swal2-confirm {
+      color: #000 !important;
+      font-weight: bold;
     }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body>
-  <div class="encuesta-container">
-    <h2>Registrarse</h2>
-
-    <p class="login-description">
-      Completa todos los campos correctamente para lograr un registro exitoso. Si no logras hacerlo adecuadamente, se te informará qué está erróneo.
-    </p>
-
-    <hr class="login-divider">
-
-    <form method="post" novalidate>
-      {% csrf_token %}
-      
-      <div class="form-group">
-        {{ form.username.label_tag }}
-        {{ form.username }}
-        <div id="error-username" class="error-message"></div>
-      </div>
-      <div class="form-group">
-        {{ form.first_name.label_tag }}
-        {{ form.first_name }}
-        <div id="error-first_name" class="error-message"></div>
-      </div>
-      <div class="form-group">
-        {{ form.last_name.label_tag }}
-        {{ form.last_name }}
-        <div id="error-last_name" class="error-message"></div>
-      </div>
-      <div class="form-group">
-        {{ form.email.label_tag }}
-        {{ form.email }}
-        <div id="error-email" class="error-message"></div>
-      </div>
-      <div class="form-group">
-        {{ form.password.label_tag }}
-        {{ form.password }}
-        <div id="error-password" class="error-message"></div>
-      </div>
-      <div class="form-group">
-        {{ form.direccion.label_tag }}
-        {{ form.direccion }}
-        <div id="error-direccion" class="error-message"></div>
-      </div>
-      <div class="form-group">
-        {{ form.telefono.label_tag }}
-        {{ form.telefono }}
-        <div id="error-telefono" class="error-message"></div>
+  <div class="register-wrapper">
+    <div class="register-card">
+      <div class="back-link">
+        <a href="{% url 'index' %}">
+          <i class="bi bi-arrow-left-circle-fill"></i> Volver al inicio
+        </a>
       </div>
 
-      <button type="submit">Registrarse</button>
-    </form>
+      <div class="register-header">
+        <div class="icon-circle">
+          <i class="bi bi-person-plus-fill"></i>
+        </div>
+        <h2>REGISTRARSE</h2>
+        <p class="register-description">
+          Completa todos los campos correctamente para lograr un registro exitoso. Si no logras hacerlo adecuadamente, se te informará qué está erróneo.
+        </p>
+      </div>
 
-    <p class="register-link" style="color: #000000">
-      ¿Ya tienes cuenta? <a style="color: #36965e" href="{% url 'login' %}">Inicia sesión aquí</a> o retorna <a style="color: #36965e" href="{% url 'index' %}">aquí</a>
-    </p>
+      <div class="register-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="form-group">
+            {{ form.username.label_tag }}
+            {{ form.username }}
+            <div id="error-username" class="error-message"></div>
+          </div>
+          <div class="form-group">
+            {{ form.first_name.label_tag }}
+            {{ form.first_name }}
+            <div id="error-first_name" class="error-message"></div>
+          </div>
+          <div class="form-group">
+            {{ form.last_name.label_tag }}
+            {{ form.last_name }}
+            <div id="error-last_name" class="error-message"></div>
+          </div>
+          <div class="form-group">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            <div id="error-email" class="error-message"></div>
+          </div>
+          <div class="form-group">
+            {{ form.password.label_tag }}
+            {{ form.password }}
+            <div id="error-password" class="error-message"></div>
+          </div>
+          <div class="form-group">
+            {{ form.direccion.label_tag }}
+            {{ form.direccion }}
+            <div id="error-direccion" class="error-message"></div>
+          </div>
+          <div class="form-group">
+            {{ form.telefono.label_tag }}
+            {{ form.telefono }}
+            <div id="error-telefono" class="error-message"></div>
+          </div>
+          <button type="submit">Registrarse</button>
+        </form>
+
+        <p class="register-link">
+          ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a>
+        </p>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -112,7 +264,7 @@
       });
 
       const username = document.getElementById('id_username');
-      const existingUsernames = ['kar_12', 'admin', 'juan2024']; // Simulación
+      const existingUsernames = ['kar_12', 'admin', 'juan2024'];
 
       username.addEventListener('blur', () => {
         const val = username.value.trim();
@@ -166,7 +318,37 @@
           clearError(telefono);
         }
       });
+
+      const form = document.querySelector('form');
+      form.addEventListener('submit', function (e) {
+        const requiredFields = ['id_username', 'id_first_name', 'id_last_name', 'id_email', 'id_password', 'id_direccion', 'id_telefono'];
+        let hasError = false;
+
+        requiredFields.forEach(id => {
+          const input = document.getElementById(id);
+          if (!input.value.trim() || input.classList.contains('error')) {
+            hasError = true;
+          }
+        });
+
+        if (hasError) {
+          e.preventDefault();
+          Swal.fire({
+            icon: 'warning',
+            title: 'Formulario incompleto',
+            text: 'Por favor, completa correctamente todos los campos antes de continuar.',
+            background: '#000',
+            color: '#fff',
+            confirmButtonColor: '#FFEB3B',
+            confirmButtonText: 'Entendido',
+            customClass: {
+              confirmButton: 'swal2-confirm'
+            }
+          });
+        }
+      });
     });
   </script>
 </body>
+
 </html>

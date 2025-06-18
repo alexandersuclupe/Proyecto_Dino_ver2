@@ -1,7 +1,7 @@
 {% extends "base/base_cliente.html" %}
 {% load static %}
 
-{% block title %}Dashboard Administrativo{% endblock %}
+{% block title %}Dino — Panel de cliente{% endblock %}
 
 {% block content %}
 
@@ -11,8 +11,8 @@
   <div class="col-md-6">
     <div class="card  stat-card text-center p-4">
 
-      <h4 class="fw-bold" style="color: #000000">¡Bienvenido, {{ request.user.get_full_name|default:request.user.username }}!</h4>
-      <p class="text-muted">Nos alegra verte de vuelta. Aquí puedes calificar nuestra calidad de servicio :) .</p>
+      <h4 class="fw-bold" style="color: #000000">¡Bienvenido(a), {{ request.user.get_full_name|default:request.user.username }}!</h4>
+      <p class="text-muted">Nos encanta tenerte nuevamente aquí. Recuerda que puedes visualizar las evaluaciones realizadas, pendientes y realizar evaluaciones.</p>
     </div>
   </div>
 
