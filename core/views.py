@@ -539,34 +539,88 @@ def lista_autoevaluaciones(request):
 
 @login_required
 def realizar_autoevaluacion(request):
-    indicadores = Indicador.objects.all()
+
+    usuario = request.user                      
+
+    try:
+        trabajador = Trabajador.objects.get(user=usuario)
+    except Trabajador.DoesNotExist:
+        messages.error(request, "Este usuario no está asociado a un trabajador.")
+        return redirect('evaluacion_exitosa')
+
+
+    try:
+        mes = int(request.GET.get('mes', timezone.now().month))
+    except ValueError:
+        mes = timezone.now().month
+
+    if AutoevaluacionTrabajador.objects.filter(
+        trabajador=usuario,       
+        fecha__month=mes
+    ).exists():
+        messages.error(request, "Ya has realizado una autoevaluación este mes.")
+        return redirect('evaluacion_exitosa')
+
+    puesto = trabajador.puesto
+    if not puesto:
+        messages.error(request, "No se ha definido un puesto para este usuario.")
+        return redirect('evaluacion_exitosa')
+
+    criterios = (
+        Criterio.objects
+        .filter(
+            puestos=puesto,
+            estado='Activo',
+            nombre__startswith='Autoevaluación'
+        )
+        .prefetch_related('indicadores')
+    )
 
     if request.method == 'POST':
-        form = AutoevaluacionForm(indicadores, request.POST)
-        if form.is_valid():
-            evaluacion = AutoevaluacionTrabajador.objects.create(
-                trabajador=request.user
-            )
-            for key, valoracion in form.cleaned_data.items():
-                indicador_id = int(key.replace('indicador_', ''))
-                puntaje = int(valoracion)
-                RespuestaAutoevaluacionTrabajador.objects.create(
-                    autoevaluacion=evaluacion,
+  
+        autoeval = AutoevaluacionTrabajador.objects.create(trabajador=usuario)
+
+        for criterio in criterios:
+            for indicador in criterio.indicadores.all():
+                valor = request.POST.get(f'indicador_{indicador.id}')
+                if valor and valor.isdigit():
+                    RespuestaAutoevaluacionTrabajador.objects.create(
+                        autoevaluacion=autoeval,
+                        indicador=indicador,
+                        valoracion=int(valor)
+                    )
+        return redirect('evaluacion_exitosa')
+
+    return render(
+        request,
+        'realizar_autoevaluacion.html',
+        {
+            'trabajador': trabajador,  
+            'criterios' : criterios,
+            'mes'       : mes,
+        }
+    )
+    return render(request, 'realizar_autoevaluacion.html', context)
+
+def guardar_autoevaluacion(request):
+    if request.method == 'POST':
+        trabajador = request.user
+        autoeval = AutoevaluacionTrabajador.objects.create(
+            trabajador=trabajador)
+
+        for key, valoracion in request.POST.items():
+            if key.startswith('indicador_'):
+                indicador_id = int(key.split('_')[1])
+                respuesta = RespuestaAutoevaluacionTrabajador(
+                    autoevaluacion=autoeval,
                     indicador_id=indicador_id,
-                    valoracion=valoracion,  # Guarda '1', '2', ..., '5'
-                    puntaje=puntaje
+                    valoracion=valoracion
                 )
-            return redirect('evaluacion_exitosa')
-    else:
-        form = AutoevaluacionForm(indicadores)
+                respuesta.save()  
 
-    return render(request, 'realizar_autoevaluacion.html', {
-        'form': form,
-        'trabajador': request.user,
-        'indicadores': indicadores,
-        'titulo': f'Autoevaluación - {request.user.get_full_name() or request.user.username}'
-    })
 
+def evaluacion_exitosa(request):
+    return render(request, 'evaluacion_exitosa.html')
 
 def guardar_autoevaluacion(request):
     if request.method == 'POST':

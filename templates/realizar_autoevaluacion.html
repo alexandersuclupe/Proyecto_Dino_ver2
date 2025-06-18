@@ -81,7 +81,8 @@
       transition: width 0.3s ease;
     }
 
-    .progress-left-text, .progress-right-text {
+    .progress-left-text,
+    .progress-right-text {
       position: absolute;
       top: 3px;
       font-size: 13px;
@@ -103,7 +104,8 @@
       justify-content: space-between;
     }
 
-    button, .back-button {
+    button,
+    .back-button {
       padding: 14px 26px;
       font-weight: bold;
       border: none;
@@ -117,7 +119,8 @@
       box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
     }
 
-    button:hover, .back-button:hover {
+    button:hover,
+    .back-button:hover {
       background: linear-gradient(135deg, #388e3c, #2e7d32);
       transform: scale(1.03);
       box-shadow: 0 6px 18px rgba(56, 142, 60, 0.5);
@@ -126,7 +129,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Autoevaluación de {{ trabajador.get_full_name|default:trabajador.username }}</h1>
+    <h1>Autoevaluación de {{ trabajador.user.get_full_name|default:trabajador.user.username }}</h1>
 
     <!-- Barra de progreso -->
     <div class="progress-container">
@@ -142,23 +145,30 @@
         <thead>
           <tr>
             <th>Indicadores</th>
-            <th>1</th>
-            <th>2</th>
-            <th>3</th>
-            <th>4</th>
-            <th>5</th>
+            <th>1<br>(Muy malo)</th>
+            <th>2<br>(Casi malo)</th>
+            <th>3<br>(Intermedio)</th>
+            <th>4<br>(Bueno)</th>
+            <th>5<br>(Muy bueno)</th>
           </tr>
         </thead>
         <tbody>
-          {% for indicador in indicadores %}
-          <tr>
-            <td>{{ forloop.counter }}. {{ indicador.nombre }}</td>
-            {% for i in "12345" %}
-            <td>
-              <input type="radio" name="indicador_{{ indicador.id }}" value="{{ i }}" required>
-            </td>
+          {% for criterio in criterios %}
+            <tr>
+              <td colspan="6" style="font-weight: bold; background-color: #e8f5e9; text-align: left;">
+                Criterio: {{ criterio.nombre }}
+              </td>
+            </tr>
+            {% for indicador in criterio.indicadores.all %}
+              <tr>
+                <td>{{ forloop.parentloop.counter }}.{{ forloop.counter }} {{ indicador.nombre }}</td>
+                {% for i in "12345" %}
+                  <td>
+                    <input type="radio" name="indicador_{{ indicador.id }}" value="{{ i }}" required>
+                  </td>
+                {% endfor %}
+              </tr>
             {% endfor %}
-          </tr>
           {% endfor %}
         </tbody>
       </table>
@@ -176,7 +186,7 @@
       const progressBar = document.getElementById('progress-bar');
       const progressText = document.getElementById('progress-text');
       const progressPercent = document.getElementById('progress-percent');
-      const total = form.querySelectorAll('tbody tr').length;
+      const total = form.querySelectorAll('tbody tr input[type="radio"][value="1"]').length;
 
       const updateProgress = () => {
         let filled = 0;
