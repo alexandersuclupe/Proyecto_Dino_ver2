@@ -9,7 +9,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from openpyxl import Workbook
 from .models import AutoevaluacionTrabajador, RespuestaAutoevaluacionTrabajador, TipoEvaluacion, Venta, Usuario, Cliente, EvaluacionVenta, EvaluacionTrabajador, Criterio, RespuestaEvaluacionTrabajador, Rol, RespuestaEvaluacionVenta, Indicador, PeriodoEvaluacion, PesoEvaluacion, ResultadoTotal, Trabajador
 from .forms import CriterioForm, FiltroEvaluacionForm, IndicadorFormSet
-from .forms import AutoevaluacionForm, AutoevaluacionTrabajadorForm, RespuestaAutoevaluacionFormSet, RespuestaForm, TrabajadorForm
+from .forms import AutoevaluacionForm, AutoevaluacionTrabajadorForm, RespuestaAutoevaluacionFormSet, RespuestaForm, TrabajadorForm ,PeriodoEvaluacionForm
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -1569,3 +1569,31 @@ def seguimiento_trabajador(request):
         'mes_filtro': mes_filtro,
     }
     return render(request, 'seguimiento_trabajador.html', context)
+########################################################################33
+
+####################### programar evaluaciones ############################################
+
+
+@login_required
+def programar_periodo_evaluacion(request):
+    if request.method == 'POST':
+        form = PeriodoEvaluacionForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, "Periodo de evaluación programado exitosamente.")
+            # Redirige a la lista de periodos
+            return redirect('lista_periodos')
+        else:
+            messages.error(
+                request, "Error al programar el periodo de evaluación. Verifique los campos.")
+    else:
+        form = PeriodoEvaluacionForm()
+    return render(request, 'periodo/programar_periodo.html', {'form': form})
+
+
+@login_required
+def lista_periodos(request):
+    periodos = PeriodoEvaluacion.objects.all()
+    return render(request, 'periodo/listar_periodos.html', {'periodos': periodos})
+

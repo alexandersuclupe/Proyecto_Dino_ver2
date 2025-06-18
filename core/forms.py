@@ -1,5 +1,5 @@
 from django import forms
-from .models import AutoevaluacionTrabajador, Cliente, Indicador, RespuestaAutoevaluacionTrabajador, TipoEvaluacion, Trabajador
+from .models import AutoevaluacionTrabajador, Cliente, Indicador, RespuestaAutoevaluacionTrabajador, TipoEvaluacion, Trabajador,PeriodoEvaluacion,Puesto
 from django.contrib.auth import get_user_model
 from django import forms
 from .models import Criterio, Indicador
@@ -9,6 +9,7 @@ from core.models import Usuario
 import random
 import string
 SPECIAL_CHARS = "!@#$%^&*"
+from django.core.exceptions import ValidationError
 
 
 
@@ -49,6 +50,31 @@ class RespuestaForm(forms.Form):
     )
 
 #######3
+# class EvaluacionVentaForm(forms.Form):
+#     comentarios = forms.CharField(
+#         widget=forms.Textarea(attrs={
+#             'placeholder': 'Comentarios adicionales (opcional)',
+#             'rows': 3,
+#             'style': 'resize: vertical; height: 80px; padding-right: 0px'
+#         }),
+#         required=False,
+#         label="Comentarios adicionales"
+#     )
+
+#     def __init__(self, *args, indicadores=None, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         if indicadores:
+#             for indicador in indicadores:
+#                 choices = [(i, '★' * i) for i in range(1, indicador.max_puntaje + 1)]
+#                 self.fields[f'indicador_{indicador.id}'] = forms.ChoiceField(
+#                     label=indicador.nombre,
+#                     choices=choices,
+#                     widget=forms.RadioSelect,
+#                     required=True,
+#                 )
+#                 # Aquí asignamos la descripción para usarla en el template
+#                 self.fields[f'indicador_{indicador.id}'].widget.attrs['descripcion'] = indicador.descripcion or "Sin descripción."
+
 class EvaluacionVentaForm(forms.Form):
     comentarios = forms.CharField(
         widget=forms.Textarea(attrs={
@@ -62,19 +88,20 @@ class EvaluacionVentaForm(forms.Form):
 
     def __init__(self, *args, indicadores=None, **kwargs):
         super().__init__(*args, **kwargs)
+        
         if indicadores:
             for indicador in indicadores:
-                choices = [(i, '★' * i) for i in range(1, indicador.max_puntaje + 1)]
+                # Creamos las opciones para las estrellas (1 a 5)
+                choices = [(i, '★' * i) for i in range(1, 6)]  # 1 estrella = 1 punto, hasta 5 estrellas
                 self.fields[f'indicador_{indicador.id}'] = forms.ChoiceField(
                     label=indicador.nombre,
                     choices=choices,
-                    widget=forms.RadioSelect,
+                    widget=forms.RadioSelect(attrs={'class': 'stars'}),
                     required=True,
                 )
+                
                 # Aquí asignamos la descripción para usarla en el template
                 self.fields[f'indicador_{indicador.id}'].widget.attrs['descripcion'] = indicador.descripcion or "Sin descripción."
-
-
 #################### CRITERIO ########################################3
 class CriterioForm(forms.ModelForm):
     class Meta:
@@ -287,3 +314,37 @@ class FiltroEvaluacionForm(forms.Form):
         label='Tipo'
     )
     ##############33
+
+
+class PeriodoEvaluacionForm(forms.ModelForm):
+    class Meta:
+        model = PeriodoEvaluacion
+        fields = ['puesto', 'fecha_inicio', 'fecha_fin']
+
+    puesto = forms.ModelChoiceField(
+        queryset=Puesto.objects.all(),
+        empty_label="Seleccionar Puesto",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    
+    fecha_inicio = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        label="Fecha de Inicio"
+    )
+    
+    fecha_fin = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        label="Fecha de Fin"
+    )
+
+    # Validación para asegurar que la fecha de inicio no sea posterior a la fecha de fin
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha_inicio = cleaned_data.get('fecha_inicio')
+        fecha_fin = cleaned_data.get('fecha_fin')
+
+        if fecha_inicio and fecha_fin:
+            if fecha_inicio > fecha_fin:
+                raise ValidationError('La fecha de inicio no puede ser posterior a la fecha de fin.')
+
+        return cleaned_data

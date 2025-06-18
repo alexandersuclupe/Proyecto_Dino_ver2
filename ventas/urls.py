@@ -98,5 +98,8 @@ urlpatterns = [
     path('reporte_evaluacion/<int:evaluacion_id>/', views.reporte_evaluacion, name='reporte_evaluacion'),
 
     path('seguimiento/', views.seguimiento_trabajador, name='seguimiento_trabajador'),
+    path('programar_periodo/', views.programar_periodo_evaluacion, name='programar_periodo'),
+    path('lista_periodos/', views.lista_periodos, name='lista_periodos'), 
+
 
 ]
