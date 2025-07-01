@@ -373,16 +373,24 @@ class AutoevaluacionTrabajadorAdmin(admin.ModelAdmin):
 #         return obj.esta_activo()
 #     esta_activo.boolean = True
 #     esta_activo.short_description = 'Activo ahora?'
+# @admin.register(PeriodoEvaluacion)
+# class PeriodoEvaluacionAdmin(admin.ModelAdmin):
+#     list_display = ('puesto', 'fecha_inicio', 'fecha_fin', 'activo_ahora')
+
+#     def activo_ahora(self, obj):
+#         return obj.esta_activo()
+#     activo_ahora.boolean = True
+#     activo_ahora.short_description = '¿Activo ahora?'
+
 @admin.register(PeriodoEvaluacion)
 class PeriodoEvaluacionAdmin(admin.ModelAdmin):
-    list_display = ('puesto', 'fecha_inicio', 'fecha_fin', 'activo_ahora')
+    list_display = ('puesto', 'fecha_inicio', 'fecha_fin', 'estado_periodo')
 
-    def activo_ahora(self, obj):
-        return obj.esta_activo()
-    activo_ahora.boolean = True
-    activo_ahora.short_description = '¿Activo ahora?'
+    def estado_periodo(self, obj):
+        return obj.estado  # Muestra el valor del campo 'estado'
+    estado_periodo.short_description = 'Estado del Periodo'  # Personaliza el título de la columna
 
-
+    
 
 # ——— Admin para PesoEvaluacion ———
 @admin.register(PesoEvaluacion)

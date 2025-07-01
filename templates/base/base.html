@@ -337,7 +337,7 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <ul class="nav flex-column">
-                {% if request.user.trabajador.puesto.nombre == 'Gerente' %}
+                {% if request.user.trabajador.puesto.nombre == 'gerente' %}
 
                 <li class="nav-item">
                     <a href="{% url 'admin_dashboard' %}"
@@ -399,7 +399,7 @@
                         <li class="nav-item">
                             <a href="{% url 'historial_evaluaciones' %}"
                                 class="nav-link {% if view_name == 'historial_evaluaciones' %}active{% endif %}">
-                                <i class="bi bi-bar-chart-fill"></i><span>Historial</span>
+                                <i class="bi bi-bar-chart-fill"></i><span>Seguimiento</span>
                             </a>
                         </li>
                     </ul>

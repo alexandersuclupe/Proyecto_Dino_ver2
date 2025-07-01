@@ -308,21 +308,48 @@ class PesoEvaluacion(models.Model):
         return f"{self.puesto.nombre} – {self.get_tipo_display()}: {self.peso}"
 
 
+# class PeriodoEvaluacion(models.Model):
+#     puesto = models.ForeignKey(Puesto, on_delete=models.CASCADE, related_name='periodos_evaluacion')
+#     fecha_inicio = models.DateField()
+#     fecha_fin = models.DateField()
+
+#     class Meta:
+#         unique_together = ('puesto', 'fecha_inicio', 'fecha_fin')
+
+#     def esta_activo(self):
+#         hoy = date.today()     # <-- usa localdate en lugar de timezone.now().date()
+#         return self.fecha_inicio <= hoy <= self.fecha_fin
+
+#     def __str__(self):
+#         return f"{self.puesto.nombre}: {self.fecha_inicio} → {self.fecha_fin}"
+
 class PeriodoEvaluacion(models.Model):
     puesto = models.ForeignKey(Puesto, on_delete=models.CASCADE, related_name='periodos_evaluacion')
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
+    estado = models.CharField(max_length=10, choices=[('Pendiente', 'Pendiente'), ('Activo', 'Activo'), ('Vencido', 'Vencido')], default='Pendiente')
 
     class Meta:
         unique_together = ('puesto', 'fecha_inicio', 'fecha_fin')
 
-    def esta_activo(self):
-        hoy = date.today()     # <-- usa localdate en lugar de timezone.now().date()
-        return self.fecha_inicio <= hoy <= self.fecha_fin
+    def save(self, *args, **kwargs):
+        hoy = date.today()
+
+        # Lógica para determinar el estado basado en las fechas
+        if self.fecha_inicio and self.fecha_fin:  # Asegurarse de que las fechas estén definidas
+            if hoy < self.fecha_inicio:
+                self.estado = 'Pendiente'
+            elif self.fecha_inicio <= hoy <= self.fecha_fin:
+                self.estado = 'Activo'
+            else:
+                self.estado = 'Vencido'
+        else:
+            self.estado = 'Pendiente'  # Si no hay fechas, el estado es pendiente por defecto
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.puesto.nombre}: {self.fecha_inicio} → {self.fecha_fin}"
-
+        return f"{self.puesto.nombre}: {self.fecha_inicio} → {self.fecha_fin} ({self.estado})"
 
 class ResultadoTotal(models.Model):
     

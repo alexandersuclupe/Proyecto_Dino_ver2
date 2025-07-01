@@ -11,19 +11,15 @@
 
 <div class="container mt-5">
 
-
     <div class="card shadow-sm p-4">
-
 
         <h3 class="titulo mb-4">
             <i class="bi bi-person-plus-fill icono-verde"></i> {{ titulo }}
         </h3>
 
-        <form method="post">
+        <form method="post" id="trabajadorForm">
             {% csrf_token %}
             <div class="row g-3">
-
-
 
                 <!-- Nombres y Apellidos -->
                 <div class="col-md-6">
@@ -31,16 +27,15 @@
                         Nombres
                     </label>
                     {{ form.first_name }}
-                    {{ form.first_name.errors }}
+                    <div id="error-first_name" class="text-danger"></div>  <!-- Error para el nombre -->
                 </div>
                 <div class="col-md-6">
                     <label for="{{ form.last_name.id_for_label }}" class="form-label">
                         Apellidos
                     </label>
                     {{ form.last_name }}
-                    {{ form.last_name.errors }}
+                    <div id="error-last_name" class="text-danger"></div>  <!-- Error para el apellido -->
                 </div>
-
 
                 <!-- Puesto, Dirección y Teléfono -->
                 <div class="col-md-4">
@@ -48,22 +43,24 @@
                         Puesto
                     </label>
                     {{ form.puesto }}
-                    {{ form.puesto.errors }}
+                    <div id="error-puesto" class="text-danger"></div>  <!-- Error para puesto -->
                 </div>
                 <div class="col-md-4">
                     <label for="{{ form.direccion.id_for_label }}" class="form-label">
                         Dirección
                     </label>
                     {{ form.direccion }}
-                    {{ form.direccion.errors }}
+                    <div id="error-direccion" class="text-danger"></div>  <!-- Error para dirección -->
                 </div>
                 <div class="col-md-4">
                     <label for="{{ form.telefono.id_for_label }}" class="form-label">
                         Teléfono
                     </label>
                     {{ form.telefono }}
-                    {{ form.telefono.errors }}
+                    <div id="error-telefono" class="text-danger"></div>  <!-- Error para teléfono -->
+                    
                 </div>
+
                 <!-- Usuario y Correo -->
                 <div class="col-md-4">
                     <label for="{{ form.username.id_for_label }}" class="form-label">
@@ -77,12 +74,9 @@
                         Correo electrónico
                     </label>
                     {{ form.email }}
-                    {{ form.email.errors }}
+                    <div id="error-email" class="text-danger"></div>  <!-- Error para correo -->
+                    
                 </div>
-
-
-
-
 
                 <!-- Contraseña -->
                 {% if not form.instance.pk %}
@@ -91,21 +85,18 @@
                         Contraseña inicial
                     </label>
                     {{ form.password }}
+                    <div id="error-password" class="text-danger"></div>  <!-- Error para contraseña -->
                 </div>
                 {% endif %}
 
             </div>
             <div class="mt-4">
-                <!-- Contenedor para los botones -->
                 <div class="d-flex justify-content-between">
-                    <!-- Botón Volver a trabajadores a la izquierda -->
                     <div>
                         <a href="{% url 'gestion_empleados' %}" class="btn btn-outline-success mb-3">
                             <i class="bi bi-arrow-left-circle-fill"></i> Volver a trabajadores
                         </a>
                     </div>
-
-                    <!-- Botones Guardar y Cancelar a la derecha -->
                     <div>
                         <button type="submit" class="btn btn-success">
                             <i class="bi bi-save-fill"></i> Guardar
@@ -119,5 +110,135 @@
         </form>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('trabajadorForm');
+
+        // Función para mostrar los errores
+        function showError(input, message) {
+            const errorDiv = document.getElementById(`error-${input.id}`);
+            if (errorDiv) {
+                errorDiv.innerText = message;
+            }
+            input.classList.add('is-invalid');
+        }
+
+        // Función para limpiar los errores
+        function clearError(input) {
+            const errorDiv = document.getElementById(`error-${input.id}`);
+            if (errorDiv) {
+                errorDiv.innerText = '';
+            }
+            input.classList.remove('is-invalid');
+        }
+
+        // Validación del nombre
+        document.getElementById('id_first_name').addEventListener('input', function () {
+            const val = this.value;
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/.test(val)) {
+                showError(this, "Este campo solo permite letras.");
+            } else {
+                clearError(this);
+            }
+        });
+
+        // Validación del apellido
+        document.getElementById('id_last_name').addEventListener('input', function () {
+            const val = this.value;
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]*$/.test(val)) {
+                showError(this, "Este campo solo permite letras.");
+            } else {
+                clearError(this);
+            }
+        });
+
+        // Validación del nombre de usuario
+        document.getElementById('id_username').addEventListener('blur', function () {
+            const val = this.value.trim();
+            const existingUsernames = ['kar_12', 'admin', 'juan2024'];
+            if (!/^[a-zA-Z0-9_]{4,}$/.test(val)) {
+                showError(this, "Solo letras, números o guión bajo. Mínimo 4 caracteres.");
+            } else if (existingUsernames.includes(val)) {
+                showError(this, "Este nombre de usuario ya existe. Intenta con otro.");
+            } else {
+                clearError(this);
+            }
+        });
+
+        // Validación del correo electrónico
+        document.getElementById('id_email').addEventListener('blur', function () {
+            const val = this.value.trim();
+            if (!/^[\w\.-]+@[\w\.-]+\.\w{2,4}$/.test(val)) {
+                showError(this, "Introduce un correo electrónico válido.");
+            } else {
+                clearError(this);
+            }
+        });
+
+        // Validación de la contraseña
+        //document.getElementById('id_password').addEventListener('blur', function () {
+        //    const val = this.value;
+         //   if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(val)) {
+          //      showError(this, "Debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número.");
+          //  } else {
+          //      clearError(this);
+          //  }
+       // });
+
+        // Validación de la dirección
+        document.getElementById('id_direccion').addEventListener('blur', function () {
+            const val = this.value.trim();
+            if (val.length < 5) {
+                showError(this, "La dirección debe tener al menos 5 caracteres.");
+            } else {
+                clearError(this);
+            }
+        });
+
+        // Validación del teléfono
+        document.getElementById('id_telefono').addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '');
+        });
+        document.getElementById('id_telefono').addEventListener('blur', function () {
+            if (!/^\d{9}$/.test(this.value)) {
+                showError(this, "El teléfono debe contener exactamente 9 dígitos.");
+            } else {
+                clearError(this);
+            }
+        });
+
+        // Validación al enviar el formulario
+        form.addEventListener('submit', function (e) {
+            let hasError = false;
+
+            // Verificar campos con errores
+            form.querySelectorAll('input').forEach(function(input) {
+                if (!input.value.trim() || input.classList.contains('is-invalid')) {
+                    hasError = true;
+                }
+            });
+
+            // Si hay errores, previene el envío y muestra una alerta
+            if (hasError) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Formulario incompleto',
+                    text: 'Por favor, completa correctamente todos los campos antes de continuar.',
+                    background: '#000',
+                    color: '#fff',
+                    confirmButtonColor: '#FFEB3B',
+                    confirmButtonText: 'Entendido',
+                    customClass: {
+                        confirmButton: 'swal2-confirm'
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}
 
 {% endblock %}

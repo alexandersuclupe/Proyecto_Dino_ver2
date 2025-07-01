@@ -275,6 +275,22 @@ class TrabajadorForm(forms.ModelForm):
         # En creación: generamos contraseña con 6 dígitos (del 1 al 6)
         #self.fields['password'].initial = ''.join(random.choice('123456') for _ in range(6))
         self.fields['password'].initial = '123456'
+        
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        
+        # Si estamos editando, no verificamos el nombre de usuario si es el mismo del trabajador actual
+        if self.instance.pk:
+            # Comprobamos si el nombre de usuario ya está en uso por otro usuario
+            if User.objects.filter(username=username).exclude(id=self.instance.user.id).exists():
+                raise ValidationError("Este nombre de usuario ya está en uso por otro usuario.")
+        else:
+            # Si no estamos editando, simplemente verificamos si el nombre de usuario está disponible
+            if User.objects.filter(username=username).exists():
+                raise ValidationError("Este nombre de usuario ya está en uso.")
+                
+        return username
+
     def save(self, commit=True):
         data = self.cleaned_data
 
@@ -315,7 +331,6 @@ class FiltroEvaluacionForm(forms.Form):
     )
     ##############33
 
-
 class PeriodoEvaluacionForm(forms.ModelForm):
     class Meta:
         model = PeriodoEvaluacion
@@ -337,13 +352,27 @@ class PeriodoEvaluacionForm(forms.ModelForm):
         label="Fecha de Fin"
     )
 
-    # Validación para asegurar que la fecha de inicio no sea posterior a la fecha de fin
+    # Validación para evitar la creación de un periodo en el mismo mes
     def clean(self):
         cleaned_data = super().clean()
+        puesto = cleaned_data.get('puesto')
         fecha_inicio = cleaned_data.get('fecha_inicio')
         fecha_fin = cleaned_data.get('fecha_fin')
 
+        # Verificar si ambas fechas están presentes antes de proceder
         if fecha_inicio and fecha_fin:
+            # Verificar si ya existe un periodo en el mismo mes y año para el mismo puesto
+            periodo_existente = PeriodoEvaluacion.objects.filter(
+                puesto=puesto,
+                fecha_inicio__month=fecha_inicio.month,  # Verifica el mes
+                fecha_inicio__year=fecha_inicio.year,    # Verifica el año
+            )
+
+            # Si existe un periodo en el mismo mes y año, no permitir la creación de uno nuevo
+            if periodo_existente.exists():
+                raise ValidationError(f"Ya existe un periodo de evaluación programado para el mes de {fecha_inicio.strftime('%B %Y')}.")
+
+            # Comprobar que la fecha de inicio no sea posterior a la fecha de fin
             if fecha_inicio > fecha_fin:
                 raise ValidationError('La fecha de inicio no puede ser posterior a la fecha de fin.')
 

@@ -792,8 +792,8 @@ def autoevaluacion_view(request):
 #     puesto_nombre = puesto.nombre.lower() if puesto else ''
 
 #     # 2) Cargar el periodo activo para ese puesto
-#     periodo = PeriodoEvaluacion.objects.filter(puesto=puesto).first()
-#     periodo_activo = periodo.esta_activo() if periodo else False
+#     periodo = PeriodoEvaluacion.objects.filter(puesto=puesto,estado="Activo").first()
+#     periodo_activo = periodo is not None
 
 #     # 3) Filtrar empleados según rol (puesto) del evaluador
 #     if puesto_nombre == 'supervisor':
@@ -857,8 +857,10 @@ def lista_evaluaciones(request):
     puesto_nombre = puesto.nombre.lower() if puesto else ''
 
     # 2) Cargar el periodo activo para ese puesto
-    periodo = PeriodoEvaluacion.objects.filter(puesto=puesto).first()
-    periodo_activo = periodo.esta_activo() if periodo else False
+    periodo = PeriodoEvaluacion.objects.filter(puesto=puesto, estado="Activo").first()
+
+    # Verificar si existe un periodo activo
+    periodo_activo = periodo is not None
 
     if not periodo_activo:
         # Si el periodo no está activo, redirigir o mostrar un mensaje
@@ -872,21 +874,31 @@ def lista_evaluaciones(request):
         ).exclude(user=user)
 
     elif puesto_nombre == 'gerente':
+        # Filtrar solo supervisores para los gerentes
         empleados = Trabajador.objects.filter(
-            puesto__nombre__iexact='supervisor')
+            puesto__nombre__iexact='supervisor'  # Comparación insensible a mayúsculas/minúsculas
+        ).exclude(user=user)  # Excluir al propio gerente
+
     else:
         empleados = Trabajador.objects.none()
 
-    # 4) Pre-crear evaluaciones pendientes
+    # 4) Pre-crear evaluaciones pendientes (para nuevas fechas de activación)
     for emp in empleados:
-        EvaluacionTrabajador.objects.get_or_create(
+        # Verificar si ya existe una evaluación para ese periodo y ese trabajador
+        evaluacion_existente = EvaluacionTrabajador.objects.filter(
             evaluador=user,
             evaluado=emp.user,
-            defaults={
-                'fecha_activacion': periodo.fecha_inicio if periodo else timezone.now(),
-                'estado': 'PENDIENTE'
-            }
-        )
+            fecha_activacion=periodo.fecha_inicio).first()
+
+        # Si no existe una evaluación para esta fecha, crearla
+        if not evaluacion_existente:
+            nueva_evaluacion = EvaluacionTrabajador.objects.create(
+                evaluador=user,
+                evaluado=emp.user,
+                fecha_activacion=periodo.fecha_inicio,  # Nueva fecha de activación
+                estado='PENDIENTE'  # El estado inicial
+            )
+            nueva_evaluacion.save()  # Guardar la nueva evaluación
 
     # 5) Recuperar los filtros desde la URL
     estado = request.GET.get('estado', '')
@@ -910,6 +922,81 @@ def lista_evaluaciones(request):
         'estado': estado,
         'trabajador': trabajador,
     })
+
+
+
+# @login_required
+# def lista_evaluaciones(request):
+#     user = request.user
+
+#     # 1) Intentar conseguir el perfil de Trabajador
+#     try:
+#         perfil = user.trabajador
+#     except (Trabajador.DoesNotExist, AttributeError):
+#         # Si el usuario no tiene perfil de Trabajador, no puede ver evaluaciones
+#         return render(request, 'sin_permiso.html', status=403)
+
+#     puesto = perfil.puesto
+#     puesto_nombre = puesto.nombre.lower() if puesto else ''
+
+#     # 2) Cargar el periodo activo para ese puesto
+#     # 2) Cargar el periodo activo para ese puesto
+#     periodo = PeriodoEvaluacion.objects.filter(puesto=puesto, estado="Activo").first()
+
+#     # Verificar si existe un periodo activo
+#     periodo_activo = periodo is not None
+
+#     if not periodo_activo:
+#         # Si el periodo no está activo, redirigir o mostrar un mensaje
+#         return render(request, 'sin_periodo_activo.html')  # Asegúrate de crear esta plantilla
+
+#     # 3) Filtrar empleados según rol (puesto) del evaluador
+#     if puesto_nombre == 'supervisor':
+#         candidatos = ['vendedor', 'cajero', 'almacen']
+#         empleados = Trabajador.objects.filter(
+#             puesto__nombre__in=candidatos
+#         ).exclude(user=user)
+
+#     elif puesto_nombre == 'gerente':
+#         empleados = Trabajador.objects.filter(
+#             puesto__nombre__iexact='supervisor')
+#     else:
+#         empleados = Trabajador.objects.none()
+
+#     # 4) Pre-crear evaluaciones pendientes
+#     for emp in empleados:
+#         EvaluacionTrabajador.objects.get_or_create(
+#             evaluador=user,
+#             evaluado=emp.user,
+#             defaults={
+#                 'fecha_activacion': periodo.fecha_inicio if periodo else timezone.now(), 
+#                 'estado': 'PENDIENTE'
+#             }
+#         )
+
+#     # 5) Recuperar los filtros desde la URL
+#     estado = request.GET.get('estado', '')
+#     trabajador = request.GET.get('trabajador', '')
+
+#     # 6) Filtrar evaluaciones por estado y trabajador
+#     evaluaciones = EvaluacionTrabajador.objects.filter(evaluador=user)
+
+#     if estado:
+#         evaluaciones = evaluaciones.filter(estado=estado)
+
+#     if trabajador:
+#         evaluaciones = evaluaciones.filter(
+#             evaluado__username__icontains=trabajador)
+
+#     # 7) Renderizar la plantilla
+#     return render(request, 'lista_evaluaciones.html', {
+#         'evaluaciones': evaluaciones,
+#         'periodo': periodo,
+#         'periodo_activo': periodo_activo,
+#         'estado': estado,
+#         'trabajador': trabajador,
+#     })
+
 
 @login_required
 def gestion_empleados(request):
@@ -1274,7 +1361,7 @@ def exportar_evaluaciones_excel(request):
         trabajador = None
 
     es_admin = user.is_superuser or (
-        trabajador and trabajador.puesto and trabajador.puesto.nombre.lower() == "supervisor"
+        trabajador and trabajador.puesto and trabajador.puesto.nombre.lower() == "gerente"
     )
 
     wb = Workbook()
@@ -1580,15 +1667,16 @@ def programar_periodo_evaluacion(request):
         form = PeriodoEvaluacionForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(
-                request, "Periodo de evaluación programado exitosamente.")
-            # Redirige a la lista de periodos
+            messages.success(request, "Periodo de evaluación programado exitosamente.")
             return redirect('lista_periodos')
         else:
-            messages.error(
-                request, "Error al programar el periodo de evaluación. Verifique los campos.")
+            # Si el formulario no es válido, mostrar los mensajes de error
+            for message in form.errors.get('__all__', []):
+                messages.error(request, message)
+            return render(request, 'periodo/programar_periodo.html', {'form': form})
     else:
         form = PeriodoEvaluacionForm()
+
     return render(request, 'periodo/programar_periodo.html', {'form': form})
 
 

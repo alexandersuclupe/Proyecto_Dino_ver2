@@ -99,12 +99,11 @@
           <p class="mb-1"><strong>Puesto:</strong> <span class="badge-puesto">{{ t.puesto.nombre|default:"No asignado" }}</span></p>
 
           <div class="d-flex justify-content-between mt-3">
-            <a href="{% url 'editar_empleado' t.id %}" class="btn btn-sm btn-outline-primary">
+            <a href="{% url 'editar_empleado' t.id %}" class="btn btn-sm btn-outline-primary editar-btn">
               <i class="bi bi-pencil-fill"></i> Editar
             </a>
-            <a href="{% url 'eliminar_empleado' t.id %}" class="btn btn-sm btn-outline-danger"
-               onclick="return confirm('¿Eliminar a {{ t.user.username }}?')">
-              <i class="bi bi-trash3-fill"></i> Eliminar
+            <a href="{% url 'eliminar_empleado' t.id %}" class="btn btn-sm btn-outline-danger eliminar-btn" data-name="{{ t.user.first_name }} {{ t.user.last_name }}">
+                <i class="bi bi-trash3-fill"></i> Eliminar
             </a>
           </div>
         </div>
@@ -147,4 +146,37 @@
   {% endif %}
 
 </div>
+
+<!-- Agregar SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Delegación de eventos para manejar todos los botones de eliminación
+    document.querySelectorAll('.eliminar-btn').forEach(function(button) {
+        button.addEventListener("click", function(event) {
+            event.preventDefault();  // Evitar que el enlace sea seguido inmediatamente
+
+            var empleadoName = event.target.getAttribute("data-name"); // Obtener el nombre del trabajador desde el atributo data-name
+
+            // Mostrar la ventana emergente de SweetAlert2
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¿Eliminar a " + empleadoName + "?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Si el usuario confirma, redirigir al enlace de eliminación
+                    window.location.href = event.target.href;
+                }
+            });
+        });
+    });
+
+    
+</script>
+
 {% endblock %}

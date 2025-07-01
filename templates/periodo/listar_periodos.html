@@ -1,0 +1,75 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Dino — Gestión de criterios{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Periodos de Evaluación</title>
+    <!-- Estilos de Bootstrap (puedes incluir tu propio CSS) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Lista de Periodos de Evaluación</h2>
+
+        <!-- Botón para agregar nuevo periodo -->
+        <a href="{% url 'programar_periodo' %}" class="btn btn-success mb-3">Programar Nuevo Periodo</a>
+
+        <!-- Tabla de periodos -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Puesto</th>
+                    <th>Fecha de Inicio</th>
+                    <th>Fecha de Fin</th>
+                    <th>Estado</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                {% for periodo in periodos %}
+                <tr>
+                    <td>{{ periodo.puesto.nombre }}</td>
+                    <td>{{ periodo.fecha_inicio }}</td>
+                    <td>{{ periodo.fecha_fin }}</td>
+                    <td>
+                        <span
+                            class="badge {% if periodo.estado == 'Activo' %}bg-success{% elif periodo.estado == 'Pendiente' %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ periodo.estado }}
+                        </span>
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+
+
+</body>
+
+</html>
+{% endblock %}

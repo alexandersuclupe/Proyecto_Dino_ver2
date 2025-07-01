@@ -5,6 +5,8 @@ from .models import (
     EvaluacionTrabajador, EvaluacionVenta,
     PesoEvaluacion, ResultadoTotal, TipoEvaluacion,Trabajador
 )
+from django.db.models.signals import pre_delete
+
 
 # @receiver(post_save, sender=EvaluacionTrabajador)
 # def _recalcula(sender, instance, **kwargs):
@@ -132,3 +134,4 @@ def _on_venta(sender, instance, **kwargs):
     perfil = instance.trabajador
     if getattr(instance, 'estado', '') == 'COMPLETADA' or kwargs.get('signal') is post_delete:
         _recalcula(perfil)
+
